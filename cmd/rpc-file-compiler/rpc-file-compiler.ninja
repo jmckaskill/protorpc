@@ -1,0 +1,9 @@
+OBJ = obj/$TGT/rpc-file-compiler
+SRC = protorpc/cmd/rpc-file-compiler
+
+build $OBJ/rpc-file-compiler.o: cxx $SRC/rpc-file-compiler.cpp
+build bin/$TGT/rpc-file-compiler.exe: cxxlink $
+ $OBJ/rpc-file-compiler.o $
+ lib/$TGT/zlib.lib $
+ bin/$TGT/protorpc.so $
+

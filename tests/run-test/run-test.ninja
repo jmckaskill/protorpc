@@ -1,0 +1,9 @@
+OBJ = obj/$TGT/run-test
+SRC = protorpc/tests/run-test
+
+build $OBJ/run-test.o: cc $SRC/run-test.c
+
+build bin/$TGT/run-test.exe: clink $
+ $OBJ/run-test.o $
+ lib/$TGT/protorpc.lib $
+

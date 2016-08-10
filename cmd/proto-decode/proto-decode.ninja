@@ -1,0 +1,9 @@
+OBJ = obj/$TGT/proto-decode
+SRC = protorpc/cmd/proto-decode
+
+build $OBJ/proto-decode.o: cc $SRC/proto-decode.c
+
+build bin/$TGT/proto-decode.exe: clink $
+ $OBJ/proto-decode.o $
+ lib/$TGT/protorpc.lib $
+

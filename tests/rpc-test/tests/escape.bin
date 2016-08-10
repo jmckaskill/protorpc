@@ -1,0 +1,8 @@
+POST %2F%61pi/Login HTTP/1.1
+Content-Length: 4
+
+{}
+POST %2F%61pi/Login%3F HTTP/1.1
+
+POST %252Fapi/Login HTTP/1.1
+
