@@ -1,13 +1,7 @@
 #define BUILDING_PROTORPC
 #include "rpc.h"
-#include <protorpc/protorpc.h>
-#include <os/http-parser.h>
-#include <os/thread.h>
-#include <os/log.h>
-#include <os/hash.h>
-#include <os/char-array.h>
-
-#include <ext/bearssl-0.5/inc/bearssl.h>
+#include "../protorpc.h"
+#include <bearssl.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -311,6 +305,7 @@ static const char *serve_rpc(struct rpc_server *m, int fd) {
 			return s_not_found;
 		}
 
+#ifdef PROTORPC_INCLUDE_STREAMS
 	} else if (p.method == HTTP_METHOD_GET && smap_find(&m->streams, p.path.buf, p.path.len, &idx)) {
 		// single poll of an API stream
 		const char *str = "HTTP/1.1 200 \r\n" CONTENT_LENGTH_TAIL;
@@ -326,6 +321,7 @@ static const char *serve_rpc(struct rpc_server *m, int fd) {
 		if (send(fd, m->output.buf, m->output.len, 0) != (int) m->output.len) {
 			return s_closesocket;
 		}
+#endif
 
 	} else if (p.method == HTTP_METHOD_GET && str_equals(&p.path, "/")) {
 		send_string(fd, "HTTP/1.1 307 Temporary Redirect\r\nLocation:/en/index.html\r\nContent-Length\r\n\r\n");

@@ -1,5 +1,9 @@
 #include "protoc-gen-protorpc.h"
-#include <os/pipe.h>
+
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
 
 static void declare_external_fields(str_t *o, const struct FileDescriptorProto *f, const struct DescriptorProto *msg) {
     for (int i = 0; i < msg->field.len; i++) {
@@ -65,8 +69,6 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f) {
     str_add(o, "#include \"");
     str_addpb(o, f->name);
     str_add(o, ".h\"" EOL);
-	str_add(o, "#include <os/log.h>" EOL);
-	str_add(o, "#include <os/pipe.h>" EOL);
     
     for (int i = 0; i < f->enum_type.len; i++) {
         const struct type *t = get_enum_type(f->enum_type.v[i]);
@@ -94,19 +96,26 @@ static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequ
 }
 
 int main(int argc, char *argv[]) {
-    if (argc >= 2) {
+    if (argc >= 3) {
         // we've been called directly
         // call protoc with the arguments which will then call the backend back
-        return exec_protoc(argv[0], argv[1]);
+        return exec_protoc(argv[0], argv[1], argv[2]);
     }
-	set_binary(stdin);
+#ifdef _WIN32
+	_setmode(_fileno(stdin), _O_BINARY);
+#endif
 
     str_t in = STR_INIT;
     str_fread_all(&in, stdin);
 
-    pb_alloc_t obj = PB_ALLOC_INIT;
+	size_t bufsz = 1 * 1024 * 1024;
+	char *obuf = malloc(bufsz);
+	pb_buf_t obj = { obuf, obuf + bufsz };
     struct CodeGeneratorRequest req = {0};
-    pb_get_CodeGeneratorRequest(in.buf, in.buf+in.len, &obj, &req);
+	if (pb_get_CodeGeneratorRequest(in.buf, in.buf + in.len, &obj, &req)) {
+		fprintf(stderr, "protoc-gen-protorpc - failed to parse input\n");
+		return 2;
+	}
 
     for (int i = 0; i < req.proto_file.len; i++) {
         insert_file_types(req.proto_file.v[i]);
@@ -120,7 +129,7 @@ int main(int argc, char *argv[]) {
         const struct FileDescriptorProto *f = get_file_proto(&req, req.file_to_generate.v[i]);
 
 		if (f == NULL) {
-			fprintf(stderr, "invalid input - can't find %.*s\n", req.file_to_generate.v[i].len, req.file_to_generate.v[i].p);
+			fprintf(stderr, "protoc-gen-protorpc - can't find %.*s\n", req.file_to_generate.v[i].len, req.file_to_generate.v[i].p);
 			return 2;
 		}
 

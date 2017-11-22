@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include <protorpc/protorpc.h>
+#include "../protorpc.h"
 
 char pb_errret[] = {0}; 
 
@@ -597,48 +597,51 @@ err:
 
 #define PARSE_ARRAY(type, suffix)										\
 	if (pb_parse_array(&p)) {											\
+		*pv = (type*) a->next;											\
 		do {															\
-			*pv = (type*) pb_reserve(a, *plen, sizeof(**pv));	        \
+			if (a->next + ((*plen)*sizeof(type)) > a->end) {			\
+				return pb_errret;										\
+			}															\
 			p = pb_parse_ ## suffix(p, (type*) *pv + *plen);			\
 			(*plen)++;													\
 		} while (pb_more_array(&p));									\
-		pb_commit(a, *plen, sizeof(**pv));								\
+		a->next += (*plen) * sizeof(type);								\
 	}																	\
 	return p
 
-char *pb_parse_array_bool(char *p, pb_alloc_t *a, bool const **pv, int *plen) {
+char *pb_parse_array_bool(char *p, pb_buf_t *a, bool const **pv, int *plen) {
 	PARSE_ARRAY(bool, bool);
 }
 
-char *pb_parse_array_i32(char *p, pb_alloc_t *a, int32_t const **pv, int *plen) {
+char *pb_parse_array_i32(char *p, pb_buf_t *a, int32_t const **pv, int *plen) {
 	PARSE_ARRAY(int32_t, i32);
 }
 
-char *pb_parse_array_u32(char *p, pb_alloc_t *a, uint32_t const **pv, int *plen) {
+char *pb_parse_array_u32(char *p, pb_buf_t *a, uint32_t const **pv, int *plen) {
 	PARSE_ARRAY(uint32_t, u32);
 }
 
-char *pb_parse_array_i64(char *p, pb_alloc_t *a, int64_t const **pv, int *plen) {
+char *pb_parse_array_i64(char *p, pb_buf_t *a, int64_t const **pv, int *plen) {
 	PARSE_ARRAY(int64_t, i64);
 }
 
-char *pb_parse_array_u64(char *p, pb_alloc_t *a, uint64_t const **pv, int *plen) {
+char *pb_parse_array_u64(char *p, pb_buf_t *a, uint64_t const **pv, int *plen) {
 	PARSE_ARRAY(uint64_t, u64);
 }
 
-char *pb_parse_array_float(char *p, pb_alloc_t *a, float const **pv, int *plen) {
+char *pb_parse_array_float(char *p, pb_buf_t *a, float const **pv, int *plen) {
 	PARSE_ARRAY(float, float);
 }
 
-char *pb_parse_array_double(char *p, pb_alloc_t *a, double const **pv, int *plen) {
+char *pb_parse_array_double(char *p, pb_buf_t *a, double const **pv, int *plen) {
 	PARSE_ARRAY(double, double);
 }
 
-char *pb_parse_array_bytes(char *p, pb_alloc_t *a, struct pb_bytes const **pv, int *plen) {
+char *pb_parse_array_bytes(char *p, pb_buf_t *a, struct pb_bytes const **pv, int *plen) {
 	PARSE_ARRAY(struct pb_bytes, bytes);
 }
 
-char *pb_parse_array_string(char *p, pb_alloc_t *a, struct pb_string const **pv, int *plen) {
+char *pb_parse_array_string(char *p, pb_buf_t *a, struct pb_string const **pv, int *plen) {
 	PARSE_ARRAY(struct pb_string, string);
 }
 

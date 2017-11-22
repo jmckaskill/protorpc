@@ -2,13 +2,16 @@
 
 #include "plugin.proto.h"
 #include "descriptor.proto.h"
-#include <protorpc/protorpc.h>
-#include <os/str.h>
+#include "../../protobuf.h"
+#include "../../char-array.h"
+#include "../str.h"
+#include "../hash.h"
 #include <math.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
 
+#define NEW(type) ((type*) calloc(1, sizeof(type)))
 
 struct type {
     str_t c_type;
@@ -62,11 +65,19 @@ void do_decode(str_t *out, const struct type *t, bool define);
 void do_parse_enum(str_t *out, const struct type *t, bool define);
 void do_print_enum(str_t *out, const struct type *t, bool define);
 void do_parse(str_t *out, const struct type *t, bool define);
-void do_fparse(str_t *out, const struct type *t, bool define);
 void do_print(str_t *out, const struct type *t, bool define);
 void do_encode(str_t *out, const struct type *t, bool define);
 void do_server(str_t *out, const struct type *t, int stage);
 void do_client(str_t *out, const struct type *t, bool define);
 void do_nonzero(str_t *o, const struct type *t, bool define);
 
-int exec_protoc(char *argv0, char *argv1);
+int exec_protoc(char *my_exe, char *protoc_exe, char *filename);
+
+struct hash_entry {
+	struct pb_string str;
+	uint32_t off;
+	const void *data;
+};
+
+void calc_hash_values(struct hash_entry *entries, int num, uint32_t *hashmul, uint32_t *hashsz);
+

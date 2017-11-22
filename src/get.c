@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include <protorpc/protorpc.h>
+#include "../protorpc.h"
 
 const char *pb_get_u32(const char *p, const char *e, uint32_t *pv) {
     size_t shift = 0;
@@ -78,7 +78,7 @@ const char *pb_get_string(const char *p, const char *e, struct pb_string *pv) {
     return e;
 }
 
-const char *pb_get_packed_bool(const char *p, const char *e, pb_alloc_t *a, bool **pv, int *plen) {
+const char *pb_get_packed_bool(const char *p, const char *e, pb_buf_t *a, bool **pv, int *plen) {
 	(void) a;
     static_assert(sizeof(bool) == 1, "incompatible bool size");
     struct pb_string bytes;
@@ -87,60 +87,72 @@ const char *pb_get_packed_bool(const char *p, const char *e, pb_alloc_t *a, bool
     *plen = bytes.len;
     return p;
 }
-const char *pb_get_packed_u32(const char *p, const char *e, pb_alloc_t *a, uint32_t **pv, int *plen) {
+const char *pb_get_packed_u32(const char *p, const char *e, pb_buf_t *a, uint32_t **pv, int *plen) {
 	(void) a;
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
     p = b.p;
     e = b.p + b.len;
     *plen = 0;
+	*pv = (uint32_t*)a->next;
     while (p < e) {
-        *pv = (uint32_t*) pb_reserve(a, *plen, sizeof(uint32_t));
+		if (a->next + ((*plen)*sizeof(uint32_t)) > a->end) {
+			return NULL;
+		}
         p = pb_get_u32(p, e, &(*pv)[(*plen)++]);
     }
-    pb_commit(a, *plen, sizeof(uint32_t));
+	a->next += (*plen)*sizeof(uint32_t);
     return ret;
 }
-const char *pb_get_packed_u64(const char *p, const char *e, pb_alloc_t *a, uint64_t **pv, int *plen) {
+const char *pb_get_packed_u64(const char *p, const char *e, pb_buf_t *a, uint64_t **pv, int *plen) {
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
 	p = b.p;
 	e = b.p + b.len;
     *plen = 0;
+	*pv = (uint64_t*)a->next;
     while (p < e) {
-        *pv = (uint64_t*) pb_reserve(a, *plen, sizeof(uint64_t));
+		if (a->next + ((*plen) * sizeof(uint64_t)) > a->end) {
+			return NULL;
+		}
         p = pb_get_u64(p, e, &(*pv)[(*plen)++]);
     }
-    pb_commit(a, *plen, sizeof(uint64_t));
+	a->next += (*plen) * sizeof(uint64_t);
     return ret;
 }
-const char *pb_get_packed_s32(const char *p, const char *e, pb_alloc_t *a, int32_t **pv, int *plen) {
+const char *pb_get_packed_s32(const char *p, const char *e, pb_buf_t *a, int32_t **pv, int *plen) {
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
 	p = b.p;
 	e = b.p + b.len;
     *plen = 0;
-    while (p < e) {
-        *pv = (int32_t*) pb_reserve(a, *plen, sizeof(int32_t));
+	*pv = (int32_t*)a->next;
+	while (p < e) {
+		if (a->next + ((*plen) * sizeof(int32_t)) > a->end) {
+			return NULL;
+		}
         p = pb_get_s32(p, e, &(*pv)[(*plen)++]);
     }
-    pb_commit(a, *plen, sizeof(int32_t));
+	a->next += (*plen) * sizeof(int32_t);
     return ret;
 }
-const char *pb_get_packed_s64(const char *p, const char *e, pb_alloc_t *a, int64_t **pv, int *plen) {
+const char *pb_get_packed_s64(const char *p, const char *e, pb_buf_t *a, int64_t **pv, int *plen) {
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
 	p = b.p;
 	e = b.p + b.len;
     *plen = 0;
-    while (p < e) {
-        *pv = (int64_t*) pb_reserve(a, *plen, sizeof(int64_t));
+	*pv = (int64_t*)a->next;
+	while (p < e) {
+		if (a->next + ((*plen) * sizeof(int64_t)) > a->end) {
+			return NULL;
+		}
         p = pb_get_s64(p, e, &(*pv)[(*plen)++]);
     }
-    pb_commit(a, *plen, sizeof(int64_t));
+	a->next += (*plen) * sizeof(int64_t);
     return ret;
 }
-const char *pb_get_packed_f32(const char *p, const char *e, pb_alloc_t *a, union pb_f32 **pv, int *plen) {
+const char *pb_get_packed_f32(const char *p, const char *e, pb_buf_t *a, union pb_f32 **pv, int *plen) {
 	(void) a;
     struct pb_string b;
     p = pb_get_string(p,e,&b);
@@ -148,7 +160,7 @@ const char *pb_get_packed_f32(const char *p, const char *e, pb_alloc_t *a, union
     *plen = b.len / 4;
     return p;
 }
-const char *pb_get_packed_f64(const char *p, const char *e, pb_alloc_t *a, union pb_f64 **pv, int *plen) {
+const char *pb_get_packed_f64(const char *p, const char *e, pb_buf_t *a, union pb_f64 **pv, int *plen) {
 	(void) a;
     struct pb_string b;
     p = pb_get_string(p,e,&b);

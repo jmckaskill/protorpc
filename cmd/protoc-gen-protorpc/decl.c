@@ -182,7 +182,6 @@ void do_struct_funcs(str_t *o, const struct type *t, bool define) {
 
 	do_nonzero(o, t, define);
     do_parse(o, t, define);
-	do_fparse(o, t, define);
     do_print(o, t, define);
 
     if (define) {

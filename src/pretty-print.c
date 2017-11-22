@@ -1,16 +1,21 @@
 #define BUILDING_PROTORPC
-#include <protorpc/protorpc.h>
+#include "../protorpc.h"
 
-static void add_newline(str_t *o, int depth) {
-	str_grow(o, o->len + depth + 1);
-	o->buf[o->len++] = '\n';
+static int add_newline(pb_buf_t *o, int depth) {
+    char *p = o->next;
+    if (p + depth + 1 > o->end) {
+        return -1;
+    }
+    *(p++) = '\n';
     while (depth) {
-		o->buf[o->len++] = '\t';
+        *(p++) = '\t';
         depth--;
     }
+    o->next = p;
+    return 0;
 }
 
-static const char *copy_string(str_t *o, const char *in, const char *end) {
+static const char *copy_string(pb_buf_t *o, const char *in, const char *end) {
 	const char *begin = in;
 	while (in < end) {
         switch (*in) {
@@ -20,7 +25,9 @@ static const char *copy_string(str_t *o, const char *in, const char *end) {
             return NULL;
         case '\"':
             in++;
-			str_add2(o, begin, (int) (in - begin));
+            if (pb_append(o, begin, in - begin)) {
+                return NULL;
+            }
             return in;
         case '\\':
 			in++;
@@ -34,8 +41,8 @@ static const char *copy_string(str_t *o, const char *in, const char *end) {
 	return NULL;
 }
 
-int pb_pretty_print(str_t *o, const char *in, int len) {
-	int begin = o->len;
+int pb_pretty_print(pb_buf_t *o, const char *in, int len) {
+	char *begin = o->next;
     int depth = 0;
     bool just_opened = false;
 	bool just_comma = false;
@@ -52,7 +59,9 @@ int pb_pretty_print(str_t *o, const char *in, int len) {
             break;
         case '{':
         case '[':
-			str_addch(o, *in);
+			if (pb_append(o, in, 1)) {
+                goto err;
+            }
             just_opened = true;
 			just_comma = false;
             depth++;
@@ -62,16 +71,20 @@ int pb_pretty_print(str_t *o, const char *in, int len) {
         case ']':
             depth--;
             // collapse {} or [] with no entries 
-            if (!just_opened) {
-                add_newline(o, depth);
+            if (!just_opened && add_newline(o, depth)) {
+                goto err;
             }
             just_opened = false;
 			just_comma = false;
-			str_addch(o, *in);
+            if (pb_append(o, in, 1)) {
+                goto err;
+            }
             in++;
             break;
         case ':':
-			str_add(o, ": ");
+            if (pb_append(o, ": ", 2)) {
+                goto err;
+            }
             in++;
             break;
         case ',':
@@ -81,14 +94,19 @@ int pb_pretty_print(str_t *o, const char *in, int len) {
         case '"':
             // strings
 			if (just_comma) {
-				str_addch(o, ',');
-				add_newline(o, depth);
+				if (pb_append(o, ",", 1) || add_newline(o, depth)) {
+                    goto err;
+                }
 				just_comma = false;
 			} else if (just_opened) {
-                add_newline(o, depth);
+                if (add_newline(o, depth)) {
+                    goto err;
+                }
                 just_opened = false;
             }
-			str_addch(o, '\"');
+			if (pb_append(o, "\"", 1)) {
+				goto err;
+			}
             in = copy_string(o, in+1, end);
             if (!in) {
 				goto err;
@@ -97,27 +115,31 @@ int pb_pretty_print(str_t *o, const char *in, int len) {
         default:
             // numbers, booleans, etc
 			if (just_comma) {
-				str_addch(o, ',');
-				add_newline(o, depth);
+                if (pb_append(o, ",", 1) || add_newline(o, depth)) {
+                    goto err;
+                }
 				just_comma = false;
 			} else if (just_opened) {
-				add_newline(o, depth);
+				if (add_newline(o, depth)) {
+                    goto err;
+                }
 				just_opened = false;
 			}
-			str_addch(o, *in);
+			if (pb_append(o, in, 1)) {
+                goto err;
+            }
             in++;
             break;
         }
     }
 
-	if (depth) {
-		goto err;
-	}
+	if (depth || pb_append(o, "\n", 1)) {
+        goto err;
+    }
 
-	str_addch(o, '\n');
     return 0;
 
 err:
-	str_setlen(o, begin);
+    o->next = begin;
 	return -1;
 }

@@ -1,9 +1,0 @@
-OBJ = obj/$TGT/proto-encode
-SRC = protorpc/cmd/proto-encode
-
-build $OBJ/proto-encode.o: cc $SRC/proto-encode.c
-
-build bin/$TGT/proto-encode.exe: clink $
- $OBJ/proto-encode.o $
- lib/$TGT/protorpc.lib $
-

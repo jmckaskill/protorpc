@@ -50,28 +50,38 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 
 	if (f->label == LABEL_REPEATED) {
 		if (ft->pod_message) {
+			str_addf(o, "\t\t%s.v = (%s*) obj->next;" EOL, mbr.buf, ft->c_type.buf);
 			str_add(o, "\t\tdo {" EOL);
-			str_addf(o, "\t\t\t%s.v = (%s*) pb_reserve(obj, %s.len, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.buf, ft->c_type.buf);
+			str_add(o, "\t\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t\t}" EOL);
 			str_add(o, "\t\t\tstruct pb_string msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
-			str_addf(o, "\t\t\tpb_get_%s(msg.p, msg.p + msg.len, (%s*) &%s.v[%s.len]);" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf, mbr.buf);
+			str_addf(o, "\t\t\tif (pb_get_%s(msg.p, msg.p + msg.len, (%s*) &%s.v[%s.len])) {" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf, mbr.buf);
+			str_add(o, "\t\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t\t}" EOL);
 			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
 			str_addf(o, "\t\t} while (!pb_cmp_tag_%u(p, e, %u));" EOL, tagsz, tag);
 			str_add(o, EOL);
-			str_addf(o, "\t\tpb_commit(obj, %s.len, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.buf, ft->c_type.buf);
 		} else if (ft->msg) {
 			str_addf(o, "\t\t%s *prev = NULL;" EOL, ft->c_type.buf);
 			str_add(o, "\t\tdo {" EOL);
 			str_add(o, "\t\t\tstruct pb_string msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
-			str_addf(o, "\t\t\t%s *c = (%s*) pb_calloc(obj, 1, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\t\tpb_get_%s(msg.p, msg.p + msg.len, obj, c);" EOL, ft->proto_suffix.buf);
+			str_addf(o, "\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
+			str_addf(o, "\t\t\tif (!c || pb_get_%s(msg.p, msg.p + msg.len, obj, c)) {" EOL, ft->proto_suffix.buf);
+			str_add(o, "\t\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t\t}" EOL);
 			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
 			str_add(o, "\t\t\tc->pb_hdr.prev = prev;" EOL);
 			str_add(o, "\t\t\tprev = c;" EOL);
 			str_addf(o, "\t\t} while (!pb_cmp_tag_%u(p, e, %u));" EOL, tagsz, tag);
 			str_add(o, EOL);
-			str_addf(o, "\t\t%s.v = (const %s**) pb_calloc(obj, %s.len, sizeof(%s*));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t%s.v = (const %s**) pb_calloc(obj, %s.len * sizeof(%s*));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\tif (!%s.v) {" EOL, mbr.buf);
+			str_add(o, "\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t}" EOL);
 			str_add(o, EOL);
 			str_addf(o, "\t\tfor (int i = %s.len - 1; i >= 0; i--) {" EOL, mbr.buf);
 			str_addf(o, "\t\t\t%s.v[i] = prev;" EOL, mbr.buf);
@@ -82,24 +92,31 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 			get_proto_cast(o, f, 1, 0);
 			str_addf(o, "&%s.v, &%s.len);" EOL, mbr.buf, mbr.buf);
 		} else {
+			str_addf(o, "\t\t%s.v = (%s*) obj->next;" EOL, mbr.buf, ft->c_type.buf);
 			str_add(o, "\t\tdo {" EOL);
-			str_addf(o, "\t\t\t%s.v = (%s*) pb_reserve(obj, %s.len, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.buf, ft->c_type.buf);
+			str_add(o, "\t\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t\t}" EOL);
 			str_addf(o, "\t\t\tp = pb_get_%s(p + %u, e, ", ft->proto_suffix.buf, tagsz);
 			get_proto_cast(o, f, 0, 0);
 			str_addf(o, "&%s.v[%s.len]);" EOL, mbr.buf, mbr.buf);
 			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
 			str_addf(o, "\t\t} while (!pb_cmp_tag_%u(p, e, %u));" EOL, tagsz, tag);
 			str_add(o, EOL);
-			str_addf(o, "\t\tpb_commit(obj, %s.len, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.buf, ft->c_type.buf);
 		}
     } else if (ft->msg) {
         str_add(o, "\t\tstruct pb_string msg;" EOL);
         str_addf(o, "\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 		if (ft->pod_message) {
-			str_addf(o, "\t\tpb_get_%s(msg.p, msg.p + msg.len, &%s);" EOL, ft->proto_suffix.buf, mbr.buf);
+			str_addf(o, "\t\tif (pb_get_%s(msg.p, msg.p + msg.len, &%s)) {" EOL, ft->proto_suffix.buf, mbr.buf);
+			str_add(o, "\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t}" EOL);
 		} else {
 			str_addf(o, "\t\t%s = (%s*) pb_calloc(obj, 1, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\tpb_get_%s(msg.p, msg.p + msg.len, obj, (%s*) %s);" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+			str_addf(o, "\t\tif (!%s || pb_get_%s(msg.p, msg.p + msg.len, obj, (%s*) %s)) {" EOL, mbr.buf, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+			str_add(o, "\t\t\treturn -1;" EOL);
+			str_add(o, "\t\t}" EOL);
 		}
     } else {
         str_addf(o, "\t\tp = pb_get_%s(p + %u, e, ", ft->proto_suffix.buf, tagsz);
@@ -111,9 +128,9 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 }
 
 void do_decode(str_t *o, const struct type *t, bool define) {
-	str_addf(o, "void pb_get_%s(const char *p, const char *e", t->proto_suffix.buf);
+	str_addf(o, "int pb_get_%s(const char *p, const char *e", t->proto_suffix.buf);
 	if (!t->pod_message) {
-		str_add(o, ", pb_alloc_t *obj");
+		str_add(o, ", pb_buf_t *obj");
 	}
 	str_addf(o, ", %s *m)", t->c_type.buf);
     if (!define) {
@@ -130,5 +147,6 @@ void do_decode(str_t *o, const struct type *t, bool define) {
         decode_field(o, t, t->msg->field.v[i], &tagsection);
     }
 
+	str_add(o, "\treturn 0;" EOL);
     str_add(o, "}" EOL);
 }

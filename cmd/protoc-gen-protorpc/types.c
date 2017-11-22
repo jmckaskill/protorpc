@@ -1,6 +1,4 @@
 #include "protoc-gen-protorpc.h"
-#include <os/hash.h>
-#include <os/char-array.h>
 
 struct {map_t h; slice_t *keys; struct type **values;} g_named_types;
 struct {map_t h; const struct DescriptorProto **keys; struct type **values;} g_struct_types;

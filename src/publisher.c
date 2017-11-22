@@ -1,7 +1,6 @@
 #include "rpc.h"
-#include <protorpc/protorpc.h>
-#include <os/thread.h>
-#include <os/log.h>
+#include "../protorpc.h"
+#ifdef PROTORPC_INCLUDE_STREAMS
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -463,3 +462,5 @@ int rpc_launch_ws_thread(int fd, str_t *in, rpc_post_callback cb) {
 	thrd_detach(t);
 	return 0;
 }
+
+#endif

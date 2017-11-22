@@ -47,7 +47,7 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 }
 
 void do_print(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "void pb_print_%s(str_t *a, %s const *m)", t->json_suffix.buf, t->c_type.buf);
+    str_addf(o, "int pb_print_%s(pb_buf_t *a, %s const *m)", t->json_suffix.buf, t->c_type.buf);
     if (!define) {
         str_add(o, ";" EOL);
 		return;
@@ -65,8 +65,8 @@ void do_print(str_t *o, const struct type *t, bool define) {
     }
 
     // print out the fixed members
-	str_addf(o, "\tstr_grow(a, a->len + %u);" EOL, fixedsz+1); // +1 is for the opening brace
-	str_add(o, "\tchar *p = a->buf + a->len;" EOL);
+	str_addf(o, "\tchar *p = pb_appendsz(a, %u);" EOL, fixedsz+1); // +1 is for the opening brace
+	str_add(o, "\tif (!p) {return -1;}" EOL);
     str_add(o, "\t*p++ = '{';" EOL);
 
     static str_t mbr = STR_INIT;
@@ -103,7 +103,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
         }
     }
 
-	str_add(o, "\tstr_setlen(a, (unsigned) (p - a->buf));" EOL);
+	str_add(o, "\ta->next = p;" EOL);
 
     // now everything else
     for (int i = 0; i < t->msg->field.len; i++) {
@@ -139,42 +139,42 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_addf(o, "\tif (%s) {" EOL, mbr.buf);
         }
 
-		str_addf(o, "\t\tstr_add(a, \"\\\"%.*s\\\":\");" EOL, f->name.len, f->name.p);
+		str_addf(o, "\t\tif (pb_append(a, \"\\\"%.*s\\\":\", %d)) {return -1;}" EOL, f->name.len, f->name.p, f->name.len + 3);
 
         if (f->label == LABEL_REPEATED) {
 			if (isfinite(ft->max_print_size)) {
-				str_addf(o, "\t\tstr_grow(a, a->len + 3 /*[],*/ + %s.len * %d);" EOL, mbr.buf, (int) ft->max_print_size);
-				str_add(o, "\t\tchar *mp = a->buf + a->len;" EOL);
+				str_addf(o, "\t\tchar *mp = pb_appendsz(a, 3 /*[],*/ + %s.len * %d);" EOL, mbr.buf, (int) ft->max_print_size);
+				str_add(o, "\t\tif (!mp) {return -1;}" EOL);
                 str_add(o, "\t\t*mp++ = '[';" EOL);
                 str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.buf);
                 str_addf(o, "\t\t\tmp = pb_print_%s(mp, %s.v[i]);" EOL, ft->json_suffix.buf, mbr.buf);
                 str_add(o, "\t\t}" EOL);
                 str_add(o, "\t\tmp = pb_print_array_end_i(mp);" EOL);
-				str_add(o, "\t\ta->len = (int) (mp - a->buf);" EOL);
+				str_add(o, "\t\ta->next = mp;" EOL);
 			} else {
-                str_add(o, "\t\tstr_addch(a, '[');" EOL);
+				str_add(o, "\t\tif (pb_append(a, \"[\", 1)) {return -1;}" EOL);
                 str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.buf);
-				str_addf(o, "\t\t\tpb_print_%s(a, ", ft->json_suffix.buf);
+				str_addf(o, "\t\t\tif (pb_print_%s(a, ", ft->json_suffix.buf);
 				if (ft->pod_message) {
 					str_addch(o, '&');
 				}
-                str_addf(o, "%s.v[i]);" EOL, mbr.buf);
-				str_add(o, "\t\t\ta->buf[a->len-1] = ','; // replace trailing newline" EOL);
+				str_addf(o, "%s.v[i])) {return -1;}" EOL, mbr.buf);
+				str_add(o, "\t\t\ta->next[-1] = ','; // replace trailing newline" EOL);
                 str_add(o, "\t\t}" EOL);
-                str_add(o, "\t\tpb_print_array_end(a);" EOL);
+				str_add(o, "\t\tif (pb_print_array_end(a)) {return -1;}" EOL);
 			}
         } else {
-			str_addf(o, "\t\tpb_print_%s(a, ", ft->json_suffix.buf);
+			str_addf(o, "\t\tif (pb_print_%s(a, ", ft->json_suffix.buf);
 			if (ft->pod_message) {
 				str_addch(o, '&');
 			}
-			str_addf(o, "%s); " EOL, mbr.buf);
-			str_add(o, "\t\ta->buf[a->len-1] = ','; // replace trailing newline" EOL);
+			str_addf(o, "%s)) {return -1;}" EOL, mbr.buf);
+			str_add(o, "\t\ta->next[-1] = ','; // replace trailing newline" EOL);
         }
 
         str_add(o, "\t}" EOL);
     }
-    str_add(o, "\tpb_print_map_end(a);" EOL);
+    str_add(o, "\treturn pb_print_map_end(a);" EOL);
     str_add(o, "}" EOL);
 }
 

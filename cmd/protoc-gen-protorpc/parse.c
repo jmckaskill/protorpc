@@ -8,43 +8,6 @@ struct parser {
     const struct EnumValueDescriptorProto *en;
 };
 
-static uint32_t compute_hash(struct pb_string s, uint32_t mul) {
-    uint32_t hash = 0;
-    for (int i = 0; i < s.len; i++) {
-        hash = (hash * mul) + (uint8_t)s.p[i];
-    }
-    return hash;
-}
-
-// slow as algorithm, but who cares
-static void calc_hash_values(struct parser* values, int num, uint32_t* hashmul, uint32_t* hashsz) {
-	int tries_left = 1000;
-    *hashsz = num + 1;
-    *hashmul = 0;
-
-try_next:
-    *hashmul = *hashmul * 3 + 1;
-    (*hashsz)++;
-	if (!tries_left--) {
-		assert(0);
-	}
-    
-    for (int i = 0; i < num; i++) {
-        uint32_t off = compute_hash(values[i].str, *hashmul) % (*hashsz);
-        if (!off) {
-            // collides with the null hash
-            goto try_next;
-        }
-        for (int j = 0; j < i; j++) {
-            if (values[j].off == off) {
-                // we have a collision
-                goto try_next;
-            }
-        }
-        values[i].off = off;
-    }
-    // no collisions, can return
-}
 
 void do_parse_enum(str_t *o, const struct type *t, bool define) {
     str_addf(o, "char *pb_parse_%s(char *p, %s *v)", t->json_suffix.buf, t->c_type.buf);
@@ -54,10 +17,10 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
     }
     str_add(o, " {" EOL);
 
-    struct parser *hashes = (struct parser*) calloc(t->en->value.len, sizeof(struct parser));
+    struct hash_entry *hashes = (struct hash_entry*) calloc(t->en->value.len, sizeof(struct hash_entry));
     for (int i = 0; i < t->en->value.len; i++) {
-        hashes[i].en = t->en->value.v[i];
         hashes[i].str = t->en->value.v[i]->name;
+        hashes[i].data = t->en->value.v[i];
     }
 
     uint32_t hashsz, hashmul;
@@ -68,10 +31,10 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
     str_addf(o, "\tswitch (pb_parse_enum(&p, &val, %u) %% %u) {" EOL, hashmul, hashsz);
 
     for (int i = 0; i < t->en->value.len; i++) {
-        struct parser *p = &hashes[i];
-        const struct EnumValueDescriptorProto *v = p->en;
-        str_addf(o, "\tcase %u:" EOL, p->off);
-        str_addf(o, "\t\tif (!pb_cmp(val, \"%.*s\")) {" EOL, p->str.len, p->str.p);
+		struct hash_entry *h = &hashes[i];
+		const struct EnumValueDescriptorProto *v = (struct EnumValueDescriptorProto*) h->data;
+        str_addf(o, "\tcase %u:" EOL, h->off);
+        str_addf(o, "\t\tif (!pb_cmp(val, \"%.*s\")) {" EOL, h->str.len, h->str.p);
         str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.buf, v->number);
         str_add(o, "\t\t}" EOL);
         str_add(o, "\t\tbreak;" EOL);
@@ -87,7 +50,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 void do_parse(str_t *o, const struct type *t, bool define) {
     str_addf(o, "char *pb_parse_%s(char *p", t->json_suffix.buf);
 	if (!t->pod_message) {
-		str_add(o, ", pb_alloc_t *a");
+		str_add(o, ", pb_buf_t *obj");
 	}
 	str_addf(o, ", %s *m)", t->c_type.buf);
     if (!define) {
@@ -96,15 +59,15 @@ void do_parse(str_t *o, const struct type *t, bool define) {
     }
     str_add(o, " {" EOL);
 	if (!t->pod_message) {
-		str_add(o, "\t(void) a;" EOL);
+		str_add(o, "\t(void) obj;" EOL);
 	}
 	str_add(o, "\t(void) m;" EOL);
 
-    struct parser *hashes = (struct parser*) calloc(t->msg->field.len, sizeof(struct parser));
+    struct hash_entry *hashes = (struct hash_entry*) calloc(t->msg->field.len, sizeof(struct hash_entry));
 
     for (int i = 0; i < t->msg->field.len; i++) {
-        hashes[i].field = t->msg->field.v[i];
         hashes[i].str = t->msg->field.v[i]->name;
+        hashes[i].data = t->msg->field.v[i];
     }
 
     uint32_t hashsz, hashmul;
@@ -120,16 +83,16 @@ void do_parse(str_t *o, const struct type *t, bool define) {
     str_add(o, "\t\t\treturn p;" EOL);
 
     for (int i = 0; i < t->msg->field.len; i++) {
-        struct parser *p = &hashes[i];
-        const struct FieldDescriptorProto *f = p->field;
+        struct hash_entry *h = &hashes[i];
+        const struct FieldDescriptorProto *f = (struct FieldDescriptorProto*) h->data;
         const struct type *ft = get_field_type(f);
 
         static str_t mbr = STR_INIT;
         str_set(&mbr, "m->");
         str_addpb(&mbr, f->name);
 
-        str_addf(o, "\t\tcase %u:" EOL, p->off);
-        str_addf(o, "\t\t\tif (pb_cmp(key, \"%.*s\")) {" EOL, p->str.len, p->str.p);
+        str_addf(o, "\t\tcase %u:" EOL, h->off);
+        str_addf(o, "\t\t\tif (pb_cmp(key, \"%.*s\")) {" EOL, h->str.len, h->str.p);
         str_add(o, "\t\t\t\tgoto unknown;" EOL);
         str_add(o, "\t\t\t}"  EOL);
 
@@ -154,14 +117,16 @@ void do_parse(str_t *o, const struct type *t, bool define) {
                 str_add(o, "\t\t\tif (pb_parse_array(&p)) {" EOL);
                 str_addf(o, "\t\t\t\t%s *prev = NULL;" EOL, ft->c_type.buf);
                 str_add(o, "\t\t\t\tdo {" EOL);
-                str_addf(o, "\t\t\t\t\t%s *c = (%s*) pb_calloc(a, 1, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
-                str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, a, c);" EOL, ft->json_suffix.buf);
+                str_addf(o, "\t\t\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
+				str_add(o, "\t\t\t\t\tif (!c) {return pb_errret;}" EOL);
+                str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, obj, c);" EOL, ft->json_suffix.buf);
                 str_addf(o, "\t\t\t\t\t%s.len++;" EOL, mbr.buf);
                 str_add(o, "\t\t\t\t\tc->pb_hdr.prev = prev;" EOL);
                 str_add(o, "\t\t\t\t\tprev = c;" EOL);
                 str_add(o, "\t\t\t\t} while (pb_more_array(&p));" EOL);
                 str_add(o, EOL);
-                str_addf(o, "\t\t\t\t%s.v = (const %s**) pb_calloc(a, %s.len, sizeof(%s*));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
+                str_addf(o, "\t\t\t\t%s.v = (const %s**) pb_calloc(obj, %s.len * sizeof(%s*));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
+				str_addf(o, "\t\t\t\tif (!%s.v) {return pb_errret;}" EOL, mbr.buf);
                 str_add(o, EOL);
                 str_addf(o, "\t\t\t\tfor (int i = %s.len - 1; i >= 0; i--) {" EOL, mbr.buf);
                 str_addf(o, "\t\t\t\t\t%s.v[i] = prev;" EOL, mbr.buf);
@@ -171,18 +136,21 @@ void do_parse(str_t *o, const struct type *t, bool define) {
 			} else if (ft->en || ft->pod_message) {
                 str_add(o, "\t\t\tif (pb_parse_array(&p)) {" EOL);
                 str_add(o, "\t\t\t\tint n = 0;" EOL);
+				str_addf(o, "\t\t\t\t%s.v = (%s*) obj->next;" EOL, mbr.buf, ft->c_type.buf);
                 str_add(o, "\t\t\t\tdo {" EOL);
-                str_addf(o, "\t\t\t\t\t%s.v = (%s*) pb_reserve(a, n, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
+				str_addf(o, "\t\t\t\t\tif (obj->next + n * sizeof(%s) > obj->end) {return pb_errret;}" EOL, ft->c_type.buf);
 				str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, (%s*) &%s.v[n++]); " EOL, ft->json_suffix.buf, ft->c_type.buf, mbr.buf);
                 str_add(o, "\t\t\t\t} while (pb_more_array(&p));" EOL);
+				str_addf(o, "\t\t\t\tobj->next += n * sizeof(%s);" EOL, ft->c_type.buf);
                 str_addf(o, "\t\t\t\t%s.len = n;" EOL, mbr.buf);
                 str_add(o, "\t\t\t}" EOL);
 			} else {
-                str_addf(o, "\t\t\tp = pb_parse_array_%s(p, a, &%s.v, &%s.len);" EOL, ft->json_suffix.buf, mbr.buf, mbr.buf);
+                str_addf(o, "\t\t\tp = pb_parse_array_%s(p, obj, &%s.v, &%s.len);" EOL, ft->json_suffix.buf, mbr.buf, mbr.buf);
 			}
         } else if (ft->msg && !ft->pod_message) {
-            str_addf(o, "\t\t\t%s = (%s*) pb_calloc(a, 1, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
-            str_addf(o, "\t\t\tp = pb_parse_%s(p, a, (%s*) %s);" EOL, ft->json_suffix.buf, ft->c_type.buf, mbr.buf);
+            str_addf(o, "\t\t\t%s = (%s*) pb_calloc(a, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
+			str_addf(o, "\t\t\tif (!%s) {return pb_errret;}" EOL, mbr.buf);
+            str_addf(o, "\t\t\tp = pb_parse_%s(p, obj, (%s*) %s);" EOL, ft->json_suffix.buf, ft->c_type.buf, mbr.buf);
         } else {
             str_addf(o, "\t\t\tp = pb_parse_%s(p, &%s);" EOL, ft->json_suffix.buf, mbr.buf);
         }
@@ -198,26 +166,4 @@ void do_parse(str_t *o, const struct type *t, bool define) {
     str_add(o, "}" EOL); // function
 
     free(hashes);
-}
-
-void do_fparse(str_t *o, const struct type *t, bool define) {
-	str_addf(o, "int pb_fparse_%s(const char *fn, str_t *b", t->json_suffix.buf);
-	if (!t->pod_message) {
-		str_add(o, ", pb_alloc_t *a");
-	}
-	str_addf(o, ", %s *m)", t->c_type.buf);
-	if (!define) {
-		str_add(o, ";" EOL);
-		return;
-	}
-
-	str_add(o, " {" EOL);
-	str_add(o, "\tint off = b->len;" EOL);
-	str_add(o, "\tstr_read_file(b, fn);" EOL);
-	str_addf(o, "\treturn pb_parse_%s(b->buf + off", t->json_suffix.buf);
-	if (!t->pod_message) {
-		str_add(o, ", a");
-	}
-	str_add(o, ", m) == pb_errret ? -1 : 0; " EOL);
-	str_add(o, "}" EOL);
 }

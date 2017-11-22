@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include <protorpc/protorpc.h>
+#include "../protorpc.h"
 
 char *pb_print_bool(char *p, bool v) {
     if (v) {
@@ -113,34 +113,41 @@ static const char escapechar[] =
     "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0"
     "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0";
 
-void pb_print_string(str_t *a, struct pb_string v) {
-	int i = a->len;
-	str_grow(a, i + 1 /*"*/ + v.len + 2 /*",*/);
-	a->buf[i++] = '\"';
+int pb_print_string(pb_buf_t *a, struct pb_string v) {
+	if (a->next + 1 /*"*/ + v.len + 2 /*",*/ > a->end) {
+		return -1;
+	}
+	char *p = a->next;
+	*(p++) = '\"';
     const char *s = v.p;
     const char *e = s + v.len;
     while (s < e) {
         char ch = *s++;
         char escape = escapechar[(uint8_t)ch];
         if (!escape) {
-            a->buf[i++] = ch;
+            *(p++) = ch;
         } else if (escape == 'u') {
-			str_grow(a, i + (int) (e-s) + 2 /*",*/ + 6 /*\u00EE*/);
-            a->buf[i++] = '\\';
-            a->buf[i++] = 'u';
-            a->buf[i++] = '0';
-            a->buf[i++] = '0';
-            a->buf[i++] = hexchar[ch >> 4];
-            a->buf[i++] = hexchar[ch & 0xF];
+			if (p + (e - s) + 2 /*",*/ + 6 /*\u00EE*/ > a->end) {
+				return -1;
+			}
+            *(p++) = '\\';
+            *(p++) = 'u';
+            *(p++) = '0';
+            *(p++) = '0';
+            *(p++) = hexchar[ch >> 4];
+            *(p++) = hexchar[ch & 0xF];
         } else {
-            str_grow(a, i + (int) (e-s) + 2 /*",*/ + 2 /*\e*/);
-            a->buf[i++] = '\\';
-            a->buf[i++] = escape;
+			if (p + (e - s) + 2 /*",*/ + 2 /*\e*/ > a->end) {
+				return -1;
+			}
+            *(p++) = '\\';
+            *(p++) = escape;
         }
     }
-    a->buf[i++] = '\"';
-    a->buf[i++] = ',';
-	a->len = i;
+    *(p++) = '\"';
+    *(p++) = ',';
+	a->next = p;
+	return 0;
 }
 
 char *pb_print_base64(char *p, const uint8_t *v, int n) {
@@ -162,34 +169,31 @@ char *pb_print_base64(char *p, const uint8_t *v, int n) {
     return p;
 }
 
-void pb_print_bytes(str_t *a, struct pb_bytes v) {
-	str_grow(a, a->len + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/);
-	char *p = a->buf + a->len;
-	*p++ = '\"';
+int pb_print_bytes(pb_buf_t *a, struct pb_bytes v) {
+	char *p = a->next;
+	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ > a->end) {
+		return -1;
+	}
+	*(p++) = '\"';
     p = pb_print_base64(p, v.p, v.len);
-    *p++ = '\"';
-    *p++ = ',';
-	a->len = (int) (p - a->buf);
+    *(p++) = '\"';
+    *(p++) = ',';
+	a->next = p;
+	return 0;
 }
 
-void pb_print_array_end(str_t *a) {
-	if (a->buf[a->len - 1] == '\n' || a->buf[a->len-1] == ',') {
-		a->len--;
+int pb_print_array_end(pb_buf_t *a) {
+	if (a->next[-1] == '\n' || a->next[-1] == ',') {
+		a->next--;
 	}
-
-	str_grow(a, a->len + 2);
-	a->buf[a->len++] = ']';
-	a->buf[a->len++] = ',';
+	return pb_append(a, "],", 2);
 }
 
-void pb_print_map_end(str_t *a) {
-	if (a->buf[a->len - 1] == '\n' || a->buf[a->len-1] == ',') {
-		a->len--;
+int pb_print_map_end(pb_buf_t *a) {
+	if (a->next[-1] == '\n' || a->next[-1] == ',') {
+		a->next--;
 	}
-
-	str_grow(a, a->len + 2);
-	a->buf[a->len++] = '}';
-	a->buf[a->len++] = '\n';
+	return pb_append(a, "}\n", 2);
 }
 
 
