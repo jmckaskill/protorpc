@@ -29,10 +29,10 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 #define ca_setlen(P, SZ) 		(assert(sizeof((P)->buf) != sizeof(char*)), (P)->len = (SZ), (P)->buf[(P)->len] = '\0')
 #define ca_set2(P, SRC, SRCSZ) 	(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (SRCSZ)))
 #define ca_set(P, SRC) 			(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (int) strlen(SRC)))
-#define ca_setstr(P, PADD) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (PADD)->buf, (PADD)->len))
+#define ca_setstr(P, ADD) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (ADD).buf, (ADD).len))
 #define ca_add2(P, SRC, SRCSZ) 	(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (SRCSZ)))
 #define ca_add(P, SRC) 			(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (int) strlen(SRC)))
-#define ca_addstr(P, PADD) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (PADD)->buf, (PADD)->len))
+#define ca_addstr(P, ADD) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (ADD).buf, (ADD).len))
 #define ca_vaddf(P, FMT, AP) 	(assert(sizeof((P)->buf) != sizeof(char*)), ca_vaddf_((P)->buf, sizeof((P)->buf), &(P)->len, (FMT), (AP)))
 #define ca_addf(P, ...) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_addf_((P)->buf, sizeof((P)->buf), &(P)->len, __VA_ARGS__))
 

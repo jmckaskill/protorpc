@@ -20,9 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="./http-parser.c" />
-    <ClCompile Include="./publisher.c" />
     <ClCompile Include="./rpc.c" />
-    <ClCompile Include="./rpc2.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="./rpc.h" />

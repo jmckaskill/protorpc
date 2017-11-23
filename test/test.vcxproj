@@ -1,74 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ARM-Debug|Win32">
-      <Configuration>ARM-Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="ARM-Release|Win32">
-      <Configuration>ARM-Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
+	<ProjectConfiguration Include="Release|Win32">
+	  <Configuration>Release</Configuration>
+	  <Platform>Win32</Platform>
+	</ProjectConfiguration>
+	<ProjectConfiguration Include="Debug|Win32">
+	  <Configuration>Debug</Configuration>
+	  <Platform>Win32</Platform>
+	</ProjectConfiguration>
+	<ProjectConfiguration Include="ARM-Debug|Win32">
+	  <Configuration>ARM-Debug</Configuration>
+	  <Platform>Win32</Platform>
+	</ProjectConfiguration>
+	<ProjectConfiguration Include="ARM-Release|Win32">
+	  <Configuration>ARM-Release</Configuration>
+	  <Platform>Win32</Platform>
+	</ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="./bin-to-json/bin-to-json.c" />
-    <ClCompile Include="./rpc-test/client.cpp" />
-    <ClCompile Include="./rpc-test/protocol.cpp" />
-    <ClCompile Include="./rpc-test/server.cpp" />
-    <ClCompile Include="./run-test/run-test.c" />
+    <ClCompile Include="./test.cpp" />
     <ClCompile Include="./test.proto.c" />
-    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="./rpc-test/protocol.hpp" />
     <ClInclude Include="./test.proto.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="./bin-to-json/bin-to-json.json" />
-    <None Include="./bin-to-json/bin-to-json.ninja" />
-    <None Include="./bin-to-json/bin-to-json.proto" />
-    <None Include="./bin-to-json/bin-to-json.txt" />
-    <None Include="./protorpc-tests.ninja" />
-    <None Include="./rpc-test/build.sh" />
-    <None Include="./rpc-test/protocol.proto" />
-    <None Include="./rpc-test/test.json" />
-    <None Include="./rpc-test/tests/test.sh" />
-    <None Include="./run-test/run-test.ninja" />
     <None Include="./test.proto" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}</ProjectGuid>
-    <Keyword>MakeFileProj</Keyword>
-    <ProjectName>bin - test.exe</ProjectName>
+	<ProjectGuid>{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}</ProjectGuid>
+	<Keyword>MakeFileProj</Keyword>
+	<ProjectName>bin - test.exe</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+	<ConfigurationType>Makefile</ConfigurationType>
+	<UseDebugLibraries>false</UseDebugLibraries>
+	<PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+	<ConfigurationType>Makefile</ConfigurationType>
+	<UseDebugLibraries>true</UseDebugLibraries>
+	<PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+	<ConfigurationType>Makefile</ConfigurationType>
+	<UseDebugLibraries>false</UseDebugLibraries>
+	<PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+	<ConfigurationType>Makefile</ConfigurationType>
+	<UseDebugLibraries>false</UseDebugLibraries>
+	<PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -76,61 +60,61 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeOutput>$(SolutionDir)\bin\win32-release\test.exe</NMakeOutput>
-    <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/test.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/test.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/test.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
-    <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-    <SourcePath />
-    <ExcludePath />
+	<NMakeOutput>$(SolutionDir)\bin\win32-release\test.exe</NMakeOutput>
+	<NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/test.exe</NMakeCleanCommandLine>
+	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
+	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+	<SourcePath />
+	<ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeOutput>$(SolutionDir)\bin\win32-debug\test.exe</NMakeOutput>
-    <NMakePreprocessorDefinitions>WIN32</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/test.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/test.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/test.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
-    <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-    <SourcePath />
-    <ExcludePath />
+	<NMakeOutput>$(SolutionDir)\bin\win32-debug\test.exe</NMakeOutput>
+	<NMakePreprocessorDefinitions>WIN32</NMakePreprocessorDefinitions>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/test.exe</NMakeCleanCommandLine>
+	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
+	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+	<SourcePath />
+	<ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'">
-    <NMakeOutput>$(SolutionDir)\bin\arm-release\test.exe</NMakeOutput>
-    <NMakePreprocessorDefinitions>__linux__;__arm__;NDEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/test.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/test.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/test.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
-    <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-    <SourcePath />
-    <ExcludePath />
+	<NMakeOutput>$(SolutionDir)\bin\arm-release\test.exe</NMakeOutput>
+	<NMakePreprocessorDefinitions>__linux__;__arm__;NDEBUG</NMakePreprocessorDefinitions>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/test.exe</NMakeCleanCommandLine>
+	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
+	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+	<SourcePath />
+	<ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'">
-    <NMakeOutput>$(SolutionDir)\bin\arm-debug\test.exe</NMakeOutput>
-    <NMakePreprocessorDefinitions>__linux__;__arm__;DEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/test.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/test.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/test.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
-    <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-    <SourcePath />
-    <ExcludePath />
+	<NMakeOutput>$(SolutionDir)\bin\arm-debug\test.exe</NMakeOutput>
+	<NMakePreprocessorDefinitions>__linux__;__arm__;DEBUG</NMakePreprocessorDefinitions>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/test.exe</NMakeCleanCommandLine>
+	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
+	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+	<SourcePath />
+	<ExcludePath />
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

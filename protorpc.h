@@ -2,30 +2,42 @@
 #include "http-parser.h"
 #include "protobuf.h"
 
-#if 0
-#define RPC_IN_BUFSZ (16*1024)
-#define RPC_OUT_BUFSZ (16*1024)
-#define RPC_DECODE_BUFSZ (16*1024)
-
-struct rpc_message {
-	struct http_parser http;
-	struct { int len; char buf[RPC_IN_BUFSZ]; } in;
-	struct { int len; char buf[RPC_OUT_BUFSZ]; } out;
-	struct { int len; char buf[RPC_DECODE_BUFSZ]; } msg;
+enum pr_http_method {
+    PR_HTTP_UNSET,
+    PR_HTTP_GET,
+    PR_HTTP_POST,
 };
 
-PROTO_API int rpc_process(struct rpc_server *s, const void *data, size_t sz);
+enum pr_http_length_type {
+    PR_HTTP_LENGTH_UNSET,
+    PR_HTTP_LENGTH_CHUNKED,
+    PR_HTTP_LENGTH_FIXED,
+    PR_HTTP_LENGTH_CLOSE,
+};
 
-typedef int(*rpc_read_fn)(void* udata, void *buf, size_t sz);
+// must be memset to 0 before each request
+struct pr_http {
+    enum pr_http_method method;
+    enum pr_http_length_type length_type;
+    const char *error_string;
+    uint64_t content_length;
+    uint64_t left_in_chunk;
+    unsigned have_etag : 1;
+    unsigned multipart_form : 1;
+    unsigned expect_continue : 1;
+    unsigned version_1_0 : 1;
+    unsigned have_multipart_header : 1;
+	uint64_t etag;
+    struct {int len; char buf[64];} login;
+    struct {int len; char buf[6];} lang;
+	struct {int len; char buf[256];} boundary;
+    struct {int len; char buf[256];} name;
+};
 
-typedef int(*rpc_post_callback)(pb_buf_t *obj, pb_buf_t *resp, char *body, int bodysz);
+// error codes for pr_parse* functions
+#define PR_FINISHED 0
+#define PR_CONTINUE 1
+#define PR_ERROR -1
 
-PROTO_API struct rpc_server *rpc_server_new();
-PROTO_API void rpc_server_delete(struct rpc_server *m);
-PROTO_API void rpc_handle_post(struct rpc_server *m, const char *path, rpc_post_callback cb);
-PROTO_API int rpc_listen(struct rpc_server *m, int port);
-PROTO_API void rpc_detached_serve(struct rpc_server *m);
-PROTO_API void rpc_serve(struct rpc_server *m);
-
-
-#endif
+int pr_parse_request(struct pr_http *h, char *buf, int *avail);
+int pr_parse_body(struct pr_http *h, char **data, int *sz);
