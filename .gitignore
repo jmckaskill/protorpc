@@ -1,2 +1,6 @@
 *.vcxproj
-*.vcxproj.user
+*.vcxproj.user.ninja_deps
+.ninja_log
+.ninja_deps
+/bin
+/obj

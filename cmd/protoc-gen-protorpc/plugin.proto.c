@@ -1,4 +1,4 @@
-#include "protorpc/cmd/protoc-gen-protorpc/plugin.proto.h"
+#include "plugin.proto.h"
 
 int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorRequest *m) {
 	(void) obj;

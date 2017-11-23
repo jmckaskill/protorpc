@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include <protorpc/protorpc.h>
+#include "../protobuf.h"
 
 
 char *pb_put_u32(char *p, uint32_t v) {

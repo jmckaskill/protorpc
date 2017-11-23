@@ -43,7 +43,7 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
     // don't bother cleaning up as this function isn't guaranteed to return
     return (int) code;
 #else
-    execlp(protoc_exe, protoc_exe, "-I.", "--protorpc.exe_out=.", argv1, NULL);
+    execlp(protoc_exe, protoc_exe, "-I.", "--protorpc.exe_out=.", file, NULL);
     perror("exec protoc");
     return 1;
 #endif

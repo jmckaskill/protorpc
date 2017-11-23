@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include "../protorpc.h"
+#include "../protobuf.h"
 
 static int add_newline(pb_buf_t *o, int depth) {
     char *p = o->next;

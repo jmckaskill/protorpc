@@ -1,5 +1,5 @@
 #pragma once
-#include <protorpc/protorpc.h>
+#include <protobuf.h>
 #ifdef __cplusplus
 extern "C" {
 #endif

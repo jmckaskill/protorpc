@@ -1,4 +1,4 @@
-#include "protorpc/cmd/protoc-gen-protorpc/descriptor.proto.h"
+#include "descriptor.proto.h"
 
 int pb_get_FileDescriptorSet(const char *p, const char *e, pb_buf_t *obj, struct FileDescriptorSet *m) {
 	(void) obj;

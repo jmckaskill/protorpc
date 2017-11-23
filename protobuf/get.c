@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include "../protorpc.h"
+#include "../protobuf.h"
 
 const char *pb_get_u32(const char *p, const char *e, uint32_t *pv) {
     size_t shift = 0;

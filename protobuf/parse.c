@@ -1,5 +1,5 @@
 #define BUILDING_PROTORPC
-#include "../protorpc.h"
+#include "../protobuf.h"
 
 char pb_errret[] = {0}; 
 

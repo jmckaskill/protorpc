@@ -1,6 +1,6 @@
 #pragma once
-#include <protorpc/protorpc.h>
-#include "protorpc/cmd/protoc-gen-protorpc/descriptor.proto.h"
+#include <protobuf.h>
+#include "descriptor.proto.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

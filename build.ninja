@@ -1,0 +1,5 @@
+SRC_NINJA = src.ninja
+INCLUDES = -I .
+
+include toolchain/host-gcc.ninja
+subninja toolchain/target-gcc.ninja
