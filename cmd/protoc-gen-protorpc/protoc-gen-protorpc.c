@@ -67,12 +67,7 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
 
 static void write_source(str_t *o, const struct FileDescriptorProto *f) {
     str_add(o, "#include \"");
-    char *slash = str_rfind_char(f->name, '/');
-    if (slash) {
-        str_add2(o, slash+1, f->name.buf + f->name.len - (slash+1));
-    } else {
-        str_addstr(o, f->name);
-    }
+    str_addstr(o, f->name);
     str_add(o, ".h\"" EOL);
     
     for (int i = 0; i < f->enum_type.len; i++) {

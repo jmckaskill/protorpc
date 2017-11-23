@@ -25,9 +25,9 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
     str_addf(o, "\tif (pb_skipto_%u(&p, e, %u)) {" EOL, tagsz, tag);
     
     // hacks to support bootstapping descriptor.proto as 0 are useful values for these fields
-    if (!strcmp(t->name.buf, ".FieldDescriptorProto") && !pb_cmp(f->name, "oneof_index")) {
+    if (!strcmp(t->name.buf, ".google.protobuf.FieldDescriptorProto") && !pb_cmp(f->name, "oneof_index")) {
         str_add(o, "\t\tm->oneof_index_set = true;" EOL);
-    } else if (!strcmp(t->name.buf, ".FieldOptions") && !pb_cmp(f->name, "packed")) {
+    } else if (!strcmp(t->name.buf, ".google.protobuf.FieldOptions") && !pb_cmp(f->name, "packed")) {
 		str_add(o, "\t\tm->packed_set = true;" EOL);
 	}
 
@@ -58,7 +58,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 			str_add(o, "\t\t\t}" EOL);
 			str_add(o, "\t\t\tstruct pb_string msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
-			str_addf(o, "\t\t\tif (pb_get_%s(msg.p, msg.p + msg.len, (%s*) &%s.v[%s.len])) {" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf, mbr.buf);
+			str_addf(o, "\t\t\tif (pb_get_%s(msg.buf, msg.buf + msg.len, (%s*) &%s.v[%s.len])) {" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf, mbr.buf);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
 			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
@@ -71,7 +71,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 			str_add(o, "\t\t\tstruct pb_string msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 			str_addf(o, "\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\t\tif (!c || pb_get_%s(msg.p, msg.p + msg.len, obj, c)) {" EOL, ft->proto_suffix.buf);
+			str_addf(o, "\t\t\tif (!c || pb_get_%s(msg.buf, msg.buf + msg.len, obj, c)) {" EOL, ft->proto_suffix.buf);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
 			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
@@ -110,12 +110,12 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
         str_add(o, "\t\tstruct pb_string msg;" EOL);
         str_addf(o, "\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 		if (ft->pod_message) {
-			str_addf(o, "\t\tif (pb_get_%s(msg.p, msg.p + msg.len, &%s)) {" EOL, ft->proto_suffix.buf, mbr.buf);
+			str_addf(o, "\t\tif (pb_get_%s(msg.buf, msg.buf + msg.len, &%s)) {" EOL, ft->proto_suffix.buf, mbr.buf);
 			str_add(o, "\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t}" EOL);
 		} else {
-			str_addf(o, "\t\t%s = (%s*) pb_calloc(obj, 1, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\tif (!%s || pb_get_%s(msg.p, msg.p + msg.len, obj, (%s*) %s)) {" EOL, mbr.buf, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+			str_addf(o, "\t\t%s = (%s*) pb_calloc(obj, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
+			str_addf(o, "\t\tif (!%s || pb_get_%s(msg.buf, msg.buf + msg.len, obj, (%s*) %s)) {" EOL, mbr.buf, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
 			str_add(o, "\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t}" EOL);
 		}

@@ -15,11 +15,11 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
         str_t path = STR_INIT;
         str_add(&path, "PATH=");
         str_add(&path, getenv("PATH"));
-#ifdef WIN32
+        #ifdef WIN32
         str_addch(&path, ';');
-#else
+        #else
         str_addch(&path, ':');
-#endif
+        #endif
         str_add2(&path, my_exe, (int) ((bslash ? bslash : slash) - my_exe));
         // putenv doesn't copy the input, so don't free the string
 		putenv(path.buf);

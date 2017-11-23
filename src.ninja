@@ -7,17 +7,18 @@ build $obj/protobuf/print.o: cc protobuf/print.c
 build $obj/protobuf/put.o: cc protobuf/put.c
 
 build $obj/protoc-gen-protorpc/decl.o: cc cmd/protoc-gen-protorpc/decl.c
-build $obj/protoc-gen-protorpc/descriptor.proto.o: cc cmd/protoc-gen-protorpc/descriptor.proto.c
 build $obj/protoc-gen-protorpc/exec.o: cc cmd/protoc-gen-protorpc/exec.c
 build $obj/protoc-gen-protorpc/get.o: cc cmd/protoc-gen-protorpc/get.c
 build $obj/protoc-gen-protorpc/hash.o: cc cmd/protoc-gen-protorpc/hash.c
 build $obj/protoc-gen-protorpc/parse.o: cc cmd/protoc-gen-protorpc/parse.c
-build $obj/protoc-gen-protorpc/plugin.proto.o: cc cmd/protoc-gen-protorpc/plugin.proto.c
 build $obj/protoc-gen-protorpc/print.o: cc cmd/protoc-gen-protorpc/print.c
 build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc cmd/protoc-gen-protorpc/protoc-gen-protorpc.c
 build $obj/protoc-gen-protorpc/put.o: cc cmd/protoc-gen-protorpc/put.c
 build $obj/protoc-gen-protorpc/server.o: cc cmd/protoc-gen-protorpc/server.c
 build $obj/protoc-gen-protorpc/types.o: cc cmd/protoc-gen-protorpc/types.c
+
+build $obj/google/descriptor.proto.o: cc google/protobuf/descriptor.proto.c
+build $obj/google/plugin.proto.o: cc google/protobuf/compiler/plugin.proto.c
 
 build $obj/str.o: cc cmd/str.c
 build $obj/hash.o: cc cmd/hash.c
@@ -29,15 +30,15 @@ build $obj/protobuf.lib: lib $
  $obj/protobuf/print.o $
  $obj/protobuf/put.o $
 
-build bin/$TGT/protoc-gen-protoc-gen-protorpc: clink $
+build bin/$TGT/protoc-gen-protorpc.exe: clink $
  $obj/protobuf.lib $
  $obj/protoc-gen-protorpc/decl.o $
- $obj/protoc-gen-protorpc/descriptor.proto.o $
+ $obj/google/descriptor.proto.o $
  $obj/protoc-gen-protorpc/exec.o $
  $obj/protoc-gen-protorpc/get.o $
  $obj/protoc-gen-protorpc/hash.o $
  $obj/protoc-gen-protorpc/parse.o $
- $obj/protoc-gen-protorpc/plugin.proto.o $
+ $obj/google/plugin.proto.o $
  $obj/protoc-gen-protorpc/print.o $
  $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
  $obj/protoc-gen-protorpc/put.o $

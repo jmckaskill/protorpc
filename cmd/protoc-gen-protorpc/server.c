@@ -67,24 +67,15 @@ void do_server(str_t *o, const struct type *t, int stage) {
 					str_add(o, "\t(void) body; (void) bodysz;" EOL);
 				} else {
 					str_addf(o, "\t%s in = {0};" EOL, in->c_type.buf);
-					if (m->options && m->options->binary) {
-						if (in->pod_message) {
-							str_add(o, "(void) obj;" EOL);
-							str_addf(o, "\tpb_decode_%s(body, body + bodysz, &in);" EOL, in->proto_suffix.buf);
-						} else {
-							str_addf(o, "\tpb_decode_%s(body, body + bodysz, obj, &in);" EOL, in->proto_suffix.buf);
-						}
+					str_add(o, "\t(void) bodysz;" EOL);
+					if (in->pod_message) {
+						str_add(o, "\t(void) obj;" EOL);
+						str_addf(o, "\tif (pb_parse_%s(body, &in) == pb_errret) {" EOL, in->json_suffix.buf);
 					} else {
-						str_add(o, "\t(void) bodysz;" EOL);
-						if (in->pod_message) {
-							str_add(o, "\t(void) obj;" EOL);
-							str_addf(o, "\tif (pb_parse_%s(body, &in) == pb_errret) {" EOL, in->json_suffix.buf);
-						} else {
-							str_addf(o, "\tif (pb_parse_%s(body, obj, &in) == pb_errret) {" EOL, in->json_suffix.buf);
-						}
-						str_add(o, "\t\treturn 400;" EOL);
-						str_add(o, "\t}" EOL);
+						str_addf(o, "\tif (pb_parse_%s(body, obj, &in) == pb_errret) {" EOL, in->json_suffix.buf);
 					}
+					str_add(o, "\t\treturn 400;" EOL);
+					str_add(o, "\t}" EOL);
 				}
 				if (!is_empty(out)) {
 					str_addf(o, "\t%s out = {0};" EOL, out->c_type.buf);
@@ -99,9 +90,6 @@ void do_server(str_t *o, const struct type *t, int stage) {
 				str_add(o, ");" EOL);
 				if (is_empty(out)) {
 					str_add(o, "\t(void) resp;" EOL);
-				} else if (m->options && m->options->binary) {
-					str_addf(o, "\tstr_grow(resp, resp->len + pb_maxsz_%s(&out));" EOL, out->proto_suffix.buf);
-					str_addf(o, "\tstr_setend(resp, pb_encode_%s(resp->buf + resp->len, &out));" EOL, out->proto_suffix.buf);
 				} else {
 					str_addf(o, "\tpb_print_%s(resp, &out);" EOL, out->json_suffix.buf);
 				}

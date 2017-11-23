@@ -130,13 +130,6 @@ void insert_file_types(const struct FileDescriptorProto *f) {
     if (f->package.len) {
         str_add(&proto, ".");
         str_addstr(&proto, f->package);
-
-        str_addstr(&c, f->package);
-        for (int i = 0; i < c.len; i++) {
-            if (c.buf[i] == '.') {
-                c.buf[i] = '_';
-            }
-        }
     }
 
     int protosz = proto.len;

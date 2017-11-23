@@ -149,7 +149,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
                 str_addf(o, "\t\t\tp = pb_parse_array_%s(p, obj, &%s.v, &%s.len);" EOL, ft->json_suffix.buf, mbr.buf, mbr.buf);
 			}
         } else if (ft->msg && !ft->pod_message) {
-            str_addf(o, "\t\t\t%s = (%s*) pb_calloc(a, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
+            str_addf(o, "\t\t\t%s = (%s*) pb_calloc(obj, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
 			str_addf(o, "\t\t\tif (!%s) {return pb_errret;}" EOL, mbr.buf);
             str_addf(o, "\t\t\tp = pb_parse_%s(p, obj, (%s*) %s);" EOL, ft->json_suffix.buf, ft->c_type.buf, mbr.buf);
         } else {

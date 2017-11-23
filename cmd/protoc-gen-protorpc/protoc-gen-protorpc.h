@@ -1,7 +1,6 @@
 #pragma once
 
-#include "plugin.proto.h"
-#include "descriptor.proto.h"
+#include "google/protobuf/compiler/plugin.proto.h"
 #include "../../protobuf.h"
 #include "../../char-array.h"
 #include "../str.h"

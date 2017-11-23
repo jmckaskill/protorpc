@@ -156,10 +156,10 @@ void define_struct(str_t *o, struct type *t) {
     }
 
     // hacks to support bootstrapping descriptor.proto as 0 are useful values for these fields
-    if (!strcmp(t->name.buf, ".FieldDescriptorProto")) {
+    if (!strcmp(t->name.buf, ".google.protobuf.FieldDescriptorProto")) {
         str_add(o, "\tbool oneof_index_set;" EOL);
 
-    } else if (!strcmp(t->name.buf, ".FieldOptions")) {
+    } else if (!strcmp(t->name.buf, ".google.protobuf.FieldOptions")) {
         str_add(o, "\tbool packed_set;" EOL);
 	}
 
