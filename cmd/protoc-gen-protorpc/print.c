@@ -19,7 +19,7 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 	for (int i = 0; i < t->msg->oneof_decl.len; i++) {
 		str_add(o, " ||" EOL);
 		str_add(o, "\t\tm->");
-		str_addpb(o, t->msg->oneof_decl.v[i]->name);
+		str_addstr(o, t->msg->oneof_decl.v[i]->name);
 		str_add(o, "_type");
 	}
 
@@ -30,7 +30,7 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 		}
 
 		str_set(&mbr, "m->");
-		str_addpb(&mbr, f->name);
+		str_addstr(&mbr, f->name);
 
 		const struct type *ft = get_field_type(f);
 		str_add(o, EOL);
@@ -76,27 +76,28 @@ void do_print(str_t *o, const struct type *t, bool define) {
         const struct type *ft = get_field_type(f);
         if (f->label != LABEL_REPEATED && isfinite(ft->max_print_size)) {
             str_set(&mbr, "m->");
-            str_addpb(&mbr, f->name);
+            str_addstr(&mbr, f->name);
 
             if (f->oneof_index_set) {
                 struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
                 str_add(o, "\tif(m->");
-                str_addpb(o, oneof);
+                str_addstr(o, oneof);
                 str_add(o, "_type == ");
-                to_upper(o, t->proto_suffix.buf, t->proto_suffix.len);
+                struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+                to_upper(o, ps);
                 str_add(o, "_");
-                to_upper(o, f->name.p, f->name.len);
+                to_upper(o, f->name);
                 str_add(o, ") {" EOL);
 
                 str_set(&mbr, "m->");
-                str_addpb(&mbr, oneof);
+                str_addstr(&mbr, oneof);
                 str_addch(&mbr, '.');
-                str_addpb(&mbr, f->name);
+                str_addstr(&mbr, f->name);
             } else {
                 str_addf(o, "\tif (%s) {" EOL, mbr.buf);
             }
 
-            str_addf(o, "\t\tmemcpy(p, \"\\\"%.*s\\\":\", %u);" EOL, f->name.len, f->name.p, f->name.len + 3 /*"":*/);
+            str_addf(o, "\t\tmemcpy(p, \"\\\"%.*s\\\":\", %u);" EOL, STRF(f->name), f->name.len + 3 /*"":*/);
             str_addf(o, "\t\tp += %u;" EOL, f->name.len + 3);
             str_addf(o, "\t\tp = pb_print_%s(p, %s);" EOL, ft->json_suffix.buf, mbr.buf);
             str_add(o, "\t}" EOL);
@@ -114,22 +115,23 @@ void do_print(str_t *o, const struct type *t, bool define) {
         }
         
         str_set(&mbr, "m->");
-        str_addpb(&mbr, f->name);
+        str_addstr(&mbr, f->name);
 
         if (f->oneof_index_set) {
             struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
             str_add(o, "\tif(m->");
-            str_addpb(o, oneof);
+            str_addstr(o, oneof);
             str_add(o, "_type == ");
-            to_upper(o, t->proto_suffix.buf, t->proto_suffix.len);
+            struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            to_upper(o, ps);
             str_add(o, "_");
-            to_upper(o, f->name.p, f->name.len);
+            to_upper(o, f->name);
             str_add(o, ") {" EOL);
 
             str_set(&mbr, "m->");
-            str_addpb(&mbr, oneof);
+            str_addstr(&mbr, oneof);
             str_addch(&mbr, '.');
-            str_addpb(&mbr, f->name);
+            str_addstr(&mbr, f->name);
 
 		} else if (f->label == LABEL_REPEATED || f->type == TYPE_STRING || f->type == TYPE_BYTES) {
 			str_addf(o, "\tif (%s.len) {" EOL, mbr.buf);
@@ -139,7 +141,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_addf(o, "\tif (%s) {" EOL, mbr.buf);
         }
 
-		str_addf(o, "\t\tif (pb_append(a, \"\\\"%.*s\\\":\", %d)) {return -1;}" EOL, f->name.len, f->name.p, f->name.len + 3);
+		str_addf(o, "\t\tif (pb_append(a, \"\\\"%.*s\\\":\", %d)) {return -1;}" EOL, STRF(f->name), f->name.len + 3);
 
         if (f->label == LABEL_REPEATED) {
 			if (isfinite(ft->max_print_size)) {
@@ -190,7 +192,7 @@ void do_print_enum(str_t *o, const struct type *t, bool define) {
         const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         // "enum",
         str_addf(o, "\tcase %d:" EOL, v->number);
-        str_addf(o, "\t\tmemcpy(p, \"\\\"%.*s\\\",\", %u);" EOL, v->name.len, v->name.p, v->name.len + 3 /*"",*/);
+        str_addf(o, "\t\tmemcpy(p, \"\\\"%.*s\\\",\", %u);" EOL, STRF(v->name), v->name.len + 3 /*"",*/);
         str_addf(o, "\t\treturn p + %u;" EOL, v->name.len + 3);
     }
     str_add(o, "\tdefault:" EOL);

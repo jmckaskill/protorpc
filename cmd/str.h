@@ -60,7 +60,7 @@ __attribute__((format (printf,2,0)))
 int str_vaddf(str_t *s, const char *fmt, va_list ap);
 
 // defined as a macro to also support ca_* char arrays
-#define str_addstr(PS, PADD) str_add2(PS, (PADD)->buf, (PADD)->len);
+#define str_addstr(PS, PADD) str_add2(PS, (PADD).buf, (PADD).len);
 
 static inline void str_add(str_t *s, const char *a) {
 	str_add2(s, a, (int) strlen(a));
@@ -87,9 +87,4 @@ static inline void str_swap(str_t *a, str_t *b) {
 	str_t c = *a;
 	*a = *b;
 	*b = c;
-}
-
-
-static inline void str_addpb(str_t *s, struct pb_string pb) {
-	str_add2(s, pb.p, pb.len);
 }

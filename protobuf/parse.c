@@ -275,7 +275,7 @@ char *pb_parse_string(char *p, struct pb_string *v) {
         case '\0':
             return pb_errret;
         case '"':
-			v->p = (char*) ret;
+			v->buf = (char*) ret;
 			v->len = (int) (out - ret);
             return (char*)in+1;
         case '\\':
@@ -446,7 +446,7 @@ uint32_t pb_parse_enum(char **p, struct pb_string *v, uint32_t mul) {
         (*p)++;
     }
 next:
-	v->p = ret;
+	v->buf = ret;
 	v->len = (int) (*p - ret);
 	(*p)++;
     return hash;
@@ -483,7 +483,7 @@ uint32_t pb_parse_field(char **p, struct pb_string *v, uint32_t mul) {
         (*p)++;
     }
 next:
-	v->p = ret;
+	v->buf = ret;
 	v->len = (int) (*p - ret);
     *p = consume_space(*p+1);
     if (**p != ':') {

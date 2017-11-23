@@ -9,19 +9,19 @@ static void join_underscore(str_t *c, struct pb_string tail) {
     if (c->len) {
         str_addch(c, '_');
 	}
-    str_addpb(c, tail);
+    str_addstr(c, tail);
 }
 
 static void insert_service(const struct ServiceDescriptorProto *svc, str_t *proto, str_t *c) {
     str_add(proto, ".");
-    str_addpb(proto, svc->name);
+    str_addstr(proto, svc->name);
 	join_underscore(c, svc->name);
 	struct type *t = NEW(struct type);
-    str_addstr(&t->name, proto);
-    str_addstr(&t->c_type, c);
-    str_addstr(&t->proto_suffix, c);
-	str_addstr(&t->json_suffix, c);
-    str_addstr(&t->proto_type, proto);
+    str_addstr(&t->name, *proto);
+    str_addstr(&t->c_type, *c);
+    str_addstr(&t->proto_suffix, *c);
+	str_addstr(&t->json_suffix, *c);
+    str_addstr(&t->proto_type, *proto);
 	t->svc = svc;
 
     imap_set(&g_service_types, svc, t);
@@ -29,15 +29,15 @@ static void insert_service(const struct ServiceDescriptorProto *svc, str_t *prot
 
 static void insert_enum(const struct EnumDescriptorProto *en, str_t *proto, str_t *c) {
     str_add(proto, ".");
-    str_addpb(proto, en->name);
+    str_addstr(proto, en->name);
 	join_underscore(c, en->name);
 
     struct type *t = NEW(struct type);
-    str_addstr(&t->name, proto);
+    str_addstr(&t->name, *proto);
     str_add(&t->c_type, "enum ");
-    str_addstr(&t->c_type, c);
+    str_addstr(&t->c_type, *c);
     str_add(&t->proto_suffix, "u32");
-	str_addstr(&t->json_suffix, c);
+	str_addstr(&t->json_suffix, *c);
     t->en = en;
     t->max_proto_size = 5;
     str_add(&t->proto_type, "uint32_t");
@@ -55,17 +55,17 @@ static void insert_enum(const struct EnumDescriptorProto *en, str_t *proto, str_
 
 static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_t *c, bool default_packed, const struct FileDescriptorProto *file) {
     str_add(proto, ".");
-    str_addpb(proto, msg->name);
+    str_addstr(proto, msg->name);
 	join_underscore(c, msg->name);
 
     int protosz = proto->len;
     int csz = c->len;
 
     struct type *t = NEW(struct type);
-    str_addstr(&t->name, proto);
+    str_addstr(&t->name, *proto);
     str_add(&t->c_type, "struct ");
-    str_addstr(&t->c_type, c);
-    str_addstr(&t->proto_suffix, c);
+    str_addstr(&t->c_type, *c);
+    str_addstr(&t->proto_suffix, *c);
     t->msg = msg;
     t->max_print_size = INFINITY;
     t->max_proto_size = INFINITY;
@@ -129,9 +129,9 @@ void insert_file_types(const struct FileDescriptorProto *f) {
     
     if (f->package.len) {
         str_add(&proto, ".");
-        str_addpb(&proto, f->package);
+        str_addstr(&proto, f->package);
 
-        str_addpb(&c, f->package);
+        str_addstr(&c, f->package);
         for (int i = 0; i < c.len; i++) {
             if (c.buf[i] == '.') {
                 c.buf[i] = '_';
@@ -274,7 +274,7 @@ void get_proto_cast(str_t *out, const struct FieldDescriptorProto* f, int array_
         str_add(out, "*");
     }
     str_add(out, "(");
-    str_addstr(out, &t->proto_type);
+    str_addstr(out, t->proto_type);
 
     if (array_type) {
         str_add(out, "*");
@@ -288,7 +288,7 @@ void get_proto_cast(str_t *out, const struct FieldDescriptorProto* f, int array_
 struct type *get_field_type(const struct FieldDescriptorProto *f) {
     if (f->type == TYPE_MESSAGE || f->type == TYPE_ENUM) {
         struct type *t = NULL;
-        if (smap_get(&g_named_types, f->type_name.p, f->type_name.len, &t) && t->msg && !t->max_proto_size_calculated) {
+        if (smap_get(&g_named_types, f->type_name.buf, f->type_name.len, &t) && t->msg && !t->max_proto_size_calculated) {
             calc_max_proto_size(t);
         }
         return t;
@@ -319,13 +319,13 @@ struct type *get_service_type(const struct ServiceDescriptorProto *p) {
 
 struct type *get_input_type(const struct MethodDescriptorProto *m) {
     struct type *t = NULL;
-    smap_get(&g_named_types, m->input_type.p, m->input_type.len, &t);
+    smap_get(&g_named_types, m->input_type.buf, m->input_type.len, &t);
     return t;
 }
 
 struct type *get_output_type(const struct MethodDescriptorProto *m) {
 	struct type *t= NULL;
-    smap_get(&g_named_types, m->output_type.p, m->output_type.len, &t);
+    smap_get(&g_named_types, m->output_type.buf, m->output_type.len, &t);
     return t;
 }
 

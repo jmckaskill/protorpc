@@ -1,24 +1,24 @@
 #include "protoc-gen-protorpc.h"
 #include <assert.h>
 
-void to_upper(str_t *o, const char *s, size_t n) {
-	for (size_t i = 0; i < n; i++) {
-		if ('a' <= s[i] && s[i] <= 'z') {
-            str_addch(o, s[i] - 'a' + 'A');
+void to_upper(str_t *o, struct pb_string s) {
+	for (int i = 0; i < s.len; i++) {
+		if ('a' <= s.buf[i] && s.buf[i] <= 'z') {
+            str_addch(o, s.buf[i] - 'a' + 'A');
 		} else {
-            str_addch(o, s[i]);
+            str_addch(o, s.buf[i]);
 		}
 	}
 }
 
 void define_enum(str_t *o, const struct type *t) {
-    str_addstr(o, &t->c_type);
+    str_addstr(o, t->c_type);
     str_add(o, " {" EOL);
 
     for (int i = 0; i < t->en->value.len; i++) {
         const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         str_add(o, "\t");
-        str_addpb(o, v->name);
+        str_addstr(o, v->name);
         str_add(o, " = ");
         str_addf(o, "%u", v->number);
         if (i < t->en->value.len-1) {
@@ -30,7 +30,7 @@ void define_enum(str_t *o, const struct type *t) {
 }
 
 void declare_struct(str_t *o, const struct type *t) {
-    str_addstr(o, &t->c_type);
+    str_addstr(o, t->c_type);
     str_add(o, ";" EOL);
 }
 
@@ -38,17 +38,17 @@ static void append_field_type(str_t *o, const struct FieldDescriptorProto *f) {
     const struct type *ft = get_field_type(f);
     if (f->label == LABEL_REPEATED) {
         str_add(o, "struct {int len; ");
-        str_addstr(o, &ft->c_type);
+        str_addstr(o, ft->c_type);
         str_add(o, " const *");
         if (ft->msg && !ft->pod_message) {
             str_add(o, "*");
         }
         str_add(o, "v;}");
     } else if (ft->msg && !ft->pod_message) {
-        str_addstr(o, &ft->c_type);
+        str_addstr(o, ft->c_type);
         str_add(o, " const*");
     } else {
-        str_addstr(o, &ft->c_type);
+        str_addstr(o, ft->c_type);
     }
 }
 
@@ -57,17 +57,18 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
 	struct pb_string name = t->msg->oneof_decl.v[oneof]->name;
 
     str_add(o, "enum ");
-    str_addstr(o, &t->proto_suffix);
+    str_addstr(o, t->proto_suffix);
     str_add(o, "_");
-    str_addpb(o, name);
+    str_addstr(o, name);
     str_add(o, "_type {" EOL);
 
 	while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index_set && t->msg->field.v[i]->oneof_index == oneof) {
         const struct FieldDescriptorProto* f = t->msg->field.v[i];
         str_add(o, "\t");
-        to_upper(o, t->proto_suffix.buf, t->proto_suffix.len);
+        struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+        to_upper(o, ps);
         str_add(o, "_");
-        to_upper(o, f->name.p, f->name.len);
+        to_upper(o, f->name);
         str_add(o, ",");
         str_add(o, EOL);
         i++;
@@ -83,11 +84,11 @@ size_t define_oneof(str_t *o, const struct type *t, int i) {
     struct pb_string name = t->msg->oneof_decl.v[oneof]->name;
 
     str_add(o, "\tenum ");
-    str_addstr(o, &t->proto_suffix);
+    str_addstr(o, t->proto_suffix);
     str_add(o, "_");
-    str_addpb(o, name);
+    str_addstr(o, name);
     str_add(o, "_type ");
-    str_addpb(o, name);
+    str_addstr(o, name);
     str_add(o, "_type;" EOL);
 
     str_add(o, "\tunion {" EOL);
@@ -97,13 +98,13 @@ size_t define_oneof(str_t *o, const struct type *t, int i) {
         str_add(o, "\t\t");
         append_field_type(o, f);
         str_add(o, " ");
-        str_addpb(o, f->name);
+        str_addstr(o, f->name);
         str_add(o, ";" EOL);
         i++;
     }
 
     str_add(o, "\t} ");
-    str_addpb(o, name);
+    str_addstr(o, name);
     str_add(o, ";" EOL);
 
     return i;
@@ -134,7 +135,7 @@ void define_struct(str_t *o, struct type *t) {
 		}
 	}
 
-    str_addstr(o, &t->c_type);
+    str_addstr(o, t->c_type);
     str_add(o, " {" EOL);
     
 	if (!t->pod_message) {
@@ -149,7 +150,7 @@ void define_struct(str_t *o, struct type *t) {
             str_add(o, "\t");
             append_field_type(o, f);
             str_addch(o, '\t');
-            str_addpb(o, f->name);
+            str_addstr(o, f->name);
             str_add(o, ";" EOL);
         }
     }

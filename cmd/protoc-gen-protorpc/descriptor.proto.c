@@ -8,7 +8,7 @@ int pb_get_FileDescriptorSet(const char *p, const char *e, pb_buf_t *obj, struct
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FileDescriptorProto *c = (struct FileDescriptorProto*) pb_calloc(obj, sizeof(struct FileDescriptorProto));
-			if (!c || pb_get_FileDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_FileDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->file.len++;
@@ -55,7 +55,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct DescriptorProto *c = (struct DescriptorProto*) pb_calloc(obj, sizeof(struct DescriptorProto));
-			if (!c || pb_get_DescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_DescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->message_type.len++;
@@ -79,7 +79,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct EnumDescriptorProto *c = (struct EnumDescriptorProto*) pb_calloc(obj, sizeof(struct EnumDescriptorProto));
-			if (!c || pb_get_EnumDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_EnumDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->enum_type.len++;
@@ -103,7 +103,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct ServiceDescriptorProto *c = (struct ServiceDescriptorProto*) pb_calloc(obj, sizeof(struct ServiceDescriptorProto));
-			if (!c || pb_get_ServiceDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_ServiceDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->service.len++;
@@ -127,7 +127,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FieldDescriptorProto *c = (struct FieldDescriptorProto*) pb_calloc(obj, sizeof(struct FieldDescriptorProto));
-			if (!c || pb_get_FieldDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_FieldDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->extension.len++;
@@ -149,7 +149,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct FileOptions*) pb_calloc(obj, sizeof(struct FileOptions));
-		if (!m->options || pb_get_FileOptions(msg.p, msg.p + msg.len, obj, (struct FileOptions*) m->options)) {
+		if (!m->options || pb_get_FileOptions(msg.buf, msg.buf + msg.len, obj, (struct FileOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -157,7 +157,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->source_code_info = (struct SourceCodeInfo*) pb_calloc(obj, sizeof(struct SourceCodeInfo));
-		if (!m->source_code_info || pb_get_SourceCodeInfo(msg.p, msg.p + msg.len, obj, (struct SourceCodeInfo*) m->source_code_info)) {
+		if (!m->source_code_info || pb_get_SourceCodeInfo(msg.buf, msg.buf + msg.len, obj, (struct SourceCodeInfo*) m->source_code_info)) {
 			return -1;
 		}
 	}
@@ -202,7 +202,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FieldDescriptorProto *c = (struct FieldDescriptorProto*) pb_calloc(obj, sizeof(struct FieldDescriptorProto));
-			if (!c || pb_get_FieldDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_FieldDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->field.len++;
@@ -226,7 +226,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct DescriptorProto *c = (struct DescriptorProto*) pb_calloc(obj, sizeof(struct DescriptorProto));
-			if (!c || pb_get_DescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_DescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->nested_type.len++;
@@ -250,7 +250,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct EnumDescriptorProto *c = (struct EnumDescriptorProto*) pb_calloc(obj, sizeof(struct EnumDescriptorProto));
-			if (!c || pb_get_EnumDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_EnumDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->enum_type.len++;
@@ -276,7 +276,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			}
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
-			if (pb_get_DescriptorProto_ExtensionRange(msg.p, msg.p + msg.len, (struct DescriptorProto_ExtensionRange*) &m->extension_range.v[m->extension_range.len])) {
+			if (pb_get_DescriptorProto_ExtensionRange(msg.buf, msg.buf + msg.len, (struct DescriptorProto_ExtensionRange*) &m->extension_range.v[m->extension_range.len])) {
 				return -1;
 			}
 			m->extension_range.len++;
@@ -290,7 +290,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FieldDescriptorProto *c = (struct FieldDescriptorProto*) pb_calloc(obj, sizeof(struct FieldDescriptorProto));
-			if (!c || pb_get_FieldDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_FieldDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->extension.len++;
@@ -312,7 +312,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct MessageOptions*) pb_calloc(obj, sizeof(struct MessageOptions));
-		if (!m->options || pb_get_MessageOptions(msg.p, msg.p + msg.len, obj, (struct MessageOptions*) m->options)) {
+		if (!m->options || pb_get_MessageOptions(msg.buf, msg.buf + msg.len, obj, (struct MessageOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -322,7 +322,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct OneofDescriptorProto *c = (struct OneofDescriptorProto*) pb_calloc(obj, sizeof(struct OneofDescriptorProto));
-			if (!c || pb_get_OneofDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_OneofDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->oneof_decl.len++;
@@ -348,7 +348,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			}
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
-			if (pb_get_DescriptorProto_ReservedRange(msg.p, msg.p + msg.len, (struct DescriptorProto_ReservedRange*) &m->reserved_range.v[m->reserved_range.len])) {
+			if (pb_get_DescriptorProto_ReservedRange(msg.buf, msg.buf + msg.len, (struct DescriptorProto_ReservedRange*) &m->reserved_range.v[m->reserved_range.len])) {
 				return -1;
 			}
 			m->reserved_range.len++;
@@ -418,7 +418,7 @@ int pb_get_FieldDescriptorProto(const char *p, const char *e, pb_buf_t *obj, str
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct FieldOptions*) pb_calloc(obj, sizeof(struct FieldOptions));
-		if (!m->options || pb_get_FieldOptions(msg.p, msg.p + msg.len, obj, (struct FieldOptions*) m->options)) {
+		if (!m->options || pb_get_FieldOptions(msg.buf, msg.buf + msg.len, obj, (struct FieldOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -441,7 +441,7 @@ int pb_get_OneofDescriptorProto(const char *p, const char *e, pb_buf_t *obj, str
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct OneofOptions*) pb_calloc(obj, sizeof(struct OneofOptions));
-		if (!m->options || pb_get_OneofOptions(msg.p, msg.p + msg.len, obj, (struct OneofOptions*) m->options)) {
+		if (!m->options || pb_get_OneofOptions(msg.buf, msg.buf + msg.len, obj, (struct OneofOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -459,7 +459,7 @@ int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct EnumValueDescriptorProto *c = (struct EnumValueDescriptorProto*) pb_calloc(obj, sizeof(struct EnumValueDescriptorProto));
-			if (!c || pb_get_EnumValueDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_EnumValueDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->value.len++;
@@ -481,7 +481,7 @@ int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct EnumOptions*) pb_calloc(obj, sizeof(struct EnumOptions));
-		if (!m->options || pb_get_EnumOptions(msg.p, msg.p + msg.len, obj, (struct EnumOptions*) m->options)) {
+		if (!m->options || pb_get_EnumOptions(msg.buf, msg.buf + msg.len, obj, (struct EnumOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -500,7 +500,7 @@ int pb_get_EnumValueDescriptorProto(const char *p, const char *e, pb_buf_t *obj,
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct EnumValueOptions*) pb_calloc(obj, sizeof(struct EnumValueOptions));
-		if (!m->options || pb_get_EnumValueOptions(msg.p, msg.p + msg.len, obj, (struct EnumValueOptions*) m->options)) {
+		if (!m->options || pb_get_EnumValueOptions(msg.buf, msg.buf + msg.len, obj, (struct EnumValueOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -518,7 +518,7 @@ int pb_get_ServiceDescriptorProto(const char *p, const char *e, pb_buf_t *obj, s
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct MethodDescriptorProto *c = (struct MethodDescriptorProto*) pb_calloc(obj, sizeof(struct MethodDescriptorProto));
-			if (!c || pb_get_MethodDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_MethodDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->method.len++;
@@ -540,7 +540,7 @@ int pb_get_ServiceDescriptorProto(const char *p, const char *e, pb_buf_t *obj, s
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct ServiceOptions*) pb_calloc(obj, sizeof(struct ServiceOptions));
-		if (!m->options || pb_get_ServiceOptions(msg.p, msg.p + msg.len, obj, (struct ServiceOptions*) m->options)) {
+		if (!m->options || pb_get_ServiceOptions(msg.buf, msg.buf + msg.len, obj, (struct ServiceOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -562,7 +562,7 @@ int pb_get_MethodDescriptorProto(const char *p, const char *e, pb_buf_t *obj, st
 		struct pb_string msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct MethodOptions*) pb_calloc(obj, sizeof(struct MethodOptions));
-		if (!m->options || pb_get_MethodOptions(msg.p, msg.p + msg.len, obj, (struct MethodOptions*) m->options)) {
+		if (!m->options || pb_get_MethodOptions(msg.buf, msg.buf + msg.len, obj, (struct MethodOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -626,7 +626,7 @@ int pb_get_FileOptions(const char *p, const char *e, pb_buf_t *obj, struct FileO
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -668,7 +668,7 @@ int pb_get_MessageOptions(const char *p, const char *e, pb_buf_t *obj, struct Me
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -717,7 +717,7 @@ int pb_get_FieldOptions(const char *p, const char *e, pb_buf_t *obj, struct Fiel
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -751,7 +751,7 @@ int pb_get_OneofOptions(const char *p, const char *e, pb_buf_t *obj, struct Oneo
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -787,7 +787,7 @@ int pb_get_EnumOptions(const char *p, const char *e, pb_buf_t *obj, struct EnumO
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -820,7 +820,7 @@ int pb_get_EnumValueOptions(const char *p, const char *e, pb_buf_t *obj, struct 
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -853,7 +853,7 @@ int pb_get_ServiceOptions(const char *p, const char *e, pb_buf_t *obj, struct Se
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -886,7 +886,7 @@ int pb_get_MethodOptions(const char *p, const char *e, pb_buf_t *obj, struct Met
 			struct pb_string msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -918,7 +918,7 @@ int pb_get_UninterpretedOption(const char *p, const char *e, pb_buf_t *obj, stru
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct UninterpretedOption_NamePart *c = (struct UninterpretedOption_NamePart*) pb_calloc(obj, sizeof(struct UninterpretedOption_NamePart));
-			if (!c || pb_get_UninterpretedOption_NamePart(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption_NamePart(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->name.len++;
@@ -976,7 +976,7 @@ int pb_get_SourceCodeInfo(const char *p, const char *e, pb_buf_t *obj, struct So
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct SourceCodeInfo_Location *c = (struct SourceCodeInfo_Location*) pb_calloc(obj, sizeof(struct SourceCodeInfo_Location));
-			if (!c || pb_get_SourceCodeInfo_Location(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_SourceCodeInfo_Location(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->location.len++;
@@ -1034,7 +1034,7 @@ int pb_get_GeneratedCodeInfo(const char *p, const char *e, pb_buf_t *obj, struct
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct GeneratedCodeInfo_Annotation *c = (struct GeneratedCodeInfo_Annotation*) pb_calloc(obj, sizeof(struct GeneratedCodeInfo_Annotation));
-			if (!c || pb_get_GeneratedCodeInfo_Annotation(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_GeneratedCodeInfo_Annotation(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->annotation.len++;

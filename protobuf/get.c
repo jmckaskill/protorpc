@@ -69,11 +69,11 @@ const char *pb_get_string(const char *p, const char *e, struct pb_string *pv) {
     uint32_t sz;
     p = pb_get_u32(p,e,&sz);
     if (p + sz <= e) {
-        pv->p = p;
+        pv->buf = p;
         pv->len = sz;
         return p + sz;
     }
-    pv->p = NULL;
+    pv->buf = NULL;
     pv->len = 0;
     return e;
 }
@@ -83,7 +83,7 @@ const char *pb_get_packed_bool(const char *p, const char *e, pb_buf_t *a, bool *
     static_assert(sizeof(bool) == 1, "incompatible bool size");
     struct pb_string bytes;
     p = pb_get_string(p,e,&bytes);
-    *pv = (bool*) bytes.p;
+    *pv = (bool*) bytes.buf;
     *plen = bytes.len;
     return p;
 }
@@ -91,8 +91,8 @@ const char *pb_get_packed_u32(const char *p, const char *e, pb_buf_t *a, uint32_
 	(void) a;
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
-    p = b.p;
-    e = b.p + b.len;
+    p = b.buf;
+    e = b.buf + b.len;
     *plen = 0;
 	*pv = (uint32_t*)a->next;
     while (p < e) {
@@ -107,8 +107,8 @@ const char *pb_get_packed_u32(const char *p, const char *e, pb_buf_t *a, uint32_
 const char *pb_get_packed_u64(const char *p, const char *e, pb_buf_t *a, uint64_t **pv, int *plen) {
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
-	p = b.p;
-	e = b.p + b.len;
+	p = b.buf;
+	e = b.buf + b.len;
     *plen = 0;
 	*pv = (uint64_t*)a->next;
     while (p < e) {
@@ -123,8 +123,8 @@ const char *pb_get_packed_u64(const char *p, const char *e, pb_buf_t *a, uint64_
 const char *pb_get_packed_s32(const char *p, const char *e, pb_buf_t *a, int32_t **pv, int *plen) {
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
-	p = b.p;
-	e = b.p + b.len;
+	p = b.buf;
+	e = b.buf + b.len;
     *plen = 0;
 	*pv = (int32_t*)a->next;
 	while (p < e) {
@@ -139,8 +139,8 @@ const char *pb_get_packed_s32(const char *p, const char *e, pb_buf_t *a, int32_t
 const char *pb_get_packed_s64(const char *p, const char *e, pb_buf_t *a, int64_t **pv, int *plen) {
     struct pb_string b;
     const char *ret = pb_get_string(p,e,&b);
-	p = b.p;
-	e = b.p + b.len;
+	p = b.buf;
+	e = b.buf + b.len;
     *plen = 0;
 	*pv = (int64_t*)a->next;
 	while (p < e) {
@@ -156,7 +156,7 @@ const char *pb_get_packed_f32(const char *p, const char *e, pb_buf_t *a, union p
 	(void) a;
     struct pb_string b;
     p = pb_get_string(p,e,&b);
-    *pv = (union pb_f32*) b.p;
+    *pv = (union pb_f32*) b.buf;
     *plen = b.len / 4;
     return p;
 }
@@ -164,7 +164,7 @@ const char *pb_get_packed_f64(const char *p, const char *e, pb_buf_t *a, union p
 	(void) a;
     struct pb_string b;
     p = pb_get_string(p,e,&b);
-    *pv = (union pb_f64*) b.p;
+    *pv = (union pb_f64*) b.buf;
     *plen = b.len / 8;
     return p;
 }

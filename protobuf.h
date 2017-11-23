@@ -26,18 +26,18 @@ struct pb_bytes {
 
 struct pb_string {
 	int len;
-	const char *p; // not null terminated
+	const char *buf; // not null terminated
 };
 
 static inline struct pb_string pb_as_string(const char *str) {
 	struct pb_string s;
 	s.len = (int) strlen(str);
-	s.p = str;
+	s.buf = str;
 	return s;
 }
 
 static inline int pb_cmp2(struct pb_string a, const char *b, int len) {
-	return a.len == len ? memcmp(a.p, b, len) : (int) (a.len - len);
+	return a.len == len ? memcmp(a.buf, b, len) : (int) (a.len - len);
 }
 static inline int pb_cmp(struct pb_string a, const char *b) {
 	return pb_cmp2(a, b, (int) strlen(b));
@@ -182,7 +182,7 @@ static inline char *pb_put_f64(char *p, union pb_f64 v) {
 }
 static inline char *pb_put_string(char *p, struct pb_string v) {
 	p = pb_put_u32(p, v.len);
-	memcpy(p, v.p, v.len);
+	memcpy(p, v.buf, v.len);
 	return p + v.len;
 }
 static inline char *pb_put_bytes(char *p, struct pb_bytes v) {

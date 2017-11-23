@@ -34,7 +34,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 		struct hash_entry *h = &hashes[i];
 		const struct EnumValueDescriptorProto *v = (struct EnumValueDescriptorProto*) h->data;
         str_addf(o, "\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\tif (!pb_cmp(val, \"%.*s\")) {" EOL, h->str.len, h->str.p);
+        str_addf(o, "\t\tif (!pb_cmp(val, \"%.*s\")) {" EOL, STRF(h->str));
         str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.buf, v->number);
         str_add(o, "\t\t}" EOL);
         str_add(o, "\t\tbreak;" EOL);
@@ -89,27 +89,28 @@ void do_parse(str_t *o, const struct type *t, bool define) {
 
         static str_t mbr = STR_INIT;
         str_set(&mbr, "m->");
-        str_addpb(&mbr, f->name);
+        str_addstr(&mbr, f->name);
 
         str_addf(o, "\t\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\t\tif (pb_cmp(key, \"%.*s\")) {" EOL, h->str.len, h->str.p);
+        str_addf(o, "\t\t\tif (pb_cmp(key, \"%.*s\")) {" EOL, STRF(h->str));
         str_add(o, "\t\t\t\tgoto unknown;" EOL);
         str_add(o, "\t\t\t}"  EOL);
 
         if (f->oneof_index_set) {
             struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
             str_add(o, "\t\t\tm->");
-            str_addpb(o, oneof);
+            str_addstr(o, oneof);
             str_add(o, "_type = ");
-            to_upper(o, t->proto_suffix.buf, t->proto_suffix.len);
+            struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            to_upper(o, ps);
             str_add(o, "_");
-            to_upper(o, f->name.p, f->name.len);
+            to_upper(o, f->name);
             str_add(o, ";" EOL);
 
             str_set(&mbr, "m->");
-            str_addpb(&mbr, oneof);
+            str_addstr(&mbr, oneof);
             str_addch(&mbr, '.');
-            str_addpb(&mbr, f->name);
+            str_addstr(&mbr, f->name);
         }
 
         if (f->label == LABEL_REPEATED) {

@@ -23,7 +23,7 @@ void do_server(str_t *o, const struct type *t, int stage) {
 
 			str_setstr(&name, &t->c_type);
 			str_addch(&name, '_');
-			str_addpb(&name, m->name);
+			str_addstr(&name, m->name);
 
 			if (m->server_streaming) {
 				str_addf(o, "struct rpc_publisher *g_rpc_%s;" EOL, name.buf);
@@ -59,7 +59,7 @@ void do_server(str_t *o, const struct type *t, int stage) {
 
 			str_setstr(&name, &t->c_type);
 			str_addch(&name, '_');
-			str_addpb(&name, m->name);
+			str_addstr(&name, m->name);
 
 			if (!m->client_streaming && !m->server_streaming) {
 				str_addf(o, "static inline int pb_rpc_%s(pb_alloc_t *obj, str_t *resp, char *body, int bodysz) {" EOL, name.buf);
@@ -118,14 +118,14 @@ void do_server(str_t *o, const struct type *t, int stage) {
 
 			str_setstr(&name, &t->c_type);
 			str_addch(&name, '_');
-			str_addpb(&name, m->name);
+			str_addstr(&name, m->name);
 
 			// proto_type includes a leading dot which we don't want in the path
 			if (m->server_streaming) {
 				str_addf(o, "\tg_rpc_%s = rpc_publisher_new();" EOL, name.buf);
-				str_addf(o, "\trpc_handle_stream(s, \"/api/%s/%.*s\", g_rpc_%s);" EOL, t->proto_type.buf+1, m->name.len, m->name.p, name.buf);
+				str_addf(o, "\trpc_handle_stream(s, \"/api/%s/%.*s\", g_rpc_%s);" EOL, t->proto_type.buf+1, STRF(m->name), name.buf);
 			} else {
-				str_addf(o, "\trpc_handle_post(s, \"/api/%s/%.*s\", &pb_rpc_%s);" EOL, t->proto_type.buf+1, m->name.len, m->name.p, name.buf);
+				str_addf(o, "\trpc_handle_post(s, \"/api/%s/%.*s\", &pb_rpc_%s);" EOL, t->proto_type.buf+1, STRF(m->name), name.buf);
 			}
 		}
 		str_add(o, "}" EOL);
@@ -144,7 +144,7 @@ void do_server(str_t *o, const struct type *t, int stage) {
 
 			str_setstr(&name, &t->c_type);
 			str_addch(&name, '_');
-			str_addpb(&name, m->name);
+			str_addstr(&name, m->name);
 
 			if (m->server_streaming) {
 				str_addf(o, "struct rpc_publisher *g_rpc_%s;" EOL, name.buf);

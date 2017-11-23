@@ -23,7 +23,7 @@ int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, str
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FileDescriptorProto *c = (struct FileDescriptorProto*) pb_calloc(obj, sizeof(struct FileDescriptorProto));
-			if (!c || pb_get_FileDescriptorProto(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_FileDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->proto_file.len++;
@@ -55,7 +55,7 @@ int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, st
 			struct pb_string msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct CodeGeneratorResponse_File *c = (struct CodeGeneratorResponse_File*) pb_calloc(obj, sizeof(struct CodeGeneratorResponse_File));
-			if (!c || pb_get_CodeGeneratorResponse_File(msg.p, msg.p + msg.len, obj, c)) {
+			if (!c || pb_get_CodeGeneratorResponse_File(msg.buf, msg.buf + msg.len, obj, c)) {
 				return -1;
 			}
 			m->file.len++;

@@ -17,16 +17,16 @@ static void declare_external_fields(str_t *o, const struct FileDescriptorProto *
 
 static void write_header(str_t *o, const struct FileDescriptorProto *f) {
     str_add(o, "#pragma once" EOL);
-    str_add(o, "#include <protorpc/protorpc.h>" EOL);
+    str_add(o, "#include <protobuf.h>" EOL);
 
     for (int i = 0; i < f->dependency.len; i++) {
 		struct pb_string d = f->dependency.v[i];
 		if (!pb_cmp(d, "google/protobuf/empty.proto")) {
 		} else if (!pb_cmp(d, "google/protobuf/duration.proto") || !pb_cmp(d, "google/protobuf/timestamp.proto")) {
-            str_add(o, "#include <protorpc/protorpc-time.h>" EOL);
+            str_add(o, "#include <protorpc-time.h>" EOL);
 		} else {
 			str_add(o, "#include \"");
-			str_addpb(o, d);
+			str_addstr(o, d);
 			str_add(o, ".h\"" EOL);
 		}
     }
@@ -67,7 +67,12 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
 
 static void write_source(str_t *o, const struct FileDescriptorProto *f) {
     str_add(o, "#include \"");
-    str_addpb(o, f->name);
+    char *slash = str_rfind_char(f->name, '/');
+    if (slash) {
+        str_add2(o, slash+1, f->name.buf + f->name.len - (slash+1));
+    } else {
+        str_addstr(o, f->name);
+    }
     str_add(o, ".h\"" EOL);
     
     for (int i = 0; i < f->enum_type.len; i++) {
@@ -88,7 +93,7 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f) {
 
 static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequest *req, struct pb_string name) {
     for (int i = 0; i < req->proto_file.len; i++) {
-        if (!pb_cmp2(req->proto_file.v[i]->name, name.p, name.len)) {
+        if (str_equals(req->proto_file.v[i]->name, name)) {
             return req->proto_file.v[i];
         }
     }
@@ -129,7 +134,7 @@ int main(int argc, char *argv[]) {
         const struct FileDescriptorProto *f = get_file_proto(&req, req.file_to_generate.v[i]);
 
 		if (f == NULL) {
-			fprintf(stderr, "protoc-gen-protorpc - can't find %.*s\n", req.file_to_generate.v[i].len, req.file_to_generate.v[i].p);
+			fprintf(stderr, "protoc-gen-protorpc - can't find %.*s\n", STRF(req.file_to_generate.v[i]));
 			return 2;
 		}
 
@@ -140,7 +145,7 @@ int main(int argc, char *argv[]) {
         write_source(&src, f);
 
         str_clear(&filename);
-        str_addpb(&filename, f->name);
+        str_addstr(&filename, f->name);
         str_add(&filename, ".h");
         FILE *file = fopen(filename.buf, "wb");
 		if (!file) {
@@ -151,7 +156,7 @@ int main(int argc, char *argv[]) {
         fclose(file);
 
         str_clear(&filename);
-        str_addpb(&filename, f->name);
+        str_addstr(&filename, f->name);
         str_add(&filename, ".c");
         file = fopen(filename.buf, "wb");
 		if (!file) {

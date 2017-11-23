@@ -5,6 +5,20 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#if !defined __GLIBC__
+static inline void *memrchr(const void *s, int c, size_t n) {
+	unsigned char *b = (unsigned char*) s;
+	unsigned char *e = b + n - 1;
+	while (e >= b) {
+		if (*e == c) {
+			return e;
+		}
+		e--;
+	}
+	return NULL;
+}
+#endif
+
 // P should point to a structure of the form
 // struct {
 //	int len;
@@ -30,13 +44,20 @@ typedef struct {
 } slice_t;
 
 // can be used with fixed sized arrays as well as str_t
-#define str_ends_with(P, TEST) 		(strlen(TEST) <= (size_t) (P)->len && !memcmp((P)->buf + (P)->len - strlen(TEST), (TEST), strlen(TEST)))
-#define str_iends_with(P, TEST) 	(strlen(TEST) <= (size_t) (P)->len && !strncasecmp((P)->buf + (P)->len - strlen(TEST), (TEST), strlen(TEST)))
-#define str_begins_with(P, TEST)	(strlen(TEST) <= (size_t) (P)->len && !memcmp((P)->buf, (TEST), strlen(TEST)))
-#define str_ibegins_with(P, TEST)	(strlen(TEST) <= (size_t) (P)->len && !strncasecmp((P)->buf, (TEST), strlen(TEST)))
+#define str_ends_with(P, TEST) 		(strlen(TEST) <= (size_t) (P).len && !memcmp((P).buf + (P).len - strlen(TEST), (TEST), strlen(TEST)))
+#define str_iends_with(P, TEST) 	(strlen(TEST) <= (size_t) (P).len && !strncasecmp((P).buf + (P).len - strlen(TEST), (TEST), strlen(TEST)))
+#define str_begins_with(P, TEST)	(strlen(TEST) <= (size_t) (P).len && !memcmp((P).buf, (TEST), strlen(TEST)))
+#define str_ibegins_with(P, TEST)	(strlen(TEST) <= (size_t) (P).len && !strncasecmp((P).buf, (TEST), strlen(TEST)))
 
-#define str_equals(P, TEST) 	(strlen(TEST) == (size_t) (P)->len && !memcmp((P)->buf, (TEST), (P)->len))
-#define str_iequals(P, TEST)	(strlen(TEST) == (size_t) (P)->len && !strncasecmp((P)->buf, (TEST), (P)->len))
+#define str_test(P, TEST) 	(strlen(TEST) == (size_t) (P).len && !memcmp((P).buf, (TEST), (P).len))
+#define str_itest(P, TEST)	(strlen(TEST) == (size_t) (P).len && !strncasecmp((P).buf, (TEST), (P).len))
+
+#define str_equals(A, B) ((A).len == (B).len && !memcmp((A).buf, (B).buf, (A).len))
+
+#define str_rfind_char(P, CH) 	((char*) memrchr((P).buf, (CH), (P).len))
+
+// for use with %.*s in printf style functions
+#define STRF(P) (P).len, (P).buf
 
 // the following are the implementation functions
 
