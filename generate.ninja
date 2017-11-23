@@ -1,0 +1,4 @@
+bin = bin/$HOST
+
+build test/test.proto.h test/test.proto.c: run $bin/protoc-gen-protorpc.exe $bin/protoc.exe test/test.proto
+

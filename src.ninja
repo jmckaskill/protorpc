@@ -1,4 +1,6 @@
 obj = obj/$TGT
+lib = lib/$TGT
+bin = bin/$TGT
 
 build $obj/protobuf/get.o: cc protobuf/get.c
 build $obj/protobuf/parse.o: cc protobuf/parse.c
@@ -20,18 +22,23 @@ build $obj/protoc-gen-protorpc/types.o: cc cmd/protoc-gen-protorpc/types.c
 build $obj/google/descriptor.proto.o: cc google/protobuf/descriptor.proto.c
 build $obj/google/plugin.proto.o: cc google/protobuf/compiler/plugin.proto.c
 
+build $obj/test.proto.o: cc test/test.proto.c
+build $obj/test.o: cxx test/test.cpp || test/test.proto.h
+build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
+build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
+
 build $obj/str.o: cc cmd/str.c
 build $obj/hash.o: cc cmd/hash.c
 
-build $obj/protobuf.lib: lib $
+build $lib/protobuf.lib: lib $
  $obj/protobuf/get.o $
  $obj/protobuf/parse.o $
  $obj/protobuf/pretty-print.o $
  $obj/protobuf/print.o $
  $obj/protobuf/put.o $
 
-build bin/$TGT/protoc-gen-protorpc.exe: clink $
- $obj/protobuf.lib $
+build $bin/protoc-gen-protorpc.exe: clink $
+ $lib/protobuf.lib $
  $obj/protoc-gen-protorpc/decl.o $
  $obj/google/descriptor.proto.o $
  $obj/protoc-gen-protorpc/exec.o $
@@ -46,4 +53,13 @@ build bin/$TGT/protoc-gen-protorpc.exe: clink $
  $obj/protoc-gen-protorpc/types.o $
  $obj/str.o $
  $obj/hash.o $
+
+build $bin/test.exe: cxxlink $
+ $lib/protobuf.lib $
+ $obj/test.proto.o $
+ $obj/test.o $
+ $obj/gtest_main.o $
+ $obj/gtest-all.o $
+
+
 

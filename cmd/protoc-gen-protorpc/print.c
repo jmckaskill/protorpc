@@ -17,20 +17,34 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 	str_add(o, "\treturn false");
 
 	for (int i = 0; i < t->msg->oneof_decl.len; i++) {
-		str_add(o, " ||" EOL);
-		str_add(o, "\t\tm->");
+		str_add(o, EOL "\t    || m->");
 		str_addstr(o, t->msg->oneof_decl.v[i]->name);
 		str_add(o, "_type");
 	}
 
+	int32_t oneof_index = -1;
+
 	for (int i = 0; i < t->msg->field.len; i++) {
 		const struct FieldDescriptorProto *f = t->msg->field.v[i];
-		if (f->oneof_index_set) {
+		// only want to check the first member of a oneof
+		if (f->oneof_index_set && oneof_index == f->oneof_index) {
 			continue;
+		} else if (f->oneof_index_set) {
+			oneof_index = f->oneof_index;
+		} else {
+			oneof_index = -1;
 		}
 
 		str_set(&mbr, "m->");
 		str_addstr(&mbr, f->name);
+
+		if (f->oneof_index_set) {
+			struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+			str_set(&mbr, "m->");
+            str_addstr(&mbr, oneof);
+            str_addch(&mbr, '.');
+            str_addstr(&mbr, f->name);
+		}
 
 		const struct type *ft = get_field_type(f);
 		str_add(o, EOL);

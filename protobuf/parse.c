@@ -1,5 +1,6 @@
 #define BUILDING_PROTORPC
 #include "../protobuf.h"
+#include <stdlib.h>
 
 char pb_errret[] = {0}; 
 

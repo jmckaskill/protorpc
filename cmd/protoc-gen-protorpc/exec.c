@@ -31,7 +31,6 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
     str_add(&cmdline, "\" -I. --protorpc_out=. --error_format=msvs \"");
     str_add(&cmdline, file);
 	str_addch(&cmdline, '"');
-	fprintf(stderr, "running %s\n", cmdline.buf);
 
     PROCESS_INFORMATION pi;
     STARTUPINFO si = {0};

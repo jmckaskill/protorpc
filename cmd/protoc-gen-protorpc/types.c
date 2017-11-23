@@ -240,21 +240,21 @@ static struct type basic_types[19] = {
     {X("double"), 8, 22 /*%.17g,*/, X("f64"), X("double"), X("union pb_f64")}, // TYPE_DOUBLE
     {X("float"), 4, 14 /*%.9g,*/, X("f32"), X("float"), X("union pb_f32")}, // TYPE_FLOAT
     {X("int64_t"), 10, PRINT64, X("u64"), X("i64"), X("uint64_t")}, // TYPE_INT64
-    {X("uint64_t"), 10, PRINT64, X("u64"), X("u64"), STR_INIT}, // TYPE_UINT64
+    {X("uint64_t"), 10, PRINT64, X("u64"), X("u64"), X("uint64_t")}, // TYPE_UINT64
     {X("int32_t"), 5, PRINT32, X("u32"), X("i32"), X("uint32_t")}, // TYPE_INT32
     {X("uint64_t"), 8, PRINT64, X("f64"), X("u64"), X("union pb_f64")}, // TYPE_FIXED64
     {X("uint32_t"), 4, PRINT32, X("f32"), X("u32"), X("union pb_f32")}, // TYPE_FIXED32
-    {X("bool"), 1, 6 /*false,*/, X("bool"), X("bool"), STR_INIT}, // TYPE_BOOL
+    {X("bool"), 1, 6 /*false,*/, X("bool"), X("bool"), X("bool")}, // TYPE_BOOL
     {X("struct pb_string"), INFINITY, INFINITY, X("string"), X("string"), X("struct pb_string")}, // TYPE_STRING
     {0}, // TYPE_GROUP - unused
     {0}, // TYPE_MESSAGE
     {X("struct pb_bytes"), INFINITY, INFINITY, X("bytes"), X("bytes"), X("struct pb_bytes")}, // TYPE_BYTES
-    {X("uint32_t"), 5, PRINT32, X("u32"), X("u32"), STR_INIT}, // TYPE_UINT32
+	{X("uint32_t"), 5, PRINT32, X("u32"), X("u32"), X("uint32_t")}, // TYPE_UINT32
     {0}, // TYPE_ENUM - filled out separately
     {X("int32_t"), 4, PRINT32, X("f32"), X("i32"), X("union pb_f32")}, // TYPE_SFIXED32
     {X("int64_t"), 8, PRINT64, X("f64"), X("i64"), X("union pb_f64")}, // TYPE_SFIXED64
-    {X("int32_t"), 5, PRINT32, X("s32"), X("i32"), STR_INIT}, // TYPE_SINT32
-    {X("int64_t"), 10, PRINT64, X("s64"), X("i64"), STR_INIT}, // TYPE_SINT64
+    {X("int32_t"), 5, PRINT32, X("s32"), X("i32"), X("int32_t")}, // TYPE_SINT32
+    {X("int64_t"), 10, PRINT64, X("s64"), X("i64"), X("int64_t")}, // TYPE_SINT64
 };
 
 void get_proto_cast(str_t *out, const struct FieldDescriptorProto* f, int array_type, int value_type) {

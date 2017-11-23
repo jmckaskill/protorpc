@@ -1,6 +1,10 @@
-*.vcxproj
-*.vcxproj.user.ninja_deps
+*.vcxproj.user
+*.VC.db
+*.VC.opendb
 .ninja_log
 .ninja_deps
 /bin
 /obj
+/lib
+/.vs
+/Debug

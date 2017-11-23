@@ -7,7 +7,7 @@ static int add_newline(pb_buf_t *o, int depth) {
         return -1;
     }
     *(p++) = '\n';
-    while (depth) {
+    while (depth > 0) {
         *(p++) = '\t';
         depth--;
     }
@@ -59,6 +59,9 @@ int pb_pretty_print(pb_buf_t *o, const char *in, int len) {
             break;
         case '{':
         case '[':
+			if (just_comma && pb_append(o, ",", 1)) {
+				goto err;
+			}
 			if (pb_append(o, in, 1)) {
                 goto err;
             }

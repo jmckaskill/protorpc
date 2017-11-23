@@ -1,16 +1,12 @@
 syntax = "proto3";
 
-package rpc.example;
-option go_package = "rpc/pb";
-
 enum TestEnum {
     ENUM_A = 0;
     ENUM_B = 1;
     ENUM_C = 2;
 }
 
-
-message TestRequest {
+message TestMessage {
     bool b = 1;
     uint32 u32 = 5;
     uint64 u64 = 10;
@@ -24,11 +20,10 @@ message TestRequest {
     sfixed64 sf64 = 8;
     float f = 12;
     double d = 13;
+    TestEnum en = 16;
     bytes by = 14;
     string str = 15;
-    TestEnum en = 16;
-    TestRequest msg = 17;
-    TestPod pod = 18;
+
     repeated bool rb = 21;
     repeated uint32 ru32 = 25;
     repeated uint64 ru64 = 210;
@@ -45,7 +40,11 @@ message TestRequest {
     repeated bytes rby = 214;
     repeated string rstr = 215;
     repeated TestEnum ren = 216;
-    repeated TestRequest rmsg = 217;
+
+    TestMessage msg = 17;
+    TestPod pod = 18;
+
+    repeated TestMessage rmsg = 217;
     repeated TestPod rpod = 218;
     
     map<uint32, bool> mb = 221;
@@ -64,7 +63,7 @@ message TestRequest {
     map<uint32, bytes> mby = 2214;
     map<uint32, string> mstr = 2215;
     map<uint32, TestEnum> men = 2216;
-    map<uint32, TestRequest> mmsg = 2217;
+    map<uint32, TestMessage> mmsg = 2217;
     map<uint32, TestPod> mpod = 2218;
 }
 
@@ -75,33 +74,6 @@ message TestPod {
     }
 }
 
-message LoginRequest {
-    string username = 1;
-    string password = 2;
-    LoginReply expected = 3;
-}
-
-message LoginReply {
-    bytes token = 1;
-    LoginRequest request = 2;
-    repeated uint32 numbers = 3;
-}
-
-message LookupDesignRequest {
-    double northing = 1;
-    double easting = 2;
-}
-
-message LookupDesignReply {
-    double elevation = 1;
-}
-
 service TestService {
-    rpc Test (TestRequest) returns (TestRequest);
-    rpc Login (LoginRequest) returns (LoginReply);
-    rpc LookupDesign (LookupDesignRequest) returns (LookupDesignReply);
-    rpc LookupStream (LookupDesignRequest) returns (stream LookupDesignReply);
-    //rpc LookupDesignIn (stream LookupDesignRequest) returns (LookupDesignReply);
-    //rpc LookupDesignOut (LookupDesignRequest) returns (stream LookupDesignReply);
-    //rpc LookupDesignBi (stream LookupDesignRequest) returns (stream LookupDesignReply);
+    rpc Test (TestMessage) returns (TestMessage);
 }

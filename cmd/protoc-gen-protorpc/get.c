@@ -34,7 +34,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 
     if (f->oneof_index_set) {
 		struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
-		str_add(o, "\t\t\tm->");
+		str_add(o, "\t\tm->");
 		str_addstr(o, oneof);
 		str_add(o, "_type = ");
 		struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};

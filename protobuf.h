@@ -1,10 +1,8 @@
 #pragma once
 #include <stdint.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdio.h>
 
 // Some basic types
 
@@ -81,7 +79,7 @@ static inline void *pb_alloc(pb_buf_t *b, size_t sz) {
 }
 
 static inline void *pb_calloc(pb_buf_t *b, size_t sz) {
-	char *p = pb_alloc(b, sz);
+	void *p = pb_alloc(b, sz);
 	if (p) {
 		memset(p, 0, sz);
 	}

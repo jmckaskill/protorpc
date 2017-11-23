@@ -43,10 +43,12 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
         define_struct(o, get_struct_type(f->message_type.v[i]));
     }
 
+#if 0
     for (int i = 0; i < f->service.len; i++) {
         const struct type *t = get_service_type(f->service.v[i]);
         do_server(o, t, 0);
     }
+#endif
 
     for (int i = 0; i < f->enum_type.len; i++) {
         do_enum_funcs(o, get_enum_type(f->enum_type.v[i]), false);
@@ -55,10 +57,12 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
         do_struct_funcs(o, get_struct_type(f->message_type.v[i]), false);
     }
    
+#if 0
     for (int i = 0; i < f->service.len; i++) {
         const struct type *t = get_service_type(f->service.v[i]);
         do_server(o, t, 1);
     }
+#endif
 
     str_add(o, "#ifdef __cplusplus" EOL);
 	str_add(o, "}" EOL);
@@ -80,10 +84,12 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f) {
         do_struct_funcs(o, t, true);
     }
 
+#if 0
 	for (int i = 0; i < f->service.len; i++) {
 		const struct type *t = get_service_type(f->service.v[i]);
 		do_server(o, t, 2);
 	}
+#endif
 }
 
 static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequest *req, struct pb_string name) {

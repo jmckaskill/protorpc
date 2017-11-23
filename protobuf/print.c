@@ -1,5 +1,7 @@
 #define BUILDING_PROTORPC
 #include "../protobuf.h"
+#include <stdio.h>
+#include <math.h>
 
 char *pb_print_bool(char *p, bool v) {
     if (v) {
@@ -29,11 +31,10 @@ char *pb_print_u32(char *p, uint32_t v) {
     *p++ = ',';
     return p;
 }
-char *pb_print_u64(char *p, uint64_t v) {
+static char *do_print_u64(char *p, uint64_t v) {
     // use a manual loop as this is much faster then calling sprintf and for fixed integers it's pretty simple
     // print out in reverse order
     char *b = p;
-	*p++ = '\"';
     do {
         *p++ = (v % 10) + '0';
         v = v / 10;
@@ -58,12 +59,17 @@ char *pb_print_i32(char *p, int32_t v) {
         return pb_print_u32(p, (uint32_t)(v));
     }
 }
+char *pb_print_u64(char *p, uint64_t v) {
+	*p++ = '\"';
+	return do_print_u64(p, v);
+}
 char *pb_print_i64(char *p, int64_t v) {
+	*p++ = '\"';
     if (v < 0) {
         *p++ = '-';
-        return pb_print_u64(p, (uint64_t)(-v));
+        return do_print_u64(p, (uint64_t)(-v));
     } else {
-        return pb_print_u64(p, (uint64_t)(v));
+        return do_print_u64(p, (uint64_t)(v));
     }
 }
 char *pb_print_float(char *p, float v) {
@@ -72,7 +78,7 @@ char *pb_print_float(char *p, float v) {
 		memcpy(p, "\"NaN\",", 6);
 		return p + 6;
 	} else {
-		p += sprintf((char*) p, "%.9g", v);
+		p += sprintf((char*) p, "%.8g", v);
 		*p++ = ',';
 		return p;
 	}
@@ -83,7 +89,7 @@ char *pb_print_double(char *p, double v) {
 		memcpy(p, "\"NaN\",", 6);
 		return p + 6;
 	} else {
-		p += sprintf((char*) p, "%.17g", v);
+		p += sprintf((char*) p, "%.16g", v);
 		*p++ = ',';
 		return p;
 	}
