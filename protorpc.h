@@ -1,6 +1,10 @@
 #pragma once
-#include "http-parser.h"
-#include "protobuf.h"
+#include <stdint.h>
+#include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum pr_http_method {
     PR_HTTP_UNSET,
@@ -27,7 +31,10 @@ struct pr_http {
     unsigned expect_continue : 1;
     unsigned version_1_0 : 1;
     unsigned have_multipart_header : 1;
-	uint64_t etag;
+    unsigned have_body : 1;
+    uint64_t etag;
+    char *body_chunk;
+    int chunk_size;
     struct {int len; char buf[64];} login;
     struct {int len; char buf[6];} lang;
 	struct {int len; char buf[256];} boundary;
@@ -39,5 +46,9 @@ struct pr_http {
 #define PR_CONTINUE 1
 #define PR_ERROR -1
 
-int pr_parse_request(struct pr_http *h, char *buf, int *avail);
+int pr_parse_request(struct pr_http *h, char **data, int *sz);
 int pr_parse_body(struct pr_http *h, char **data, int *sz);
+
+#ifdef __cplusplus
+}
+#endif

@@ -8,6 +8,9 @@ build $obj/protobuf/pretty-print.o: cc protobuf/pretty-print.c
 build $obj/protobuf/print.o: cc protobuf/print.c
 build $obj/protobuf/put.o: cc protobuf/put.c
 
+build $obj/protorpc/rpc.o: cc protorpc/rpc.c
+build $obj/rpc_test.o: cxx test/rpc_test.cpp
+
 build $obj/protoc-gen-protorpc/decl.o: cc cmd/protoc-gen-protorpc/decl.c
 build $obj/protoc-gen-protorpc/exec.o: cc cmd/protoc-gen-protorpc/exec.c
 build $obj/protoc-gen-protorpc/get.o: cc cmd/protoc-gen-protorpc/get.c
@@ -23,7 +26,7 @@ build $obj/google/descriptor.proto.o: cc google/protobuf/descriptor.proto.c
 build $obj/google/plugin.proto.o: cc google/protobuf/compiler/plugin.proto.c
 
 build $obj/test.proto.o: cc test/test.proto.c
-build $obj/test.o: cxx test/test.cpp || test/test.proto.h
+build $obj/protobuf_test.o: cxx test/protobuf_test.cpp || test/test.proto.h
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
 
@@ -36,6 +39,7 @@ build $lib/protobuf.lib: lib $
  $obj/protobuf/pretty-print.o $
  $obj/protobuf/print.o $
  $obj/protobuf/put.o $
+ $obj/protorpc/rpc.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protobuf.lib $
@@ -57,7 +61,8 @@ build $bin/protoc-gen-protorpc.exe: clink $
 build $bin/test.exe: cxxlink $
  $lib/protobuf.lib $
  $obj/test.proto.o $
- $obj/test.o $
+ $obj/protobuf_test.o $
+ $obj/rpc_test.o $
  $obj/gtest_main.o $
  $obj/gtest-all.o $
 

@@ -3,13 +3,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 
 // Some basic types
 
 #ifdef __cplusplus
-#define PROTO_API extern "C"
-#else
-#define PROTO_API extern
+extern "C" {
 #endif
 
 union pb_msg {
@@ -108,25 +107,25 @@ static inline int pb_append(pb_buf_t *b, const char *str, int sz) {
 
 // Binary reading
 
-PROTO_API const char *pb_get_u32(const char *p, const char *e, uint32_t *pv);
-PROTO_API const char *pb_get_u64(const char *p, const char *e, uint64_t *pv);
-PROTO_API const char *pb_get_s32(const char *p, const char *e, int32_t *pv);
-PROTO_API const char *pb_get_s64(const char *p, const char *e, int64_t *pv);
-PROTO_API const char *pb_get_f32(const char *p, const char *e, union pb_f32 *pv);
-PROTO_API const char *pb_get_f64(const char *p, const char *e, union pb_f64 *pv);
-PROTO_API const char *pb_get_string(const char *p, const char *e, struct pb_string *pv);
+const char *pb_get_u32(const char *p, const char *e, uint32_t *pv);
+const char *pb_get_u64(const char *p, const char *e, uint64_t *pv);
+const char *pb_get_s32(const char *p, const char *e, int32_t *pv);
+const char *pb_get_s64(const char *p, const char *e, int64_t *pv);
+const char *pb_get_f32(const char *p, const char *e, union pb_f32 *pv);
+const char *pb_get_f64(const char *p, const char *e, union pb_f64 *pv);
+const char *pb_get_string(const char *p, const char *e, struct pb_string *pv);
 
 static inline const char *pb_get_bytes(const char *p, const char *e, struct pb_bytes *pv) {
 	return pb_get_string(p, e, (struct pb_string*) pv);
 }
 
-PROTO_API const char *pb_get_packed_bool(const char *p, const char *e, pb_buf_t *a, bool **pv, int *plen);
-PROTO_API const char *pb_get_packed_u32(const char *p, const char *e, pb_buf_t *a, uint32_t **pv, int *plen);
-PROTO_API const char *pb_get_packed_u64(const char *p, const char *e, pb_buf_t *a, uint64_t **pv, int *plen);
-PROTO_API const char *pb_get_packed_s32(const char *p, const char *e, pb_buf_t *a, int32_t **pv, int *plen);
-PROTO_API const char *pb_get_packed_s64(const char *p, const char *e, pb_buf_t *a, int64_t **pv, int *plen);
-PROTO_API const char *pb_get_packed_f32(const char *p, const char *e, pb_buf_t *a, union pb_f32 **pv, int *plen);
-PROTO_API const char *pb_get_packed_f64(const char *p, const char *e, pb_buf_t *a, union pb_f64 **pv, int *plen);
+const char *pb_get_packed_bool(const char *p, const char *e, pb_buf_t *a, bool **pv, int *plen);
+const char *pb_get_packed_u32(const char *p, const char *e, pb_buf_t *a, uint32_t **pv, int *plen);
+const char *pb_get_packed_u64(const char *p, const char *e, pb_buf_t *a, uint64_t **pv, int *plen);
+const char *pb_get_packed_s32(const char *p, const char *e, pb_buf_t *a, int32_t **pv, int *plen);
+const char *pb_get_packed_s64(const char *p, const char *e, pb_buf_t *a, int64_t **pv, int *plen);
+const char *pb_get_packed_f32(const char *p, const char *e, pb_buf_t *a, union pb_f32 **pv, int *plen);
+const char *pb_get_packed_f64(const char *p, const char *e, pb_buf_t *a, union pb_f64 **pv, int *plen);
 
 static inline int pb_cmp_tag_1(const char *p, const char *e, uint8_t v) {
 	return (p < e) ? (*(uint8_t*)p - v) : 1;
@@ -141,14 +140,14 @@ static inline int pb_cmp_tag_4(const char *p, const char *e, uint32_t v) {
 	return (p < e) ? (*(int32_t*) p - (int32_t) v) : 1;
 }
 
-PROTO_API int pb_skipto_1(const char **p, const char *e, uint8_t tag);
-PROTO_API int pb_skipto_2(const char **p, const char *e, uint16_t tag);
-PROTO_API int pb_skipto_3(const char **p, const char *e, uint32_t tag);
-PROTO_API int pb_skipto_4(const char **p, const char *e, uint32_t tag);
+int pb_skipto_1(const char **p, const char *e, uint8_t tag);
+int pb_skipto_2(const char **p, const char *e, uint16_t tag);
+int pb_skipto_3(const char **p, const char *e, uint32_t tag);
+int pb_skipto_4(const char **p, const char *e, uint32_t tag);
 
-PROTO_API const char *pb_toend_1(const char *p, const char *e);
-PROTO_API const char *pb_toend_2(const char *p, const char *e);
-PROTO_API const char *pb_toend_3(const char *p, const char *e);
+const char *pb_toend_1(const char *p, const char *e);
+const char *pb_toend_2(const char *p, const char *e);
+const char *pb_toend_3(const char *p, const char *e);
 
 static inline const char *pb_get_bool(const char *p, const char *e, bool *pv) {
 	uint32_t u;
@@ -161,10 +160,10 @@ static inline const char *pb_get_bool(const char *p, const char *e, bool *pv) {
 
 // Binary writing
 
-PROTO_API char *pb_put_u32(char *p, uint32_t v);
-PROTO_API char *pb_put_u64(char *p, uint64_t v);
-PROTO_API char *pb_put_s32(char *p, int32_t v);
-PROTO_API char *pb_put_s64(char *p, int64_t v);
+char *pb_put_u32(char *p, uint32_t v);
+char *pb_put_u64(char *p, uint64_t v);
+char *pb_put_s32(char *p, int32_t v);
+char *pb_put_s64(char *p, int64_t v);
 
 static inline char *pb_put_bool(char *p, bool v) {
 	*p = v ? 1 : 0;
@@ -189,10 +188,10 @@ static inline char *pb_put_bytes(char *p, struct pb_bytes v) {
 	return p + v.len;
 }
 
-PROTO_API char *pb_put_packed_u32(char *p, const uint32_t *v, int len);
-PROTO_API char *pb_put_packed_u64(char *p, const uint64_t *v, int len);
-PROTO_API char *pb_put_packed_s32(char *p, const int32_t *v, int len);
-PROTO_API char *pb_put_packed_s64(char *p, const int64_t *v, int len);
+char *pb_put_packed_u32(char *p, const uint32_t *v, int len);
+char *pb_put_packed_u64(char *p, const uint64_t *v, int len);
+char *pb_put_packed_s32(char *p, const int32_t *v, int len);
+char *pb_put_packed_s64(char *p, const int64_t *v, int len);
 
 static inline char *pb_put_packed_bool(char *p, const bool *v, int len) {
 	static_assert(sizeof(bool) == 1, "bool size");
@@ -211,8 +210,8 @@ static inline char *pb_put_packed_f64(char *p, const union pb_f64 *v, int len) {
 	return p + len * 8;
 }
 
-PROTO_API int pb_u32_size(int sz);
-PROTO_API void pb_put_finish(char *p, char *start, int szlen);
+int pb_u32_size(int sz);
+void pb_put_finish(char *p, char *start, int szlen);
 
 static inline char *pb_put_tag_1(char *p, uint8_t v) {
 	*(uint8_t*)p = v;
@@ -235,36 +234,36 @@ static inline char *pb_put_tag_4(char *p, uint32_t v) {
 
 // JSON reading
 
-PROTO_API char pb_errret[];
+extern char pb_errret[];
 
-PROTO_API char *pb_parse_base64(char *p, struct pb_bytes *v);
+char *pb_parse_base64(char *p, struct pb_bytes *v);
 
-PROTO_API char *pb_parse_bool(char *p, bool *v);
-PROTO_API char *pb_parse_i32(char *p, int32_t *v);
-PROTO_API char *pb_parse_u32(char *p, uint32_t *v);
-PROTO_API char *pb_parse_i64(char *p, int64_t *v);
-PROTO_API char *pb_parse_u64(char *p, uint64_t *v);
-PROTO_API char *pb_parse_float(char *p, float *v);
-PROTO_API char *pb_parse_double(char *p, double *v);
-PROTO_API char *pb_parse_bytes(char *p, struct pb_bytes *v);
-PROTO_API char *pb_parse_string(char *p, struct pb_string *v);
+char *pb_parse_bool(char *p, bool *v);
+char *pb_parse_i32(char *p, int32_t *v);
+char *pb_parse_u32(char *p, uint32_t *v);
+char *pb_parse_i64(char *p, int64_t *v);
+char *pb_parse_u64(char *p, uint64_t *v);
+char *pb_parse_float(char *p, float *v);
+char *pb_parse_double(char *p, double *v);
+char *pb_parse_bytes(char *p, struct pb_bytes *v);
+char *pb_parse_string(char *p, struct pb_string *v);
 
-PROTO_API char *pb_parse_array_bool(char *p, pb_buf_t *a, bool const **pv, int *plen);
-PROTO_API char *pb_parse_array_i32(char *p, pb_buf_t *a, int32_t const **pv, int *plen);
-PROTO_API char *pb_parse_array_u32(char *p, pb_buf_t *a, uint32_t const **pv, int *plen);
-PROTO_API char *pb_parse_array_i64(char *p, pb_buf_t *a, int64_t const **pv, int *plen);
-PROTO_API char *pb_parse_array_u64(char *p, pb_buf_t *a, uint64_t const **pv, int *plen);
-PROTO_API char *pb_parse_array_float(char *p, pb_buf_t *a, float const **pv, int *plen);
-PROTO_API char *pb_parse_array_double(char *p, pb_buf_t *a, double const **pv, int *plen);
-PROTO_API char *pb_parse_array_bytes(char *p, pb_buf_t *a, struct pb_bytes const **pv, int *plen);
-PROTO_API char *pb_parse_array_string(char *p, pb_buf_t *a, struct pb_string const **pv, int *plen);
+char *pb_parse_array_bool(char *p, pb_buf_t *a, bool const **pv, int *plen);
+char *pb_parse_array_i32(char *p, pb_buf_t *a, int32_t const **pv, int *plen);
+char *pb_parse_array_u32(char *p, pb_buf_t *a, uint32_t const **pv, int *plen);
+char *pb_parse_array_i64(char *p, pb_buf_t *a, int64_t const **pv, int *plen);
+char *pb_parse_array_u64(char *p, pb_buf_t *a, uint64_t const **pv, int *plen);
+char *pb_parse_array_float(char *p, pb_buf_t *a, float const **pv, int *plen);
+char *pb_parse_array_double(char *p, pb_buf_t *a, double const **pv, int *plen);
+char *pb_parse_array_bytes(char *p, pb_buf_t *a, struct pb_bytes const **pv, int *plen);
+char *pb_parse_array_string(char *p, pb_buf_t *a, struct pb_string const **pv, int *plen);
 
-PROTO_API bool pb_parse_array(char **p);
-PROTO_API bool pb_parse_map(char **p);
-PROTO_API bool pb_more_array(char **p);
-PROTO_API uint32_t pb_parse_enum(char **p, struct pb_string *v, uint32_t mul);
-PROTO_API uint32_t pb_parse_field(char **p, struct pb_string *v, uint32_t mul);
-PROTO_API char *pb_parse_skip(char *p);
+bool pb_parse_array(char **p);
+bool pb_parse_map(char **p);
+bool pb_more_array(char **p);
+uint32_t pb_parse_enum(char **p, struct pb_string *v, uint32_t mul);
+uint32_t pb_parse_field(char **p, struct pb_string *v, uint32_t mul);
+char *pb_parse_skip(char *p);
 
 
 
@@ -274,23 +273,23 @@ static inline int pb_base64_size(int sz) {
 	return (sz * 4 + 3) / 3;
 }
 
-PROTO_API char *pb_print_base64(char *p, const uint8_t *v, int n);
+char *pb_print_base64(char *p, const uint8_t *v, int n);
 
-PROTO_API char *pb_print_bool(char *p, bool v);
-PROTO_API char *pb_print_u32(char *p, uint32_t v);
-PROTO_API char *pb_print_i32(char *p, int32_t v);
-PROTO_API char *pb_print_u64(char *p, uint64_t v);
-PROTO_API char *pb_print_i64(char *p, int64_t v);
-PROTO_API char *pb_print_float(char *p, float v);
-PROTO_API char *pb_print_double(char *p, double v);
+char *pb_print_bool(char *p, bool v);
+char *pb_print_u32(char *p, uint32_t v);
+char *pb_print_i32(char *p, int32_t v);
+char *pb_print_u64(char *p, uint64_t v);
+char *pb_print_i64(char *p, int64_t v);
+char *pb_print_float(char *p, float v);
+char *pb_print_double(char *p, double v);
 
-PROTO_API int pb_print_string(pb_buf_t *a, struct pb_string v);
-PROTO_API int pb_print_bytes(pb_buf_t *a, struct pb_bytes v);
+int pb_print_string(pb_buf_t *a, struct pb_string v);
+int pb_print_bytes(pb_buf_t *a, struct pb_bytes v);
 
-PROTO_API int pb_print_array_end(pb_buf_t *a);
-PROTO_API int pb_print_map_end(pb_buf_t *a);
+int pb_print_array_end(pb_buf_t *a);
+int pb_print_map_end(pb_buf_t *a);
 
-PROTO_API int pb_pretty_print(pb_buf_t *out, const char *in, int len);
+int pb_pretty_print(pb_buf_t *out, const char *in, int len);
 
 static inline char *pb_print_array_end_i(char *p) {
 	if (p[-1] == ',') {
@@ -300,4 +299,8 @@ static inline char *pb_print_array_end_i(char *p) {
 	p[1] = ',';
 	return p + 2;
 }
+
+#ifdef __cplusplus
+}
+#endif
 

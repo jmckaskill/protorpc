@@ -42,9 +42,8 @@ static int get_line(char **p, char *e) {
 }
 
 static int parse_request_header(struct pr_http *h, char **p, char *e) {
-    assert(h->path.len == 0);
+    assert(h->name.len == 0);
     assert(!h->method);
-    assert(!h->version);
 
 	char *n = *p;
 	int err = get_line(p, e);
@@ -80,7 +79,8 @@ static int parse_request_header(struct pr_http *h, char **p, char *e) {
     if (str_itest(method, "GET")) {
         h->method = PR_HTTP_GET;
     } else if (str_itest(method, "POST")) {
-        h->method = PR_HTTP_POST;
+		h->method = PR_HTTP_POST;
+		h->have_body = 1;
     } else {
         h->error_string = "501 Method Not Implemented";
         return PR_ERROR;
@@ -128,7 +128,7 @@ static int parse_request_header(struct pr_http *h, char **p, char *e) {
 
     // take a local copy of the path string
 
-    if (ca_addstr(&h->path, path)) {
+    if (ca_addstr(&h->name, path)) {
         h->error_string = "414 URI Too Long";
         return PR_ERROR;
     }
@@ -214,8 +214,8 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
         bool more;
 
 		if (!key.len) {
-			if (h->length_type == HTTP_LENGTH_UNSET) {
-				h->length_type = HTTP_LENGTH_FIXED;
+			if (h->length_type == PR_HTTP_LENGTH_UNSET) {
+				h->length_type = PR_HTTP_LENGTH_FIXED;
 				h->content_length = 0;
 			}
             return PR_FINISHED;
@@ -228,11 +228,11 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
 					return PR_ERROR;
 				}
 				if (!strcasecmp(n, "chunked")) {
-					if (h->length_type != HTTP_LENGTH_UNSET) {
+					if (h->length_type != PR_HTTP_LENGTH_UNSET) {
 						h->error_string = "400 Bad Request";
 						return PR_ERROR;
 					}
-					h->length_type = HTTP_LENGTH_CHUNKED;
+					h->length_type = PR_HTTP_LENGTH_CHUNKED;
 				}
 			} while (more);
 
@@ -256,7 +256,7 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
 			}
 
         } else if (str_itest(key, "content-length")) {
-            if (h->length_type != HTTP_LENGTH_UNSET) {
+            if (h->length_type != PR_HTTP_LENGTH_UNSET) {
                 h->error_string = "400 Bad Request";
                 return PR_ERROR;
             }
@@ -278,7 +278,11 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
                 h->content_length = (h->content_length * 10) + (*n - '0');
                 n++;
             }
-			h->length_type = HTTP_LENGTH_FIXED;
+			h->length_type = PR_HTTP_LENGTH_FIXED;
+			h->left_in_chunk = h->content_length;
+			if (!h->content_length) {
+				h->have_body = 0;
+			}
 
         } else if (str_itest(key, "connection")) {
             do {
@@ -289,11 +293,11 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
                 }
 
                 if (!strcasecmp(n, "close")) {
-                    if (h->length_type != HTTP_LENGTH_UNSET) {
+                    if (h->length_type != PR_HTTP_LENGTH_UNSET) {
                         h->error_string = "400 Bad Request";
                         return PR_ERROR;
                     }
-                    h->length_type = HTTP_LENGTH_CLOSE;
+                    h->length_type = PR_HTTP_LENGTH_CLOSE;
                 }
             } while (more);
 
@@ -345,9 +349,9 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
     }
 }
 
-int pr_parse_request(struct pr_http *h, char *buf, int *avail) {
-	char *next = buf;
-    char *end = buf + *avail;
+int pr_parse_request(struct pr_http *h, char **data, int *sz) {
+	char *next = *data;
+    char *end = next + *sz;
     int err = 0;
 
     if (!h->method) {
@@ -358,14 +362,40 @@ int pr_parse_request(struct pr_http *h, char *buf, int *avail) {
     }
 	assert(err != PR_ERROR || h->error_string);
 
-	memmove(buf, next, end - next);
-    *avail = (int) (end - next);
+	*data = next;
+	*sz = (int) (end - next);
     return err;
 }
 
 int pr_parse_body(struct pr_http *h, char **data, int *sz) {
+	switch (h->length_type) {
+	case PR_HTTP_LENGTH_CHUNKED:
+		return PR_ERROR;
+	case PR_HTTP_LENGTH_FIXED:
+		h->body_chunk = *data;
+		h->chunk_size = *sz;
+		if (!*sz) {
+			return PR_ERROR;
+		} else if (*sz >= h->left_in_chunk) {
+			*sz = h->left_in_chunk;
+			h->left_in_chunk = 0;
+			return PR_FINISHED;
+		}
+		h->left_in_chunk -= *sz;
+		return PR_CONTINUE;
+	case PR_HTTP_LENGTH_CLOSE:
+		if (!*sz) {
+			return PR_FINISHED;
+		}
+		h->body_chunk = *data;
+		h->chunk_size = *sz;
+		return PR_CONTINUE;
+	default:
+		return PR_ERROR;
+	}
 }
 
+#if 0
 int pr_parse_multipart(struct pr_multipart *m, char **data, int *sz) {
 	if (!m->have_boundary) {
 		char *b = *data;
@@ -467,3 +497,5 @@ int pr_parse_multipart(struct pr_multipart *m, char **data, int *sz) {
 	*avail = (int) (end - *next);
 	return err;
 }
+#endif
+
