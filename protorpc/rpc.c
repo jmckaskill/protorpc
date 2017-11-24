@@ -217,6 +217,7 @@ static int parse_headers(struct pr_http *h, char **p, char *e) {
 			if (h->length_type == PR_HTTP_LENGTH_UNSET) {
 				h->length_type = PR_HTTP_LENGTH_FIXED;
 				h->content_length = 0;
+				h->have_body = 0;
 			}
             return PR_FINISHED;
 
@@ -377,16 +378,21 @@ int pr_parse_body(struct pr_http *h, char **data, int *sz) {
 		if (!*sz) {
 			return PR_ERROR;
 		} else if (*sz >= h->left_in_chunk) {
-			*sz = h->left_in_chunk;
+			*data += h->left_in_chunk;
+			*sz -= h->left_in_chunk;
 			h->left_in_chunk = 0;
 			return PR_FINISHED;
 		}
+		*data += *sz;
+		*sz = 0;
 		h->left_in_chunk -= *sz;
 		return PR_CONTINUE;
 	case PR_HTTP_LENGTH_CLOSE:
 		if (!*sz) {
 			return PR_FINISHED;
 		}
+		*data += *sz;
+		*sz = 0;
 		h->body_chunk = *data;
 		h->chunk_size = *sz;
 		return PR_CONTINUE;

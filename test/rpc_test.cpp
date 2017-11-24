@@ -11,10 +11,11 @@ TEST(protorpc, http) {
     
     char *data = get_request;
     int sz = strlen(get_request);
+    char *end = data + sz;
     memset(&h, 0, sizeof(h));
     EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &data, &sz));
     EXPECT_EQ(0, sz);
-    EXPECT_EQ(data, get_request + strlen(get_request));
+    EXPECT_EQ(data, end);
     EXPECT_EQ(0, h.have_body);
     EXPECT_EQ(PR_HTTP_GET, h.method);
     EXPECT_STREQ("/foo", h.name.buf);
@@ -28,10 +29,11 @@ TEST(protorpc, http) {
 
     data = post;
     sz = strlen(post);
+    end = data + sz;
     memset(&h, 0, sizeof(h));
     EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &data, &sz));
     EXPECT_EQ(6, sz);
-    EXPECT_EQ(post + strlen(post) - 6, data);
+    EXPECT_EQ(end - 6, data);
     EXPECT_EQ(1, h.have_body);
     EXPECT_EQ(PR_HTTP_POST, h.method);
     EXPECT_STREQ("/api/foo", h.name.buf);
@@ -39,7 +41,7 @@ TEST(protorpc, http) {
 
     EXPECT_EQ(PR_FINISHED, pr_parse_body(&h, &data, &sz));
     EXPECT_EQ(0, sz);
-    EXPECT_EQ(post + strlen(post), data);
-    EXPECT_EQ(post + strlen(post) - 6, h.body_chunk);
+    EXPECT_EQ(end, data);
+    EXPECT_EQ(end - 6, h.body_chunk);
     EXPECT_EQ(6, h.chunk_size);
 }
