@@ -40,7 +40,7 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 
 typedef struct {
 	int len;
-	char *buf;
+	const char *buf;
 } slice_t;
 
 // can be used with fixed sized arrays as well as str_t
@@ -54,7 +54,8 @@ typedef struct {
 
 #define str_equals(A, B) ((A).len == (B).len && !memcmp((A).buf, (B).buf, (A).len))
 
-#define str_rfind_char(P, CH) 	((char*) memrchr((P).buf, (CH), (P).len))
+#define str_find_char(P, CH)    ((const char*) memchr((P).buf, (CH), (P).len))
+#define str_rfind_char(P, CH) 	((const char*) memrchr((P).buf, (CH), (P).len))
 
 // for use with %.*s in printf style functions
 #define STRF(P) (P).len, (P).buf

@@ -5,13 +5,13 @@
 TEST(protorpc, http) {
     struct pr_http h;
 
-    char get_request[] =
+    static const char get_request[] =
         "GET /foo HTTP/1.1\r\n"
         "\r\n";
     
-    char *data = get_request;
+    const char *data = get_request;
     int sz = strlen(get_request);
-    char *end = data + sz;
+    const char *end = data + sz;
     memset(&h, 0, sizeof(h));
     EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &data, &sz));
     EXPECT_EQ(0, sz);
@@ -21,7 +21,7 @@ TEST(protorpc, http) {
     EXPECT_STREQ("/foo", h.name.buf);
     EXPECT_EQ(4, h.name.len);
 
-    char post[] = 
+    static const char post[] = 
         "POST /api/foo HTTP/1.1\r\n"
         "Content-Length:6\r\n"
         "\r\n"

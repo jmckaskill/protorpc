@@ -33,7 +33,7 @@ struct pr_http {
     unsigned have_multipart_header : 1;
     unsigned have_body : 1;
     uint64_t etag;
-    char *body_chunk;
+    const char *body_chunk;
     int chunk_size;
     struct {int len; char buf[64];} login;
     struct {int len; char buf[6];} lang;
@@ -46,8 +46,8 @@ struct pr_http {
 #define PR_CONTINUE 1
 #define PR_ERROR -1
 
-int pr_parse_request(struct pr_http *h, char **data, int *sz);
-int pr_parse_body(struct pr_http *h, char **data, int *sz);
+int pr_parse_request(struct pr_http *h, const char **data, int *sz);
+int pr_parse_body(struct pr_http *h, const char **data, int *sz);
 
 #ifdef __cplusplus
 }
