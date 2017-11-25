@@ -49,7 +49,7 @@ struct type *get_output_type(const struct MethodDescriptorProto *m);
 uint32_t get_tag_size(const struct FieldDescriptorProto *f);
 uint32_t get_tag(const struct FieldDescriptorProto *f);
 void get_proto_cast(str_t *out, const struct FieldDescriptorProto* f, int array_type, int value_type);
-void to_upper(str_t *out, pb_string_t s);
+void to_upper(str_t *out, const char *s);
 bool is_field_packed(const struct type *t, const struct FieldDescriptorProto *ft);
 
 void define_enum(str_t *out, const struct type *t);

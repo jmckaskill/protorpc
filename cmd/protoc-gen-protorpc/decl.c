@@ -1,13 +1,14 @@
 #include "protoc-gen-protorpc.h"
 #include <assert.h>
 
-void to_upper(str_t *o, pb_string_t s) {
-	for (int i = 0; i < s.len; i++) {
-		if ('a' <= s.c_str[i] && s.c_str[i] <= 'z') {
-            str_addch(o, s.c_str[i] - 'a' + 'A');
+void to_upper(str_t *o, const char *s) {
+	while (*s) {
+		if ('a' <= *s && *s <= 'z') {
+            str_addch(o, *s - 'a' + 'A');
 		} else {
-            str_addch(o, s.c_str[i]);
+            str_addch(o, *s);
 		}
+		s++;
 	}
 }
 
@@ -65,10 +66,9 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
 	while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index_set && t->msg->field.v[i]->oneof_index == oneof) {
         const struct FieldDescriptorProto* f = t->msg->field.v[i];
         str_add(o, "\t");
-        pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
-        to_upper(o, ps);
+        to_upper(o, t->proto_suffix.c_str);
         str_add(o, "_");
-        to_upper(o, f->name);
+        to_upper(o, f->name.c_str);
         str_add(o, ",");
         str_add(o, EOL);
         i++;

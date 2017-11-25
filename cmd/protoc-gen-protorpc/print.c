@@ -97,10 +97,9 @@ void do_print(str_t *o, const struct type *t, bool define) {
                 str_add(o, "\tif(m->");
                 str_addstr(o, oneof);
                 str_add(o, "_type == ");
-                pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
-                to_upper(o, ps);
+                to_upper(o, t->proto_suffix.c_str);
                 str_add(o, "_");
-                to_upper(o, f->name);
+                to_upper(o, f->name.c_str);
                 str_add(o, ") {" EOL);
 
                 str_set(&mbr, "m->");
@@ -136,10 +135,9 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");
-            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
-            to_upper(o, ps);
+            to_upper(o, t->proto_suffix.c_str);
             str_add(o, "_");
-            to_upper(o, f->name);
+            to_upper(o, f->name.c_str);
             str_add(o, ") {" EOL);
 
             str_set(&mbr, "m->");

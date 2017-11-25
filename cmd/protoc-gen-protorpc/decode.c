@@ -37,10 +37,9 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 		str_add(o, "\t\tm->");
 		str_addstr(o, oneof);
 		str_add(o, "_type = ");
-		pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
-		to_upper(o, ps);
+		to_upper(o, t->proto_suffix.c_str);
 		str_add(o, "_");
-		to_upper(o, f->name);
+		to_upper(o, f->name.c_str);
 		str_add(o, ";" EOL);
 
 		str_set(&mbr, "m->");
