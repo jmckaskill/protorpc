@@ -31,12 +31,16 @@ struct CodeGeneratorResponse {
 };
 
 int pb_get_Version(const char *p, const char *e, pb_buf_t *obj, struct Version *m);
+void pb_term_Version(struct Version *m);
 
 int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorRequest *m);
+void pb_term_CodeGeneratorRequest(struct CodeGeneratorRequest *m);
 
 int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse *m);
+void pb_term_CodeGeneratorResponse(struct CodeGeneratorResponse *m);
 
 int pb_get_CodeGeneratorResponse_File(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse_File *m);
+void pb_term_CodeGeneratorResponse_File(struct CodeGeneratorResponse_File *m);
 
 #ifdef __cplusplus
 }

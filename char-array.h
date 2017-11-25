@@ -57,9 +57,6 @@ typedef struct {
 #define str_find_char(P, CH)    ((const char*) memchr((P).buf, (CH), (P).len))
 #define str_rfind_char(P, CH) 	((const char*) memrchr((P).buf, (CH), (P).len))
 
-// for use with %.*s in printf style functions
-#define STRF(P) (P).len, (P).buf
-
 // the following are the implementation functions
 
 static inline int ca_set2_(char *buf, int bufsz, int *plen, const char *a, int asz) {

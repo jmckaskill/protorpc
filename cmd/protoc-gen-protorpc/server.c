@@ -19,7 +19,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 				continue;
 			}
 
-			str_addf(o, "\tconst char *(*%.*s)(struct %s*, struct pr_http*", STRF(m->name), t->c_type.buf);
+			str_addf(o, "\tconst char *(*%s)(struct %s*, struct pr_http*", m->name.buf, t->c_type.buf);
 			if (!is_empty(in)) {
 				str_addf(o, ", %s const *in", in->c_type.buf);
 			}
@@ -67,7 +67,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		const struct type *in = get_input_type(m);
 		const struct type *out = get_output_type(m);
 		str_addf(o, "\tcase %u:" EOL, h[i].off);
-		str_addf(o, "\t\tif(pb_cmp(path, \"%.*s\")) {" EOL, STRF(h[i].str));
+		str_addf(o, "\t\tif(pb_cmp(path, \"%s\")) {" EOL, h[i].str.buf);
 		str_add(o, "\t\t\treturn pr_not_found;" EOL);
 		str_add(o, "\t\t} else {" EOL);
 		str_addf(o, "\t\t\t%s in;" EOL, in->c_type.buf);
@@ -75,7 +75,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		str_addf(o, "\t\t\tif (pb_parse_%s((char*)body.buf, &h->request_objects, &in) == pb_errret) {" EOL, in->json_suffix.buf);
 		str_add(o, "\t\t\t\treturn pr_parse_error;" EOL);
 		str_add(o, "\t\t\t}" EOL);
-		str_addf(o, "\t\t\tconst char *ret = rpc->%.*s(rpc, h, NULL, &out);" EOL, STRF(m->name));
+		str_addf(o, "\t\t\tconst char *ret = rpc->%s(rpc, h, NULL, &out);" EOL, m->name.buf);
 		str_addf(o, "\t\t\tif (pb_print_%s(resp, &out)) {" EOL, out->json_suffix.buf);
 		str_add(o, "\t\t\t\treturn pr_print_error;" EOL);
 		str_add(o, "\t\t\t}" EOL);
@@ -151,9 +151,9 @@ void do_server(str_t *o, const struct type *t, bool define) {
 			// proto_type includes a leading dot which we don't want in the path
 			if (m->server_streaming) {
 				str_addf(o, "\tg_rpc_%s = rpc_publisher_new();" EOL, name.buf);
-				str_addf(o, "\trpc_handle_stream(s, \"/api/%s/%.*s\", g_rpc_%s);" EOL, t->proto_type.buf+1, STRF(m->name), name.buf);
+				str_addf(o, "\trpc_handle_stream(s, \"/api/%s/%s\", g_rpc_%s);" EOL, t->proto_type.buf+1, m->name.buf, name.buf);
 			} else {
-				str_addf(o, "\trpc_handle_post(s, \"/api/%s/%.*s\", &pb_rpc_%s);" EOL, t->proto_type.buf+1, STRF(m->name), name.buf);
+				str_addf(o, "\trpc_handle_post(s, \"/api/%s/%s\", &pb_rpc_%s);" EOL, t->proto_type.buf+1, m->name.buf, name.buf);
 			}
 		}
 		str_add(o, "}" EOL);

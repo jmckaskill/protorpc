@@ -1505,13 +1505,21 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 	return 0;
 }
 void pb_term_TestMessage(struct TestMessage *m) {
-	((char*)m->str.buf)[m->str.len] = '\0';
+	if (m->str.buf) {
+		((char*)m->str.buf)[m->str.len] = '\0';
+	} else {
+		m->str.buf = "";
+	}
 	if (m->msg) {
 		pb_term_TestMessage((struct TestMessage*) m->msg);
 	}
 	pb_term_TestPod((struct TestPod*) &m->pod);
 	for (int i = 0; i < m->rstr.len; i++) {
-		((char*)m->rstr.v[i].buf)[m->rstr.v[i].len] = '\0';
+		if (m->rstr.v[i].buf) {
+			((char*)m->rstr.v[i].buf)[m->rstr.v[i].len] = '\0';
+		} else {
+			((struct pb_string*)m->rstr.v)[i].buf = "";
+		}
 	}
 	for (int i = 0; i < m->rmsg.len; i++) {
 		pb_term_TestMessage((struct TestMessage*) m->rmsg.v[i]);
@@ -3311,7 +3319,11 @@ int pb_get_TestMessage_MstrEntry(const char *p, const char *e, pb_buf_t *obj, st
 	return 0;
 }
 void pb_term_TestMessage_MstrEntry(struct TestMessage_MstrEntry *m) {
-	((char*)m->value.buf)[m->value.len] = '\0';
+	if (m->value.buf) {
+		((char*)m->value.buf)[m->value.len] = '\0';
+	} else {
+		m->value.buf = "";
+	}
 }
 char *pb_encode_TestMessage_MstrEntry(char *p, struct TestMessage_MstrEntry const *m) {
 	if (m->key) {

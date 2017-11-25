@@ -111,7 +111,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
                 str_addf(o, "\tif (%s) {" EOL, mbr.buf);
             }
 
-            str_addf(o, "\t\tmemcpy(p, \"\\\"%.*s\\\":\", %u);" EOL, STRF(f->name), f->name.len + 3 /*"":*/);
+            str_addf(o, "\t\tmemcpy(p, \"\\\"%s\\\":\", %u);" EOL, f->name.buf, f->name.len + 3 /*"":*/);
             str_addf(o, "\t\tp += %u;" EOL, f->name.len + 3);
             str_addf(o, "\t\tp = pb_print_%s(p, %s);" EOL, ft->json_suffix.buf, mbr.buf);
             str_add(o, "\t}" EOL);
@@ -155,7 +155,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_addf(o, "\tif (%s) {" EOL, mbr.buf);
         }
 
-		str_addf(o, "\t\tif (pb_append(a, \"\\\"%.*s\\\":\", %d)) {return -1;}" EOL, STRF(f->name), f->name.len + 3);
+		str_addf(o, "\t\tif (pb_append(a, \"\\\"%s\\\":\", %d)) {return -1;}" EOL, f->name.buf, f->name.len + 3);
 
         if (f->label == LABEL_REPEATED) {
 			if (isfinite(ft->max_print_size)) {
@@ -206,7 +206,7 @@ void do_print_enum(str_t *o, const struct type *t, bool define) {
         const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         // "enum",
         str_addf(o, "\tcase %d:" EOL, v->number);
-        str_addf(o, "\t\tmemcpy(p, \"\\\"%.*s\\\",\", %u);" EOL, STRF(v->name), v->name.len + 3 /*"",*/);
+        str_addf(o, "\t\tmemcpy(p, \"\\\"%s\\\",\", %u);" EOL, v->name.buf, v->name.len + 3 /*"",*/);
         str_addf(o, "\t\treturn p + %u;" EOL, v->name.len + 3);
     }
     str_add(o, "\tdefault:" EOL);

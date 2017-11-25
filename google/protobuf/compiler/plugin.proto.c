@@ -16,6 +16,13 @@ int pb_get_Version(const char *p, const char *e, pb_buf_t *obj, struct Version *
 	}
 	return 0;
 }
+void pb_term_Version(struct Version *m) {
+	if (m->suffix.buf) {
+		((char*)m->suffix.buf)[m->suffix.len] = '\0';
+	} else {
+		m->suffix.buf = "";
+	}
+}
 
 int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorRequest *m) {
 	(void) obj;
@@ -68,6 +75,26 @@ int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, str
 	}
 	return 0;
 }
+void pb_term_CodeGeneratorRequest(struct CodeGeneratorRequest *m) {
+	for (int i = 0; i < m->file_to_generate.len; i++) {
+		if (m->file_to_generate.v[i].buf) {
+			((char*)m->file_to_generate.v[i].buf)[m->file_to_generate.v[i].len] = '\0';
+		} else {
+			((struct pb_string*)m->file_to_generate.v)[i].buf = "";
+		}
+	}
+	if (m->parameter.buf) {
+		((char*)m->parameter.buf)[m->parameter.len] = '\0';
+	} else {
+		m->parameter.buf = "";
+	}
+	if (m->compiler_version) {
+		pb_term_Version((struct Version*) m->compiler_version);
+	}
+	for (int i = 0; i < m->proto_file.len; i++) {
+		pb_term_FileDescriptorProto((struct FileDescriptorProto*) m->proto_file.v[i]);
+	}
+}
 
 int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse *m) {
 	(void) obj;
@@ -100,6 +127,16 @@ int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, st
 	}
 	return 0;
 }
+void pb_term_CodeGeneratorResponse(struct CodeGeneratorResponse *m) {
+	if (m->error.buf) {
+		((char*)m->error.buf)[m->error.len] = '\0';
+	} else {
+		m->error.buf = "";
+	}
+	for (int i = 0; i < m->file.len; i++) {
+		pb_term_CodeGeneratorResponse_File((struct CodeGeneratorResponse_File*) m->file.v[i]);
+	}
+}
 
 int pb_get_CodeGeneratorResponse_File(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse_File *m) {
 	(void) obj;
@@ -113,4 +150,21 @@ int pb_get_CodeGeneratorResponse_File(const char *p, const char *e, pb_buf_t *ob
 		p = pb_get_string(p + 1, e, (struct pb_string*)&m->content);
 	}
 	return 0;
+}
+void pb_term_CodeGeneratorResponse_File(struct CodeGeneratorResponse_File *m) {
+	if (m->name.buf) {
+		((char*)m->name.buf)[m->name.len] = '\0';
+	} else {
+		m->name.buf = "";
+	}
+	if (m->insertion_point.buf) {
+		((char*)m->insertion_point.buf)[m->insertion_point.len] = '\0';
+	} else {
+		m->insertion_point.buf = "";
+	}
+	if (m->content.buf) {
+		((char*)m->content.buf)[m->content.len] = '\0';
+	} else {
+		m->content.buf = "";
+	}
 }

@@ -278,6 +278,7 @@ const char *pb_parse_string(const char *p, struct pb_string *v) {
         case '"':
 			v->buf = (char*) ret;
 			v->len = (int) (out - ret);
+			*out = '\0';
             return (char*)in+1;
         case '\\':
             in++;

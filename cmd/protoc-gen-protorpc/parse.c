@@ -33,7 +33,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 		struct hash_entry *h = &hashes[i];
 		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         str_addf(o, "\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\tif (!pb_cmp(val, \"%.*s\")) {" EOL, STRF(h->str));
+        str_addf(o, "\t\tif (!pb_cmp(val, \"%s\")) {" EOL, h->str.buf);
         str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.buf, v->number);
         str_add(o, "\t\t}" EOL);
         str_add(o, "\t\tbreak;" EOL);
@@ -90,7 +90,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
         str_addstr(&mbr, f->name);
 
         str_addf(o, "\t\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\t\tif (pb_cmp(key, \"%.*s\")) {" EOL, STRF(h->str));
+        str_addf(o, "\t\t\tif (pb_cmp(key, \"%s\")) {" EOL, h->str.buf);
         str_add(o, "\t\t\t\tgoto unknown;" EOL);
         str_add(o, "\t\t\t}"  EOL);
 

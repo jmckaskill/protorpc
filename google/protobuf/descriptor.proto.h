@@ -253,58 +253,85 @@ struct GeneratedCodeInfo {
 };
 
 int pb_get_FileDescriptorSet(const char *p, const char *e, pb_buf_t *obj, struct FileDescriptorSet *m);
+void pb_term_FileDescriptorSet(struct FileDescriptorSet *m);
 
 int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct FileDescriptorProto *m);
+void pb_term_FileDescriptorProto(struct FileDescriptorProto *m);
 
 int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct DescriptorProto *m);
+void pb_term_DescriptorProto(struct DescriptorProto *m);
 
 int pb_get_DescriptorProto_ExtensionRange(const char *p, const char *e, pb_buf_t *obj, struct DescriptorProto_ExtensionRange *m);
+void pb_term_DescriptorProto_ExtensionRange(struct DescriptorProto_ExtensionRange *m);
 
 int pb_get_DescriptorProto_ReservedRange(const char *p, const char *e, struct DescriptorProto_ReservedRange *m);
+void pb_term_DescriptorProto_ReservedRange(struct DescriptorProto_ReservedRange *m);
 
 int pb_get_ExtensionRangeOptions(const char *p, const char *e, pb_buf_t *obj, struct ExtensionRangeOptions *m);
+void pb_term_ExtensionRangeOptions(struct ExtensionRangeOptions *m);
 
 int pb_get_FieldDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct FieldDescriptorProto *m);
+void pb_term_FieldDescriptorProto(struct FieldDescriptorProto *m);
 
 int pb_get_OneofDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct OneofDescriptorProto *m);
+void pb_term_OneofDescriptorProto(struct OneofDescriptorProto *m);
 
 int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct EnumDescriptorProto *m);
+void pb_term_EnumDescriptorProto(struct EnumDescriptorProto *m);
 
 int pb_get_EnumDescriptorProto_EnumReservedRange(const char *p, const char *e, struct EnumDescriptorProto_EnumReservedRange *m);
+void pb_term_EnumDescriptorProto_EnumReservedRange(struct EnumDescriptorProto_EnumReservedRange *m);
 
 int pb_get_EnumValueDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct EnumValueDescriptorProto *m);
+void pb_term_EnumValueDescriptorProto(struct EnumValueDescriptorProto *m);
 
 int pb_get_ServiceDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct ServiceDescriptorProto *m);
+void pb_term_ServiceDescriptorProto(struct ServiceDescriptorProto *m);
 
 int pb_get_MethodDescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct MethodDescriptorProto *m);
+void pb_term_MethodDescriptorProto(struct MethodDescriptorProto *m);
 
 int pb_get_FileOptions(const char *p, const char *e, pb_buf_t *obj, struct FileOptions *m);
+void pb_term_FileOptions(struct FileOptions *m);
 
 int pb_get_MessageOptions(const char *p, const char *e, pb_buf_t *obj, struct MessageOptions *m);
+void pb_term_MessageOptions(struct MessageOptions *m);
 
 int pb_get_FieldOptions(const char *p, const char *e, pb_buf_t *obj, struct FieldOptions *m);
+void pb_term_FieldOptions(struct FieldOptions *m);
 
 int pb_get_OneofOptions(const char *p, const char *e, pb_buf_t *obj, struct OneofOptions *m);
+void pb_term_OneofOptions(struct OneofOptions *m);
 
 int pb_get_EnumOptions(const char *p, const char *e, pb_buf_t *obj, struct EnumOptions *m);
+void pb_term_EnumOptions(struct EnumOptions *m);
 
 int pb_get_EnumValueOptions(const char *p, const char *e, pb_buf_t *obj, struct EnumValueOptions *m);
+void pb_term_EnumValueOptions(struct EnumValueOptions *m);
 
 int pb_get_ServiceOptions(const char *p, const char *e, pb_buf_t *obj, struct ServiceOptions *m);
+void pb_term_ServiceOptions(struct ServiceOptions *m);
 
 int pb_get_MethodOptions(const char *p, const char *e, pb_buf_t *obj, struct MethodOptions *m);
+void pb_term_MethodOptions(struct MethodOptions *m);
 
 int pb_get_UninterpretedOption(const char *p, const char *e, pb_buf_t *obj, struct UninterpretedOption *m);
+void pb_term_UninterpretedOption(struct UninterpretedOption *m);
 
 int pb_get_UninterpretedOption_NamePart(const char *p, const char *e, pb_buf_t *obj, struct UninterpretedOption_NamePart *m);
+void pb_term_UninterpretedOption_NamePart(struct UninterpretedOption_NamePart *m);
 
 int pb_get_SourceCodeInfo(const char *p, const char *e, pb_buf_t *obj, struct SourceCodeInfo *m);
+void pb_term_SourceCodeInfo(struct SourceCodeInfo *m);
 
 int pb_get_SourceCodeInfo_Location(const char *p, const char *e, pb_buf_t *obj, struct SourceCodeInfo_Location *m);
+void pb_term_SourceCodeInfo_Location(struct SourceCodeInfo_Location *m);
 
 int pb_get_GeneratedCodeInfo(const char *p, const char *e, pb_buf_t *obj, struct GeneratedCodeInfo *m);
+void pb_term_GeneratedCodeInfo(struct GeneratedCodeInfo *m);
 
 int pb_get_GeneratedCodeInfo_Annotation(const char *p, const char *e, pb_buf_t *obj, struct GeneratedCodeInfo_Annotation *m);
+void pb_term_GeneratedCodeInfo_Annotation(struct GeneratedCodeInfo_Annotation *m);
 
 #ifdef __cplusplus
 }

@@ -122,6 +122,8 @@ int main(int argc, char *argv[]) {
 		return 2;
 	}
 
+	pb_term_CodeGeneratorRequest(&req);
+
     for (int i = 0; i < req.proto_file.len; i++) {
         insert_file_types(req.proto_file.v[i]);
     }
@@ -135,7 +137,7 @@ int main(int argc, char *argv[]) {
         const struct FileDescriptorProto *f = get_file_proto(&req, req.file_to_generate.v[i]);
 
 		if (f == NULL) {
-			fprintf(stderr, "protoc-gen-protorpc - can't find %.*s\n", STRF(req.file_to_generate.v[i]));
+			fprintf(stderr, "protoc-gen-protorpc - can't find %s\n", req.file_to_generate.v[i].buf);
 			return 2;
 		}
 

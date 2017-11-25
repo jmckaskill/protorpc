@@ -51,7 +51,11 @@ void do_term(str_t *o, const struct type *t, bool define) {
 				str_addf(o, "%s}" EOL, pfx);
 			} else if (f->type == TYPE_STRING) {
 				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.buf);
-				str_addf(o, "%s\t((char*)%s.v[i].buf)[%s.v[i].len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
+				str_addf(o, "%s\tif (%s.v[i].buf) {" EOL, pfx, mbr.buf);
+				str_addf(o, "%s\t\t((char*)%s.v[i].buf)[%s.v[i].len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
+				str_addf(o, "%s\t} else {" EOL, pfx);
+				str_addf(o, "%s\t\t((struct pb_string*)%s.v)[i].buf = \"\";" EOL, pfx, mbr.buf);
+				str_addf(o, "%s\t}" EOL, pfx);
 				str_addf(o, "%s}" EOL, pfx);
 			} else {
 				remove = true;
@@ -63,7 +67,11 @@ void do_term(str_t *o, const struct type *t, bool define) {
 			str_addf(o, "%s\tpb_term_%s((%s*) %s);" EOL, pfx, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
 			str_addf(o, "%s}" EOL, pfx);
 		} else if (f->type == TYPE_STRING) {
-			str_addf(o, "%s((char*)%s.buf)[%s.len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
+			str_addf(o, "%sif (%s.buf) {" EOL, pfx, mbr.buf);
+			str_addf(o, "%s\t((char*)%s.buf)[%s.len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
+			str_addf(o, "%s} else {" EOL, pfx);
+			str_addf(o, "%s\t%s.buf = \"\";" EOL, pfx, mbr.buf);
+			str_addf(o, "%s}" EOL, pfx);
 		} else {
 			remove = true;
 		}
