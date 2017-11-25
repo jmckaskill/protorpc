@@ -16,7 +16,7 @@ typedef struct {
 	char *buf;
 } str_t;
 
-static char str_initbuf[] = {0};
+extern char str_initbuf[];
 
 #define STR_INIT {0,0,str_initbuf}
 #define STR_STATIC(str) {0,sizeof(str)-1,(char*)str}
@@ -24,11 +24,6 @@ static char str_initbuf[] = {0};
 static inline void str_init(str_t *s) {
 	s->cap = s->len = 0;
 	s->buf = str_initbuf;
-}
-static inline void str_destroy(str_t *s) {
-	if (s->cap) {
-		free(s->buf);
-	}
 }
 static inline void str_setlen(str_t *s, int len) {
 	assert(0 <= len && len <= s->cap);
@@ -52,6 +47,7 @@ static inline char *str_release(str_t *s) {
 	return p;
 }
 
+void str_destroy(str_t *s);
 void str_read_file(str_t *s, const char *fn);
 void str_fread_all(str_t *s, FILE *f);
 void str_grow(str_t *s, int cap);

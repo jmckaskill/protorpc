@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+char str_initbuf[] = {0};
+
+void str_destroy(str_t *s) {
+    if (s->cap) {
+        free(s->buf);
+    }
+}
+
 void str_grow(str_t *s, int cap) {
     if (cap < s->cap) {
         return;
