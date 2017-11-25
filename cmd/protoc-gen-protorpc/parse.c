@@ -2,7 +2,7 @@
 #include <assert.h>
 
 struct parser {
-    struct pb_string str;
+    pb_string_t str;
     uint32_t off;
     const struct FieldDescriptorProto *field;
     const struct EnumValueDescriptorProto *en;
@@ -25,7 +25,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
     uint32_t hashsz, hashmul;
     calc_hash_values(hashes, t->en->value.len, &hashmul, &hashsz);
 
-    str_add(o, "\tstruct pb_string val;" EOL);
+    str_add(o, "\tpb_string_t val;" EOL);
     str_addf(o, "\t*v = (%s) 0;" EOL, t->c_type.buf);
     str_addf(o, "\tswitch (pb_parse_enum(&p, &val, %u) %% %u) {" EOL, hashmul, hashsz);
 
@@ -75,7 +75,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
     str_add(o, "\t\treturn p;" EOL);
     str_add(o, "\t}" EOL);
     str_add(o, "\tfor (;;) {" EOL);
-    str_add(o, "\t\tstruct pb_string key;" EOL);
+    str_add(o, "\t\tpb_string_t key;" EOL);
     str_addf(o, "\t\tswitch (pb_parse_field(&p, &key, %u) %% %u) {" EOL, hashmul, hashsz);
     str_add(o, "\t\tcase 0:" EOL);
     str_add(o, "\t\t\treturn p;" EOL);
@@ -95,11 +95,11 @@ void do_parse(str_t *o, const struct type *t, bool define) {
         str_add(o, "\t\t\t}"  EOL);
 
         if (f->oneof_index_set) {
-            struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
             str_add(o, "\t\t\tm->");
             str_addstr(o, oneof);
             str_add(o, "_type = ");
-            struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
             to_upper(o, ps);
             str_add(o, "_");
             to_upper(o, f->name);

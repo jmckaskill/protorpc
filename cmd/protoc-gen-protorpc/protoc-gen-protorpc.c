@@ -23,7 +23,7 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f, bool dec
 	}
 
     for (int i = 0; i < f->dependency.len; i++) {
-		struct pb_string d = f->dependency.v[i];
+		pb_string_t d = f->dependency.v[i];
 		if (!pb_cmp(d, "google/protobuf/empty.proto")) {
 		} else if (!pb_cmp(d, "google/protobuf/duration.proto") || !pb_cmp(d, "google/protobuf/timestamp.proto")) {
             str_add(o, "#include <protorpc-time.h>" EOL);
@@ -91,7 +91,7 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f, bool dec
 	}
 }
 
-static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequest *req, struct pb_string name) {
+static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequest *req, pb_string_t name) {
     for (int i = 0; i < req->proto_file.len; i++) {
         if (str_equals(req->proto_file.v[i]->name, name)) {
             return req->proto_file.v[i];

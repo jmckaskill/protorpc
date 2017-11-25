@@ -1,7 +1,7 @@
 #include "protoc-gen-protorpc.h"
 #include <assert.h>
 
-void to_upper(str_t *o, struct pb_string s) {
+void to_upper(str_t *o, pb_string_t s) {
 	for (int i = 0; i < s.len; i++) {
 		if ('a' <= s.buf[i] && s.buf[i] <= 'z') {
             str_addch(o, s.buf[i] - 'a' + 'A');
@@ -54,7 +54,7 @@ static void append_field_type(str_t *o, const struct FieldDescriptorProto *f) {
 
 size_t declare_oneof(str_t *o, const struct type *t, int i) {
 	int32_t oneof = t->msg->field.v[i]->oneof_index;
-	struct pb_string name = t->msg->oneof_decl.v[oneof]->name;
+	pb_string_t name = t->msg->oneof_decl.v[oneof]->name;
 
     str_add(o, "enum ");
     str_addstr(o, t->proto_suffix);
@@ -65,7 +65,7 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
 	while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index_set && t->msg->field.v[i]->oneof_index == oneof) {
         const struct FieldDescriptorProto* f = t->msg->field.v[i];
         str_add(o, "\t");
-        struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+        pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
         to_upper(o, ps);
         str_add(o, "_");
         to_upper(o, f->name);
@@ -81,7 +81,7 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
 
 size_t define_oneof(str_t *o, const struct type *t, int i) {
     int32_t oneof = t->msg->field.v[i]->oneof_index;
-    struct pb_string name = t->msg->oneof_decl.v[oneof]->name;
+    pb_string_t name = t->msg->oneof_decl.v[oneof]->name;
 
     str_add(o, "\tenum ");
     str_addstr(o, t->proto_suffix);

@@ -64,12 +64,12 @@ struct TestMessage_MdEntry {
 struct TestMessage_MbyEntry {
 	union pb_msg pb_hdr;
 	uint32_t	key;
-	struct pb_bytes	value;
+	pb_bytes_t	value;
 };
 struct TestMessage_MstrEntry {
 	union pb_msg pb_hdr;
 	uint32_t	key;
-	struct pb_string	value;
+	pb_string_t	value;
 };
 struct TestMessage_MenEntry {
 	uint32_t	key;
@@ -111,8 +111,8 @@ struct TestMessage {
 	float	f;
 	double	d;
 	enum TestEnum	en;
-	struct pb_bytes	by;
-	struct pb_string	str;
+	pb_bytes_t	by;
+	pb_string_t	str;
 	struct {int len; bool const *v;}	rb;
 	struct {int len; uint32_t const *v;}	ru32;
 	struct {int len; uint64_t const *v;}	ru64;
@@ -126,8 +126,8 @@ struct TestMessage {
 	struct {int len; int64_t const *v;}	rsf64;
 	struct {int len; float const *v;}	rf;
 	struct {int len; double const *v;}	rd;
-	struct {int len; struct pb_bytes const *v;}	rby;
-	struct {int len; struct pb_string const *v;}	rstr;
+	struct {int len; pb_bytes_t const *v;}	rby;
+	struct {int len; pb_string_t const *v;}	rstr;
 	struct {int len; enum TestEnum const *v;}	ren;
 	struct TestMessage const*	msg;
 	struct TestPod	pod;
@@ -316,7 +316,7 @@ struct TestService {
 	const char *(*Test)(struct TestService*, struct pr_http*, struct TestMessage const *in, struct TestMessage *out);
 };
 
-const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, struct pb_string body, pb_buf_t *resp);
+const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, pb_string_t body, pb_buf_t *resp);
 
 #ifdef __cplusplus
 }

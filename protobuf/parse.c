@@ -207,7 +207,7 @@ static const signed char hexrev[256] = {
     -1,-1,-1,-1,-1,-1,-1,-1,    -1,-1,-1,-1,-1,-1,-1,-1,
 };
 
-const char *pb_parse_base64(const char *p, struct pb_bytes *v) {
+const char *pb_parse_base64(const char *p, pb_bytes_t *v) {
     uint8_t *in = (uint8_t*) p;
     uint8_t *out = (uint8_t*) p;
 	uint8_t *ret = (uint8_t*) p;
@@ -252,7 +252,7 @@ const char *pb_parse_base64(const char *p, struct pb_bytes *v) {
     }
 }
 
-const char *pb_parse_bytes(const char *p, struct pb_bytes *v) {
+const char *pb_parse_bytes(const char *p, pb_bytes_t *v) {
     if (*p != '\"') {
         return pb_errret;
     }
@@ -263,7 +263,7 @@ const char *pb_parse_bytes(const char *p, struct pb_bytes *v) {
     return p+1;
 }
 
-const char *pb_parse_string(const char *p, struct pb_string *v) {
+const char *pb_parse_string(const char *p, pb_string_t *v) {
     if (*p != '\"') {
         return pb_errret;
     }
@@ -429,7 +429,7 @@ bool pb_more_array(const char **p) {
         return false;
     }
 }
-uint32_t pb_parse_enum(const char **p, struct pb_string *v, uint32_t mul) {
+uint32_t pb_parse_enum(const char **p, pb_string_t *v, uint32_t mul) {
     uint32_t hash = 0;
     const char *ret;
     if (**p != '\"') {
@@ -458,7 +458,7 @@ err:
 }
 
 
-uint32_t pb_parse_field(const char **p, struct pb_string *v, uint32_t mul) {
+uint32_t pb_parse_field(const char **p, pb_string_t *v, uint32_t mul) {
     uint32_t hash = 0;
     *p = consume_space(*p);
     if (**p == '}') {
@@ -639,11 +639,11 @@ const char *pb_parse_array_double(const char *p, pb_buf_t *a, double const **pv,
 	PARSE_ARRAY(double, double);
 }
 
-const char *pb_parse_array_bytes(const char *p, pb_buf_t *a, struct pb_bytes const **pv, int *plen) {
-	PARSE_ARRAY(struct pb_bytes, bytes);
+const char *pb_parse_array_bytes(const char *p, pb_buf_t *a, pb_bytes_t const **pv, int *plen) {
+	PARSE_ARRAY(pb_bytes_t, bytes);
 }
 
-const char *pb_parse_array_string(const char *p, pb_buf_t *a, struct pb_string const **pv, int *plen) {
-	PARSE_ARRAY(struct pb_string, string);
+const char *pb_parse_array_string(const char *p, pb_buf_t *a, pb_string_t const **pv, int *plen) {
+	PARSE_ARRAY(pb_string_t, string);
 }
 

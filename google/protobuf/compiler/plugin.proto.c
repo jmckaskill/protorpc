@@ -12,7 +12,7 @@ int pb_get_Version(const char *p, const char *e, pb_buf_t *obj, struct Version *
 		p = pb_get_u32(p + 1, e, (uint32_t*)&m->patch);
 	}
 	if (pb_skipto_1(&p, e, 34)) {
-		p = pb_get_string(p + 1, e, (struct pb_string*)&m->suffix);
+		p = pb_get_string(p + 1, e, (pb_string_t*)&m->suffix);
 	}
 	return 0;
 }
@@ -27,22 +27,22 @@ void pb_term_Version(struct Version *m) {
 int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorRequest *m) {
 	(void) obj;
 	if (pb_skipto_1(&p, e, 10)) {
-		m->file_to_generate.v = (struct pb_string*) obj->next;
+		m->file_to_generate.v = (pb_string_t*) obj->next;
 		do {
-			if (obj->next + m->file_to_generate.len * sizeof(struct pb_string) > obj->end) {
+			if (obj->next + m->file_to_generate.len * sizeof(pb_string_t) > obj->end) {
 				return -1;
 			}
-			p = pb_get_string(p + 1, e, (struct pb_string*)&m->file_to_generate.v[m->file_to_generate.len]);
+			p = pb_get_string(p + 1, e, (pb_string_t*)&m->file_to_generate.v[m->file_to_generate.len]);
 			m->file_to_generate.len++;
 		} while (!pb_cmp_tag_1(p, e, 10));
 
-		obj->next += m->file_to_generate.len * sizeof(struct pb_string);
+		obj->next += m->file_to_generate.len * sizeof(pb_string_t);
 	}
 	if (pb_skipto_1(&p, e, 18)) {
-		p = pb_get_string(p + 1, e, (struct pb_string*)&m->parameter);
+		p = pb_get_string(p + 1, e, (pb_string_t*)&m->parameter);
 	}
 	if (pb_skipto_1(&p, e, 26)) {
-		struct pb_string msg;
+		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->compiler_version = (struct Version*) pb_calloc(obj, sizeof(struct Version));
 		if (!m->compiler_version || pb_get_Version(msg.buf, msg.buf + msg.len, obj, (struct Version*) m->compiler_version)) {
@@ -52,7 +52,7 @@ int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, str
 	if (pb_skipto_1(&p, e, 122)) {
 		struct FileDescriptorProto *prev = NULL;
 		do {
-			struct pb_string msg;
+			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FileDescriptorProto *c = (struct FileDescriptorProto*) pb_calloc(obj, sizeof(struct FileDescriptorProto));
 			if (!c || pb_get_FileDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
@@ -80,7 +80,7 @@ void pb_term_CodeGeneratorRequest(struct CodeGeneratorRequest *m) {
 		if (m->file_to_generate.v[i].buf) {
 			((char*)m->file_to_generate.v[i].buf)[m->file_to_generate.v[i].len] = '\0';
 		} else {
-			((struct pb_string*)m->file_to_generate.v)[i].buf = "";
+			((pb_string_t*)m->file_to_generate.v)[i].buf = "";
 		}
 	}
 	if (m->parameter.buf) {
@@ -99,12 +99,12 @@ void pb_term_CodeGeneratorRequest(struct CodeGeneratorRequest *m) {
 int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse *m) {
 	(void) obj;
 	if (pb_skipto_1(&p, e, 10)) {
-		p = pb_get_string(p + 1, e, (struct pb_string*)&m->error);
+		p = pb_get_string(p + 1, e, (pb_string_t*)&m->error);
 	}
 	if (pb_skipto_1(&p, e, 122)) {
 		struct CodeGeneratorResponse_File *prev = NULL;
 		do {
-			struct pb_string msg;
+			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct CodeGeneratorResponse_File *c = (struct CodeGeneratorResponse_File*) pb_calloc(obj, sizeof(struct CodeGeneratorResponse_File));
 			if (!c || pb_get_CodeGeneratorResponse_File(msg.buf, msg.buf + msg.len, obj, c)) {
@@ -141,13 +141,13 @@ void pb_term_CodeGeneratorResponse(struct CodeGeneratorResponse *m) {
 int pb_get_CodeGeneratorResponse_File(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse_File *m) {
 	(void) obj;
 	if (pb_skipto_1(&p, e, 10)) {
-		p = pb_get_string(p + 1, e, (struct pb_string*)&m->name);
+		p = pb_get_string(p + 1, e, (pb_string_t*)&m->name);
 	}
 	if (pb_skipto_1(&p, e, 18)) {
-		p = pb_get_string(p + 1, e, (struct pb_string*)&m->insertion_point);
+		p = pb_get_string(p + 1, e, (pb_string_t*)&m->insertion_point);
 	}
 	if (pb_skipto_1(&p, e, 122)) {
-		p = pb_get_string(p + 1, e, (struct pb_string*)&m->content);
+		p = pb_get_string(p + 1, e, (pb_string_t*)&m->content);
 	}
 	return 0;
 }

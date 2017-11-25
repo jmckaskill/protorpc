@@ -16,8 +16,8 @@ TEST(protobuf, print) {
 	int64_t rsf64[3] = { -100,0,100 };
 	float rf[1] = { 3.5 };
 	double rd[3] = { 1.1,2.2,3.3 };
-	struct pb_bytes rby[2] = { {5,(uint8_t*)"defgh"}, {5, (uint8_t*)"abcde"} };
-	struct pb_string rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
+	pb_bytes_t rby[2] = { {5,(uint8_t*)"defgh"}, {5, (uint8_t*)"abcde"} };
+	pb_string_t rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
 	enum TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
 
 	struct TestMessage msg2 = {};

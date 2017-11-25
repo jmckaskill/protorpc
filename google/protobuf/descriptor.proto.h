@@ -9,9 +9,9 @@ struct FileDescriptorSet {
 };
 struct FileDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
-	struct pb_string	package;
-	struct {int len; struct pb_string const *v;}	dependency;
+	pb_string_t	name;
+	pb_string_t	package;
+	struct {int len; pb_string_t const *v;}	dependency;
 	struct {int len; int32_t const *v;}	public_dependency;
 	struct {int len; int32_t const *v;}	weak_dependency;
 	struct {int len; struct DescriptorProto const **v;}	message_type;
@@ -20,7 +20,7 @@ struct FileDescriptorProto {
 	struct {int len; struct FieldDescriptorProto const **v;}	extension;
 	struct FileOptions const*	options;
 	struct SourceCodeInfo const*	source_code_info;
-	struct pb_string	syntax;
+	pb_string_t	syntax;
 };
 struct DescriptorProto_ExtensionRange {
 	union pb_msg pb_hdr;
@@ -34,7 +34,7 @@ struct DescriptorProto_ReservedRange {
 };
 struct DescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
+	pb_string_t	name;
 	struct {int len; struct FieldDescriptorProto const **v;}	field;
 	struct {int len; struct FieldDescriptorProto const **v;}	extension;
 	struct {int len; struct DescriptorProto const **v;}	nested_type;
@@ -43,7 +43,7 @@ struct DescriptorProto {
 	struct {int len; struct OneofDescriptorProto const **v;}	oneof_decl;
 	struct MessageOptions const*	options;
 	struct {int len; struct DescriptorProto_ReservedRange const *v;}	reserved_range;
-	struct {int len; struct pb_string const *v;}	reserved_name;
+	struct {int len; pb_string_t const *v;}	reserved_name;
 };
 struct ExtensionRangeOptions {
 	union pb_msg pb_hdr;
@@ -76,21 +76,21 @@ enum FieldDescriptorProto_Label {
 };
 struct FieldDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
+	pb_string_t	name;
 	int32_t	number;
 	enum FieldDescriptorProto_Label	label;
 	enum FieldDescriptorProto_Type	type;
-	struct pb_string	type_name;
-	struct pb_string	extendee;
-	struct pb_string	default_value;
+	pb_string_t	type_name;
+	pb_string_t	extendee;
+	pb_string_t	default_value;
 	int32_t	oneof_index;
-	struct pb_string	json_name;
+	pb_string_t	json_name;
 	struct FieldOptions const*	options;
 	bool oneof_index_set;
 };
 struct OneofDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
+	pb_string_t	name;
 	struct OneofOptions const*	options;
 };
 struct EnumDescriptorProto_EnumReservedRange {
@@ -99,29 +99,29 @@ struct EnumDescriptorProto_EnumReservedRange {
 };
 struct EnumDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
+	pb_string_t	name;
 	struct {int len; struct EnumValueDescriptorProto const **v;}	value;
 	struct EnumOptions const*	options;
 	struct {int len; struct EnumDescriptorProto_EnumReservedRange const *v;}	reserved_range;
-	struct {int len; struct pb_string const *v;}	reserved_name;
+	struct {int len; pb_string_t const *v;}	reserved_name;
 };
 struct EnumValueDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
+	pb_string_t	name;
 	int32_t	number;
 	struct EnumValueOptions const*	options;
 };
 struct ServiceDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
+	pb_string_t	name;
 	struct {int len; struct MethodDescriptorProto const **v;}	method;
 	struct ServiceOptions const*	options;
 };
 struct MethodDescriptorProto {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
-	struct pb_string	input_type;
-	struct pb_string	output_type;
+	pb_string_t	name;
+	pb_string_t	input_type;
+	pb_string_t	output_type;
 	struct MethodOptions const*	options;
 	bool	client_streaming;
 	bool	server_streaming;
@@ -133,24 +133,24 @@ enum FileOptions_OptimizeMode {
 };
 struct FileOptions {
 	union pb_msg pb_hdr;
-	struct pb_string	java_package;
-	struct pb_string	java_outer_classname;
+	pb_string_t	java_package;
+	pb_string_t	java_outer_classname;
 	bool	java_multiple_files;
 	bool	java_generate_equals_and_hash;
 	bool	java_string_check_utf8;
 	enum FileOptions_OptimizeMode	optimize_for;
-	struct pb_string	go_package;
+	pb_string_t	go_package;
 	bool	cc_generic_services;
 	bool	java_generic_services;
 	bool	py_generic_services;
 	bool	php_generic_services;
 	bool	deprecated;
 	bool	cc_enable_arenas;
-	struct pb_string	objc_class_prefix;
-	struct pb_string	csharp_namespace;
-	struct pb_string	swift_prefix;
-	struct pb_string	php_class_prefix;
-	struct pb_string	php_namespace;
+	pb_string_t	objc_class_prefix;
+	pb_string_t	csharp_namespace;
+	pb_string_t	swift_prefix;
+	pb_string_t	php_class_prefix;
+	pb_string_t	php_namespace;
 	struct {int len; struct UninterpretedOption const **v;}	uninterpreted_option;
 };
 struct MessageOptions {
@@ -215,26 +215,26 @@ struct MethodOptions {
 };
 struct UninterpretedOption_NamePart {
 	union pb_msg pb_hdr;
-	struct pb_string	name_part;
+	pb_string_t	name_part;
 	bool	is_extension;
 };
 struct UninterpretedOption {
 	union pb_msg pb_hdr;
 	struct {int len; struct UninterpretedOption_NamePart const **v;}	name;
-	struct pb_string	identifier_value;
+	pb_string_t	identifier_value;
 	uint64_t	positive_int_value;
 	int64_t	negative_int_value;
 	double	double_value;
-	struct pb_bytes	string_value;
-	struct pb_string	aggregate_value;
+	pb_bytes_t	string_value;
+	pb_string_t	aggregate_value;
 };
 struct SourceCodeInfo_Location {
 	union pb_msg pb_hdr;
 	struct {int len; int32_t const *v;}	path;
 	struct {int len; int32_t const *v;}	span;
-	struct pb_string	leading_comments;
-	struct pb_string	trailing_comments;
-	struct {int len; struct pb_string const *v;}	leading_detached_comments;
+	pb_string_t	leading_comments;
+	pb_string_t	trailing_comments;
+	struct {int len; pb_string_t const *v;}	leading_detached_comments;
 };
 struct SourceCodeInfo {
 	union pb_msg pb_hdr;
@@ -243,7 +243,7 @@ struct SourceCodeInfo {
 struct GeneratedCodeInfo_Annotation {
 	union pb_msg pb_hdr;
 	struct {int len; int32_t const *v;}	path;
-	struct pb_string	source_file;
+	pb_string_t	source_file;
 	int32_t	begin;
 	int32_t	end;
 };

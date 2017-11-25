@@ -119,7 +119,7 @@ static const char escapechar[] =
     "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0"
     "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0";
 
-int pb_print_string(pb_buf_t *a, struct pb_string v) {
+int pb_print_string(pb_buf_t *a, pb_string_t v) {
 	if (a->next + 1 /*"*/ + v.len + 2 /*",*/ > a->end) {
 		return -1;
 	}
@@ -175,7 +175,7 @@ char *pb_print_base64(char *p, const uint8_t *v, int n) {
     return p;
 }
 
-int pb_print_bytes(pb_buf_t *a, struct pb_bytes v) {
+int pb_print_bytes(pb_buf_t *a, pb_bytes_t v) {
 	char *p = a->next;
 	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ > a->end) {
 		return -1;

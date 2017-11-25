@@ -33,11 +33,11 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 
 
     if (f->oneof_index_set) {
-		struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+		pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
 		str_add(o, "\t\tm->");
 		str_addstr(o, oneof);
 		str_add(o, "_type = ");
-		struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+		pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
 		to_upper(o, ps);
 		str_add(o, "_");
 		to_upper(o, f->name);
@@ -56,7 +56,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.buf, ft->c_type.buf);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
-			str_add(o, "\t\t\tstruct pb_string msg;" EOL);
+			str_add(o, "\t\t\tpb_string_t msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 			str_addf(o, "\t\t\tif (pb_get_%s(msg.buf, msg.buf + msg.len, (%s*) &%s.v[%s.len])) {" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf, mbr.buf);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
@@ -68,7 +68,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 		} else if (ft->msg) {
 			str_addf(o, "\t\t%s *prev = NULL;" EOL, ft->c_type.buf);
 			str_add(o, "\t\tdo {" EOL);
-			str_add(o, "\t\t\tstruct pb_string msg;" EOL);
+			str_add(o, "\t\t\tpb_string_t msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 			str_addf(o, "\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
 			str_addf(o, "\t\t\tif (!c || pb_get_%s(msg.buf, msg.buf + msg.len, obj, c)) {" EOL, ft->proto_suffix.buf);
@@ -107,7 +107,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.buf, ft->c_type.buf);
 		}
     } else if (ft->msg) {
-        str_add(o, "\t\tstruct pb_string msg;" EOL);
+        str_add(o, "\t\tpb_string_t msg;" EOL);
         str_addf(o, "\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 		if (ft->pod_message) {
 			str_addf(o, "\t\tif (pb_get_%s(msg.buf, msg.buf + msg.len, &%s)) {" EOL, ft->proto_suffix.buf, mbr.buf);

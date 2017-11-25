@@ -394,7 +394,7 @@ int pr_parse_body(struct pr_http *h, const char **data, int *sz) {
 	}
 }
 
-uint32_t pr_hash_path(struct pb_string p, uint32_t mul) {
+uint32_t pr_hash_path(pb_string_t p, uint32_t mul) {
 	uint32_t hash = 0;
 	for (int i = 0; i < p.len; i++) {
 		hash = (hash * mul) + (uint32_t)p.buf[i];

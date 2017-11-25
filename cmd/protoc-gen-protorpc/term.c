@@ -22,11 +22,11 @@ void do_term(str_t *o, const struct type *t, bool define) {
 		const char *pfx = "\t";
 
 		if (f->oneof_index_set) {
-			struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+			pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
 			str_add(o, "\tif(m->");
 			str_addstr(o, oneof);
 			str_add(o, "_type == ");
-			struct pb_string ps = { t->proto_suffix.len, t->proto_suffix.buf };
+			pb_string_t ps = { t->proto_suffix.len, t->proto_suffix.buf };
 			to_upper(o, ps);
 			str_add(o, "_");
 			to_upper(o, f->name);
@@ -54,7 +54,7 @@ void do_term(str_t *o, const struct type *t, bool define) {
 				str_addf(o, "%s\tif (%s.v[i].buf) {" EOL, pfx, mbr.buf);
 				str_addf(o, "%s\t\t((char*)%s.v[i].buf)[%s.v[i].len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
 				str_addf(o, "%s\t} else {" EOL, pfx);
-				str_addf(o, "%s\t\t((struct pb_string*)%s.v)[i].buf = \"\";" EOL, pfx, mbr.buf);
+				str_addf(o, "%s\t\t((pb_string_t*)%s.v)[i].buf = \"\";" EOL, pfx, mbr.buf);
 				str_addf(o, "%s\t}" EOL, pfx);
 				str_addf(o, "%s}" EOL, pfx);
 			} else {

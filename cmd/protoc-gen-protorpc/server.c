@@ -32,7 +32,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		str_add(o, EOL);
 	}
 
-	str_addf(o, "const char *rpc_%s(struct %s* rpc, struct pr_http *h, struct pb_string body, pb_buf_t *resp)", t->c_type.buf, t->c_type.buf);
+	str_addf(o, "const char *rpc_%s(struct %s* rpc, struct pr_http *h, pb_string_t body, pb_buf_t *resp)", t->c_type.buf, t->c_type.buf);
 	if (!define) {
 		str_add(o, ";" EOL);
 		return;
@@ -59,7 +59,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 	uint32_t hashsz, hashmul;
 	calc_hash_values(h, t->svc->method.len, &hashmul, &hashsz);
 
-	str_add(o, "\tstruct pb_string path = {h->name.len, h->name.buf};" EOL);
+	str_add(o, "\tpb_string_t path = {h->name.len, h->name.buf};" EOL);
 	str_addf(o, "\tswitch (pr_hash_path(path, %u) %% %u) {" EOL, hashmul, hashsz);
 
 	for (int i = 0; i < t->svc->method.len; i++) {

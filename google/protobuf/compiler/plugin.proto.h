@@ -9,24 +9,24 @@ struct Version {
 	int32_t	major;
 	int32_t	minor;
 	int32_t	patch;
-	struct pb_string	suffix;
+	pb_string_t	suffix;
 };
 struct CodeGeneratorRequest {
 	union pb_msg pb_hdr;
-	struct {int len; struct pb_string const *v;}	file_to_generate;
-	struct pb_string	parameter;
+	struct {int len; pb_string_t const *v;}	file_to_generate;
+	pb_string_t	parameter;
 	struct {int len; struct FileDescriptorProto const **v;}	proto_file;
 	struct Version const*	compiler_version;
 };
 struct CodeGeneratorResponse_File {
 	union pb_msg pb_hdr;
-	struct pb_string	name;
-	struct pb_string	insertion_point;
-	struct pb_string	content;
+	pb_string_t	name;
+	pb_string_t	insertion_point;
+	pb_string_t	content;
 };
 struct CodeGeneratorResponse {
 	union pb_msg pb_hdr;
-	struct pb_string	error;
+	pb_string_t	error;
 	struct {int len; struct CodeGeneratorResponse_File const **v;}	file;
 };
 

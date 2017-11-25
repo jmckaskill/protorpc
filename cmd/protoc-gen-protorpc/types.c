@@ -5,7 +5,7 @@ struct {map_t h; const struct DescriptorProto **keys; struct type **values;} g_s
 struct {map_t h; const struct EnumDescriptorProto **keys; struct type **values;} g_enum_types;
 struct {map_t h; const struct ServiceDescriptorProto **keys; struct type **values;} g_service_types;
 
-static void join_underscore(str_t *c, struct pb_string tail) {
+static void join_underscore(str_t *c, pb_string_t tail) {
     if (c->len) {
         str_addch(c, '_');
 	}
@@ -245,10 +245,10 @@ static struct type basic_types[19] = {
     {X("uint64_t"), 8, PRINT64, X("f64"), X("u64"), X("union pb_f64")}, // TYPE_FIXED64
     {X("uint32_t"), 4, PRINT32, X("f32"), X("u32"), X("union pb_f32")}, // TYPE_FIXED32
     {X("bool"), 1, 6 /*false,*/, X("bool"), X("bool"), X("bool")}, // TYPE_BOOL
-    {X("struct pb_string"), INFINITY, INFINITY, X("string"), X("string"), X("struct pb_string")}, // TYPE_STRING
+    {X("pb_string_t"), INFINITY, INFINITY, X("string"), X("string"), X("pb_string_t")}, // TYPE_STRING
     {0}, // TYPE_GROUP - unused
     {0}, // TYPE_MESSAGE
-    {X("struct pb_bytes"), INFINITY, INFINITY, X("bytes"), X("bytes"), X("struct pb_bytes")}, // TYPE_BYTES
+    {X("pb_bytes_t"), INFINITY, INFINITY, X("bytes"), X("bytes"), X("pb_bytes_t")}, // TYPE_BYTES
 	{X("uint32_t"), 5, PRINT32, X("u32"), X("u32"), X("uint32_t")}, // TYPE_UINT32
     {0}, // TYPE_ENUM - filled out separately
     {X("int32_t"), 4, PRINT32, X("f32"), X("i32"), X("union pb_f32")}, // TYPE_SFIXED32

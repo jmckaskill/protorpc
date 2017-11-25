@@ -20,11 +20,11 @@ void do_maxsz(str_t *o, const struct type *t, bool define) {
         str_addstr(&mbr, f->name);
 
         if (f->oneof_index_set) {
-            struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");
-            struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
             to_upper(o, ps);
             str_add(o, "_");
             to_upper(o, f->name);
@@ -94,11 +94,11 @@ void do_encode(str_t *o, const struct type *t, bool define) {
         str_addstr(&mbr, f->name);
 
         if (f->oneof_index_set) {
-            struct pb_string oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");
-            struct pb_string ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
             to_upper(o, ps);
             str_add(o, "_");
             to_upper(o, f->name);

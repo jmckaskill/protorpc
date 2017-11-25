@@ -16,27 +16,27 @@ union pb_msg {
 	int maxsz;
 };
 
-struct pb_bytes {
+typedef struct {
 	int len;
 	uint8_t *p;
-};
+} pb_bytes_t;
 
-struct pb_string {
+typedef struct {
 	int len;
 	const char *buf; // not null terminated
-};
+} pb_string_t;
 
-static inline struct pb_string pb_as_string(const char *str) {
-	struct pb_string s;
+static inline pb_string_t pb_as_string(const char *str) {
+	pb_string_t s;
 	s.len = (int) strlen(str);
 	s.buf = str;
 	return s;
 }
 
-static inline int pb_cmp2(struct pb_string a, const char *b, int len) {
+static inline int pb_cmp2(pb_string_t a, const char *b, int len) {
 	return a.len == len ? memcmp(a.buf, b, len) : (int) (a.len - len);
 }
-static inline int pb_cmp(struct pb_string a, const char *b) {
+static inline int pb_cmp(pb_string_t a, const char *b) {
 	return pb_cmp2(a, b, (int) strlen(b));
 }
 
@@ -113,10 +113,10 @@ const char *pb_get_s32(const char *p, const char *e, int32_t *pv);
 const char *pb_get_s64(const char *p, const char *e, int64_t *pv);
 const char *pb_get_f32(const char *p, const char *e, union pb_f32 *pv);
 const char *pb_get_f64(const char *p, const char *e, union pb_f64 *pv);
-const char *pb_get_string(const char *p, const char *e, struct pb_string *pv);
+const char *pb_get_string(const char *p, const char *e, pb_string_t *pv);
 
-static inline const char *pb_get_bytes(const char *p, const char *e, struct pb_bytes *pv) {
-	return pb_get_string(p, e, (struct pb_string*) pv);
+static inline const char *pb_get_bytes(const char *p, const char *e, pb_bytes_t *pv) {
+	return pb_get_string(p, e, (pb_string_t*) pv);
 }
 
 const char *pb_get_packed_bool(const char *p, const char *e, pb_buf_t *a, bool **pv, int *plen);
@@ -177,12 +177,12 @@ static inline char *pb_put_f64(char *p, union pb_f64 v) {
 	*(uint64_t*) p = v.u;
 	return p + 8;
 }
-static inline char *pb_put_string(char *p, struct pb_string v) {
+static inline char *pb_put_string(char *p, pb_string_t v) {
 	p = pb_put_u32(p, v.len);
 	memcpy(p, v.buf, v.len);
 	return p + v.len;
 }
-static inline char *pb_put_bytes(char *p, struct pb_bytes v) {
+static inline char *pb_put_bytes(char *p, pb_bytes_t v) {
 	p = pb_put_u32(p, v.len);
 	memcpy(p, v.p, v.len);
 	return p + v.len;
@@ -236,7 +236,7 @@ static inline char *pb_put_tag_4(char *p, uint32_t v) {
 
 extern const char pb_errret[];
 
-const char *pb_parse_base64(const char *p, struct pb_bytes *v);
+const char *pb_parse_base64(const char *p, pb_bytes_t *v);
 
 const char *pb_parse_bool(const char *p, bool *v);
 const char *pb_parse_i32(const char *p, int32_t *v);
@@ -245,8 +245,8 @@ const char *pb_parse_i64(const char *p, int64_t *v);
 const char *pb_parse_u64(const char *p, uint64_t *v);
 const char *pb_parse_float(const char *p, float *v);
 const char *pb_parse_double(const char *p, double *v);
-const char *pb_parse_bytes(const char *p, struct pb_bytes *v);
-const char *pb_parse_string(const char *p, struct pb_string *v);
+const char *pb_parse_bytes(const char *p, pb_bytes_t *v);
+const char *pb_parse_string(const char *p, pb_string_t *v);
 
 const char *pb_parse_array_bool(const char *p, pb_buf_t *a, bool const **pv, int *plen);
 const char *pb_parse_array_i32(const char *p, pb_buf_t *a, int32_t const **pv, int *plen);
@@ -255,14 +255,14 @@ const char *pb_parse_array_i64(const char *p, pb_buf_t *a, int64_t const **pv, i
 const char *pb_parse_array_u64(const char *p, pb_buf_t *a, uint64_t const **pv, int *plen);
 const char *pb_parse_array_float(const char *p, pb_buf_t *a, float const **pv, int *plen);
 const char *pb_parse_array_double(const char *p, pb_buf_t *a, double const **pv, int *plen);
-const char *pb_parse_array_bytes(const char *p, pb_buf_t *a, struct pb_bytes const **pv, int *plen);
-const char *pb_parse_array_string(const char *p, pb_buf_t *a, struct pb_string const **pv, int *plen);
+const char *pb_parse_array_bytes(const char *p, pb_buf_t *a, pb_bytes_t const **pv, int *plen);
+const char *pb_parse_array_string(const char *p, pb_buf_t *a, pb_string_t const **pv, int *plen);
 
 bool pb_parse_array(const char **p);
 bool pb_parse_map(const char **p);
 bool pb_more_array(const char **p);
-uint32_t pb_parse_enum(const char **p, struct pb_string *v, uint32_t mul);
-uint32_t pb_parse_field(const char **p, struct pb_string *v, uint32_t mul);
+uint32_t pb_parse_enum(const char **p, pb_string_t *v, uint32_t mul);
+uint32_t pb_parse_field(const char **p, pb_string_t *v, uint32_t mul);
 const char *pb_parse_skip(const char *p);
 
 
@@ -283,8 +283,8 @@ char *pb_print_i64(char *p, int64_t v);
 char *pb_print_float(char *p, float v);
 char *pb_print_double(char *p, double v);
 
-int pb_print_string(pb_buf_t *a, struct pb_string v);
-int pb_print_bytes(pb_buf_t *a, struct pb_bytes v);
+int pb_print_string(pb_buf_t *a, pb_string_t v);
+int pb_print_bytes(pb_buf_t *a, pb_bytes_t v);
 
 int pb_print_array_end(pb_buf_t *a);
 int pb_print_map_end(pb_buf_t *a);
