@@ -15,10 +15,12 @@ static void declare_external_fields(str_t *o, const struct FileDescriptorProto *
     }
 }
 
-static void write_header(str_t *o, const struct FileDescriptorProto *f) {
+static void write_header(str_t *o, const struct FileDescriptorProto *f, bool decode_only) {
     str_add(o, "#pragma once" EOL);
     str_add(o, "#include <protobuf.h>" EOL);
-    str_add(o, "#include <protorpc.h>" EOL);
+	if (!decode_only) {
+		str_add(o, "#include <protorpc.h>" EOL);
+	}
 
     for (int i = 0; i < f->dependency.len; i++) {
 		struct pb_string d = f->dependency.v[i];
@@ -44,17 +46,20 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
         define_struct(o, get_struct_type(f->message_type.v[i]));
     }
 
-    for (int i = 0; i < f->enum_type.len; i++) {
-        do_enum_funcs(o, get_enum_type(f->enum_type.v[i]), false);
-    }
     for (int i = 0; i < f->message_type.len; i++) {
-        do_struct_funcs(o, get_struct_type(f->message_type.v[i]), false);
+        do_struct_funcs(o, get_struct_type(f->message_type.v[i]), false, decode_only);
     }
-   
-    for (int i = 0; i < f->service.len; i++) {
-        const struct type *t = get_service_type(f->service.v[i]);
-        do_server(o, t, false);
-    }
+
+	if (!decode_only) {
+		for (int i = 0; i < f->enum_type.len; i++) {
+			do_enum_funcs(o, get_enum_type(f->enum_type.v[i]), false);
+		}
+
+		for (int i = 0; i < f->service.len; i++) {
+			const struct type *t = get_service_type(f->service.v[i]);
+			do_server(o, t, false);
+		}
+	}
 
     str_add(o, EOL);
     str_add(o, "#ifdef __cplusplus" EOL);
@@ -63,24 +68,26 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
     str_add(o, EOL);
 }
 
-static void write_source(str_t *o, const struct FileDescriptorProto *f) {
+static void write_source(str_t *o, const struct FileDescriptorProto *f, bool decode_only) {
     str_add(o, "#include \"");
     str_addstr(o, f->name);
     str_add(o, ".h\"" EOL);
-    
-    for (int i = 0; i < f->enum_type.len; i++) {
-        const struct type *t = get_enum_type(f->enum_type.v[i]);
-        do_enum_funcs(o, t, true);
-    }
 
     for (int i = 0; i < f->message_type.len; i++) {
         const struct type *t = get_struct_type(f->message_type.v[i]);
-        do_struct_funcs(o, t, true);
+        do_struct_funcs(o, t, true, decode_only);
     }
+    
+	if (!decode_only) {
+		for (int i = 0; i < f->enum_type.len; i++) {
+			const struct type *t = get_enum_type(f->enum_type.v[i]);
+			do_enum_funcs(o, t, true);
+		}
 
-	for (int i = 0; i < f->service.len; i++) {
-		const struct type *t = get_service_type(f->service.v[i]);
-		do_server(o, t, true);
+		for (int i = 0; i < f->service.len; i++) {
+			const struct type *t = get_service_type(f->service.v[i]);
+			do_server(o, t, true);
+		}
 	}
 }
 
@@ -122,6 +129,7 @@ int main(int argc, char *argv[]) {
     str_t hdr = STR_INIT;
     str_t src = STR_INIT;
     str_t filename = STR_INIT;
+	bool decode_only = (getenv("DECODE_ONLY") != NULL);
 
     for (int i = 0; i < req.file_to_generate.len; i++) {
         const struct FileDescriptorProto *f = get_file_proto(&req, req.file_to_generate.v[i]);
@@ -134,8 +142,8 @@ int main(int argc, char *argv[]) {
         str_clear(&hdr);
         str_clear(&src);
     
-        write_header(&hdr, f);
-        write_source(&src, f);
+        write_header(&hdr, f, decode_only);
+        write_source(&src, f, decode_only);
 
         str_clear(&filename);
         str_addstr(&filename, f->name);

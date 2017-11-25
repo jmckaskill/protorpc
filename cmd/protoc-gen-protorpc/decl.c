@@ -178,26 +178,32 @@ static int cmp_field_number(const void *a, const void *b) {
     return fa->number - fb->number;
 }
 
-void do_struct_funcs(str_t *o, const struct type *t, bool define) {
+void do_struct_funcs(str_t *o, const struct type *t, bool define, bool decode_only) {
     str_add(o, EOL);
 
-	do_nonzero(o, t, define);
-    do_parse(o, t, define);
-    do_print(o, t, define);
+	if (!decode_only) {
+		do_nonzero(o, t, define);
+		do_parse(o, t, define);
+		do_print(o, t, define);
+	}
 
     if (define) {
         qsort((struct FieldDescriptorProto**) t->msg->field.v, t->msg->field.len, sizeof(t->msg->field.v[0]), &cmp_field_number);
     }
 
     do_decode(o, t, define);
-    do_encode(o, t, define);
-    do_maxsz(o, t, define);
 
-    for (int i = 0; i < t->msg->enum_type.len; i++) {
-        do_enum_funcs(o, get_enum_type(t->msg->enum_type.v[i]), define);
-    }
+	if (!decode_only) {
+		do_encode(o, t, define);
+		do_maxsz(o, t, define);
+
+		for (int i = 0; i < t->msg->enum_type.len; i++) {
+			do_enum_funcs(o, get_enum_type(t->msg->enum_type.v[i]), define);
+		}
+	}
+
     for (int i = 0; i < t->msg->nested_type.len; i++) {
-        do_struct_funcs(o, get_struct_type(t->msg->nested_type.v[i]), define);
+        do_struct_funcs(o, get_struct_type(t->msg->nested_type.v[i]), define, decode_only);
     }
 }
 

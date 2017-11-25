@@ -10,7 +10,7 @@ struct parser {
 
 
 void do_parse_enum(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "char *pb_parse_%s(char *p, %s *v)", t->json_suffix.buf, t->c_type.buf);
+    str_addf(o, "const char *pb_parse_%s(const char *p, %s *v)", t->json_suffix.buf, t->c_type.buf);
     if (!define) {
         str_add(o, ";" EOL);
         return;
@@ -47,7 +47,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 }
 
 void do_parse(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "char *pb_parse_%s(char *p", t->json_suffix.buf);
+    str_addf(o, "const char *pb_parse_%s(const char *p", t->json_suffix.buf);
 	if (!t->pod_message) {
 		str_add(o, ", pb_buf_t *obj");
 	}
