@@ -19,7 +19,8 @@
 	</ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="./test.cpp" />
+    <ClCompile Include="./protobuf_test.cpp" />
+    <ClCompile Include="./rpc_test.cpp" />
     <ClCompile Include="./test.proto.c" />
   </ItemGroup>
   <ItemGroup>

@@ -19,11 +19,9 @@
 	</ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="./http-parser.c" />
     <ClCompile Include="./rpc.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="./rpc.h" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

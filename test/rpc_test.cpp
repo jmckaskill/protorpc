@@ -2,7 +2,7 @@
 #include "../protorpc.h"
 #include <string.h>
 
-TEST(protorpc, http) {
+TEST(protorpc, parse_request) {
     struct pr_http h;
 
     static const char get_request[] =
@@ -44,4 +44,8 @@ TEST(protorpc, http) {
     EXPECT_EQ(end, data);
     EXPECT_EQ(end - 6, h.body_chunk);
     EXPECT_EQ(6, h.chunk_size);
+}
+
+TEST(protorpc, dispatch) {
+
 }

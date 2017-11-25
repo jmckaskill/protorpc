@@ -372,7 +372,7 @@ int pr_parse_body(struct pr_http *h, const char **data, int *sz) {
 			return PR_ERROR;
 		} else if (*sz >= h->left_in_chunk) {
 			*data += h->left_in_chunk;
-			*sz -= h->left_in_chunk;
+			*sz -= (int) h->left_in_chunk;
 			h->left_in_chunk = 0;
 			return PR_FINISHED;
 		}

@@ -34,7 +34,6 @@
     <ClInclude Include="./protoc-gen-protorpc.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="./protoc-gen-protorpc.ninja" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
 	<ProjectGuid>{C676AF48-ED5F-4089-B356-9A26D3521FF2}</ProjectGuid>
