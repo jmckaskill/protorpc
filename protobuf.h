@@ -26,11 +26,6 @@ struct pb_string {
 	const char *buf; // not null terminated
 };
 
-struct pb_string2 {
-	const char *end;
-	const char *buf; // not null terminated
-};
-
 static inline struct pb_string pb_as_string(const char *str) {
 	struct pb_string s;
 	s.len = (int) strlen(str);

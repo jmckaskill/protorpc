@@ -61,6 +61,7 @@ void do_struct_funcs(str_t *out, const struct type *t, bool define, bool decode_
 
 void do_maxsz(str_t *out, const struct type *t, bool define);
 void do_decode(str_t *out, const struct type *t, bool define);
+void do_term(str_t *out, const struct type *t, bool define);
 void do_parse_enum(str_t *out, const struct type *t, bool define);
 void do_print_enum(str_t *out, const struct type *t, bool define);
 void do_parse(str_t *out, const struct type *t, bool define);

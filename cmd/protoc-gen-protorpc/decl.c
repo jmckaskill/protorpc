@@ -192,6 +192,7 @@ void do_struct_funcs(str_t *o, const struct type *t, bool define, bool decode_on
     }
 
     do_decode(o, t, define);
+	do_term(o, t, define);
 
 	if (!decode_only) {
 		do_encode(o, t, define);

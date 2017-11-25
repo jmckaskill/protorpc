@@ -1504,6 +1504,76 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 	}
 	return 0;
 }
+void pb_term_TestMessage(struct TestMessage *m) {
+	((char*)m->str.buf)[m->str.len] = '\0';
+	if (m->msg) {
+		pb_term_TestMessage((struct TestMessage*) m->msg);
+	}
+	pb_term_TestPod((struct TestPod*) &m->pod);
+	for (int i = 0; i < m->rstr.len; i++) {
+		((char*)m->rstr.v[i].buf)[m->rstr.v[i].len] = '\0';
+	}
+	for (int i = 0; i < m->rmsg.len; i++) {
+		pb_term_TestMessage((struct TestMessage*) m->rmsg.v[i]);
+	}
+	for (int i = 0; i < m->rpod.len; i++) {
+		pb_term_TestPod((struct TestPod*) &m->rpod.v[i]);
+	}
+	for (int i = 0; i < m->mb.len; i++) {
+		pb_term_TestMessage_MbEntry((struct TestMessage_MbEntry*) &m->mb.v[i]);
+	}
+	for (int i = 0; i < m->mi32.len; i++) {
+		pb_term_TestMessage_Mi32Entry((struct TestMessage_Mi32Entry*) &m->mi32.v[i]);
+	}
+	for (int i = 0; i < m->ms32.len; i++) {
+		pb_term_TestMessage_Ms32Entry((struct TestMessage_Ms32Entry*) &m->ms32.v[i]);
+	}
+	for (int i = 0; i < m->msf32.len; i++) {
+		pb_term_TestMessage_Msf32Entry((struct TestMessage_Msf32Entry*) &m->msf32.v[i]);
+	}
+	for (int i = 0; i < m->mu32.len; i++) {
+		pb_term_TestMessage_Mu32Entry((struct TestMessage_Mu32Entry*) &m->mu32.v[i]);
+	}
+	for (int i = 0; i < m->mf32.len; i++) {
+		pb_term_TestMessage_Mf32Entry((struct TestMessage_Mf32Entry*) &m->mf32.v[i]);
+	}
+	for (int i = 0; i < m->mi64.len; i++) {
+		pb_term_TestMessage_Mi64Entry((struct TestMessage_Mi64Entry*) &m->mi64.v[i]);
+	}
+	for (int i = 0; i < m->msf64.len; i++) {
+		pb_term_TestMessage_Msf64Entry((struct TestMessage_Msf64Entry*) &m->msf64.v[i]);
+	}
+	for (int i = 0; i < m->ms64.len; i++) {
+		pb_term_TestMessage_Ms64Entry((struct TestMessage_Ms64Entry*) &m->ms64.v[i]);
+	}
+	for (int i = 0; i < m->mu64.len; i++) {
+		pb_term_TestMessage_Mu64Entry((struct TestMessage_Mu64Entry*) &m->mu64.v[i]);
+	}
+	for (int i = 0; i < m->mf64.len; i++) {
+		pb_term_TestMessage_Mf64Entry((struct TestMessage_Mf64Entry*) &m->mf64.v[i]);
+	}
+	for (int i = 0; i < m->mf.len; i++) {
+		pb_term_TestMessage_MfEntry((struct TestMessage_MfEntry*) &m->mf.v[i]);
+	}
+	for (int i = 0; i < m->md.len; i++) {
+		pb_term_TestMessage_MdEntry((struct TestMessage_MdEntry*) &m->md.v[i]);
+	}
+	for (int i = 0; i < m->mby.len; i++) {
+		pb_term_TestMessage_MbyEntry((struct TestMessage_MbyEntry*) m->mby.v[i]);
+	}
+	for (int i = 0; i < m->mstr.len; i++) {
+		pb_term_TestMessage_MstrEntry((struct TestMessage_MstrEntry*) m->mstr.v[i]);
+	}
+	for (int i = 0; i < m->men.len; i++) {
+		pb_term_TestMessage_MenEntry((struct TestMessage_MenEntry*) &m->men.v[i]);
+	}
+	for (int i = 0; i < m->mmsg.len; i++) {
+		pb_term_TestMessage_MmsgEntry((struct TestMessage_MmsgEntry*) m->mmsg.v[i]);
+	}
+	for (int i = 0; i < m->mpod.len; i++) {
+		pb_term_TestMessage_MpodEntry((struct TestMessage_MpodEntry*) &m->mpod.v[i]);
+	}
+}
 char *pb_encode_TestMessage(char *p, struct TestMessage const *m) {
 	if (m->b) {
 		p = pb_put_tag_1(p, 8);
@@ -2056,6 +2126,8 @@ int pb_get_TestMessage_MbEntry(const char *p, const char *e, struct TestMessage_
 	}
 	return 0;
 }
+void pb_term_TestMessage_MbEntry(struct TestMessage_MbEntry *m) {
+}
 char *pb_encode_TestMessage_MbEntry(char *p, struct TestMessage_MbEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2138,6 +2210,8 @@ int pb_get_TestMessage_Mu32Entry(const char *p, const char *e, struct TestMessag
 		p = pb_get_u32(p + 1, e, (uint32_t*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_Mu32Entry(struct TestMessage_Mu32Entry *m) {
 }
 char *pb_encode_TestMessage_Mu32Entry(char *p, struct TestMessage_Mu32Entry const *m) {
 	if (m->key) {
@@ -2222,6 +2296,8 @@ int pb_get_TestMessage_Mu64Entry(const char *p, const char *e, struct TestMessag
 	}
 	return 0;
 }
+void pb_term_TestMessage_Mu64Entry(struct TestMessage_Mu64Entry *m) {
+}
 char *pb_encode_TestMessage_Mu64Entry(char *p, struct TestMessage_Mu64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2304,6 +2380,8 @@ int pb_get_TestMessage_Mi32Entry(const char *p, const char *e, struct TestMessag
 		p = pb_get_u32(p + 1, e, (uint32_t*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_Mi32Entry(struct TestMessage_Mi32Entry *m) {
 }
 char *pb_encode_TestMessage_Mi32Entry(char *p, struct TestMessage_Mi32Entry const *m) {
 	if (m->key) {
@@ -2388,6 +2466,8 @@ int pb_get_TestMessage_Mi64Entry(const char *p, const char *e, struct TestMessag
 	}
 	return 0;
 }
+void pb_term_TestMessage_Mi64Entry(struct TestMessage_Mi64Entry *m) {
+}
 char *pb_encode_TestMessage_Mi64Entry(char *p, struct TestMessage_Mi64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2470,6 +2550,8 @@ int pb_get_TestMessage_Ms32Entry(const char *p, const char *e, struct TestMessag
 		p = pb_get_s32(p + 1, e, (int32_t*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_Ms32Entry(struct TestMessage_Ms32Entry *m) {
 }
 char *pb_encode_TestMessage_Ms32Entry(char *p, struct TestMessage_Ms32Entry const *m) {
 	if (m->key) {
@@ -2554,6 +2636,8 @@ int pb_get_TestMessage_Ms64Entry(const char *p, const char *e, struct TestMessag
 	}
 	return 0;
 }
+void pb_term_TestMessage_Ms64Entry(struct TestMessage_Ms64Entry *m) {
+}
 char *pb_encode_TestMessage_Ms64Entry(char *p, struct TestMessage_Ms64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2636,6 +2720,8 @@ int pb_get_TestMessage_Mf32Entry(const char *p, const char *e, struct TestMessag
 		p = pb_get_f32(p + 1, e, (union pb_f32*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_Mf32Entry(struct TestMessage_Mf32Entry *m) {
 }
 char *pb_encode_TestMessage_Mf32Entry(char *p, struct TestMessage_Mf32Entry const *m) {
 	if (m->key) {
@@ -2720,6 +2806,8 @@ int pb_get_TestMessage_Mf64Entry(const char *p, const char *e, struct TestMessag
 	}
 	return 0;
 }
+void pb_term_TestMessage_Mf64Entry(struct TestMessage_Mf64Entry *m) {
+}
 char *pb_encode_TestMessage_Mf64Entry(char *p, struct TestMessage_Mf64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2802,6 +2890,8 @@ int pb_get_TestMessage_Msf32Entry(const char *p, const char *e, struct TestMessa
 		p = pb_get_f32(p + 1, e, (union pb_f32*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_Msf32Entry(struct TestMessage_Msf32Entry *m) {
 }
 char *pb_encode_TestMessage_Msf32Entry(char *p, struct TestMessage_Msf32Entry const *m) {
 	if (m->key) {
@@ -2886,6 +2976,8 @@ int pb_get_TestMessage_Msf64Entry(const char *p, const char *e, struct TestMessa
 	}
 	return 0;
 }
+void pb_term_TestMessage_Msf64Entry(struct TestMessage_Msf64Entry *m) {
+}
 char *pb_encode_TestMessage_Msf64Entry(char *p, struct TestMessage_Msf64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2968,6 +3060,8 @@ int pb_get_TestMessage_MfEntry(const char *p, const char *e, struct TestMessage_
 		p = pb_get_f32(p + 1, e, (union pb_f32*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_MfEntry(struct TestMessage_MfEntry *m) {
 }
 char *pb_encode_TestMessage_MfEntry(char *p, struct TestMessage_MfEntry const *m) {
 	if (m->key) {
@@ -3052,6 +3146,8 @@ int pb_get_TestMessage_MdEntry(const char *p, const char *e, struct TestMessage_
 	}
 	return 0;
 }
+void pb_term_TestMessage_MdEntry(struct TestMessage_MdEntry *m) {
+}
 char *pb_encode_TestMessage_MdEntry(char *p, struct TestMessage_MdEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3132,6 +3228,8 @@ int pb_get_TestMessage_MbyEntry(const char *p, const char *e, pb_buf_t *obj, str
 	}
 	return 0;
 }
+void pb_term_TestMessage_MbyEntry(struct TestMessage_MbyEntry *m) {
+}
 char *pb_encode_TestMessage_MbyEntry(char *p, struct TestMessage_MbyEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3211,6 +3309,9 @@ int pb_get_TestMessage_MstrEntry(const char *p, const char *e, pb_buf_t *obj, st
 		p = pb_get_string(p + 1, e, (struct pb_string*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_MstrEntry(struct TestMessage_MstrEntry *m) {
+	((char*)m->value.buf)[m->value.len] = '\0';
 }
 char *pb_encode_TestMessage_MstrEntry(char *p, struct TestMessage_MstrEntry const *m) {
 	if (m->key) {
@@ -3294,6 +3395,8 @@ int pb_get_TestMessage_MenEntry(const char *p, const char *e, struct TestMessage
 		p = pb_get_u32(p + 1, e, (uint32_t*)&m->value);
 	}
 	return 0;
+}
+void pb_term_TestMessage_MenEntry(struct TestMessage_MenEntry *m) {
 }
 char *pb_encode_TestMessage_MenEntry(char *p, struct TestMessage_MenEntry const *m) {
 	if (m->key) {
@@ -3381,6 +3484,11 @@ int pb_get_TestMessage_MmsgEntry(const char *p, const char *e, pb_buf_t *obj, st
 		}
 	}
 	return 0;
+}
+void pb_term_TestMessage_MmsgEntry(struct TestMessage_MmsgEntry *m) {
+	if (m->value) {
+		pb_term_TestMessage((struct TestMessage*) m->value);
+	}
 }
 char *pb_encode_TestMessage_MmsgEntry(char *p, struct TestMessage_MmsgEntry const *m) {
 	if (m->key) {
@@ -3472,6 +3580,9 @@ int pb_get_TestMessage_MpodEntry(const char *p, const char *e, struct TestMessag
 	}
 	return 0;
 }
+void pb_term_TestMessage_MpodEntry(struct TestMessage_MpodEntry *m) {
+	pb_term_TestPod((struct TestPod*) &m->value);
+}
 char *pb_encode_TestMessage_MpodEntry(char *p, struct TestMessage_MpodEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3560,6 +3671,8 @@ int pb_get_TestPod(const char *p, const char *e, struct TestPod *m) {
 		p = pb_get_u32(p + 1, e, (uint32_t*)&m->foo.i);
 	}
 	return 0;
+}
+void pb_term_TestPod(struct TestPod *m) {
 }
 char *pb_encode_TestPod(char *p, struct TestPod const *m) {
 	if(m->foo_type == TESTPOD_U) {
