@@ -1,6 +1,6 @@
 #include "test/test.proto.h"
 
-const char *pb_parse_TestMessage(const char *p, pb_buf_t *obj, struct TestMessage *m) {
+char *pb_parse_TestMessage(char *p, pb_buf_t *obj, struct TestMessage *m) {
 	(void) obj;
 	(void) m;
 	if (!pb_parse_map(&p)) {
@@ -2080,7 +2080,7 @@ bool pb_nonzero_TestMessage_MbEntry(struct TestMessage_MbEntry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_MbEntry(const char *p, struct TestMessage_MbEntry *m) {
+char *pb_parse_TestMessage_MbEntry(char *p, struct TestMessage_MbEntry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2165,7 +2165,7 @@ bool pb_nonzero_TestMessage_Mu32Entry(struct TestMessage_Mu32Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Mu32Entry(const char *p, struct TestMessage_Mu32Entry *m) {
+char *pb_parse_TestMessage_Mu32Entry(char *p, struct TestMessage_Mu32Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2250,7 +2250,7 @@ bool pb_nonzero_TestMessage_Mu64Entry(struct TestMessage_Mu64Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Mu64Entry(const char *p, struct TestMessage_Mu64Entry *m) {
+char *pb_parse_TestMessage_Mu64Entry(char *p, struct TestMessage_Mu64Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2335,7 +2335,7 @@ bool pb_nonzero_TestMessage_Mi32Entry(struct TestMessage_Mi32Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Mi32Entry(const char *p, struct TestMessage_Mi32Entry *m) {
+char *pb_parse_TestMessage_Mi32Entry(char *p, struct TestMessage_Mi32Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2420,7 +2420,7 @@ bool pb_nonzero_TestMessage_Mi64Entry(struct TestMessage_Mi64Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Mi64Entry(const char *p, struct TestMessage_Mi64Entry *m) {
+char *pb_parse_TestMessage_Mi64Entry(char *p, struct TestMessage_Mi64Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2505,7 +2505,7 @@ bool pb_nonzero_TestMessage_Ms32Entry(struct TestMessage_Ms32Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Ms32Entry(const char *p, struct TestMessage_Ms32Entry *m) {
+char *pb_parse_TestMessage_Ms32Entry(char *p, struct TestMessage_Ms32Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2590,7 +2590,7 @@ bool pb_nonzero_TestMessage_Ms64Entry(struct TestMessage_Ms64Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Ms64Entry(const char *p, struct TestMessage_Ms64Entry *m) {
+char *pb_parse_TestMessage_Ms64Entry(char *p, struct TestMessage_Ms64Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2675,7 +2675,7 @@ bool pb_nonzero_TestMessage_Mf32Entry(struct TestMessage_Mf32Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Mf32Entry(const char *p, struct TestMessage_Mf32Entry *m) {
+char *pb_parse_TestMessage_Mf32Entry(char *p, struct TestMessage_Mf32Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2760,7 +2760,7 @@ bool pb_nonzero_TestMessage_Mf64Entry(struct TestMessage_Mf64Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Mf64Entry(const char *p, struct TestMessage_Mf64Entry *m) {
+char *pb_parse_TestMessage_Mf64Entry(char *p, struct TestMessage_Mf64Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2845,7 +2845,7 @@ bool pb_nonzero_TestMessage_Msf32Entry(struct TestMessage_Msf32Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Msf32Entry(const char *p, struct TestMessage_Msf32Entry *m) {
+char *pb_parse_TestMessage_Msf32Entry(char *p, struct TestMessage_Msf32Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -2930,7 +2930,7 @@ bool pb_nonzero_TestMessage_Msf64Entry(struct TestMessage_Msf64Entry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_Msf64Entry(const char *p, struct TestMessage_Msf64Entry *m) {
+char *pb_parse_TestMessage_Msf64Entry(char *p, struct TestMessage_Msf64Entry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -3015,7 +3015,7 @@ bool pb_nonzero_TestMessage_MfEntry(struct TestMessage_MfEntry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_MfEntry(const char *p, struct TestMessage_MfEntry *m) {
+char *pb_parse_TestMessage_MfEntry(char *p, struct TestMessage_MfEntry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -3100,7 +3100,7 @@ bool pb_nonzero_TestMessage_MdEntry(struct TestMessage_MdEntry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_MdEntry(const char *p, struct TestMessage_MdEntry *m) {
+char *pb_parse_TestMessage_MdEntry(char *p, struct TestMessage_MdEntry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -3180,7 +3180,7 @@ int pb_maxsz_TestMessage_MdEntry(struct TestMessage_MdEntry const *m) {
 	return n;
 }
 
-const char *pb_parse_TestMessage_MbyEntry(const char *p, pb_buf_t *obj, struct TestMessage_MbyEntry *m) {
+char *pb_parse_TestMessage_MbyEntry(char *p, pb_buf_t *obj, struct TestMessage_MbyEntry *m) {
 	(void) obj;
 	(void) m;
 	if (!pb_parse_map(&p)) {
@@ -3262,7 +3262,7 @@ int pb_maxsz_TestMessage_MbyEntry(struct TestMessage_MbyEntry const *m) {
 	return n;
 }
 
-const char *pb_parse_TestMessage_MstrEntry(const char *p, pb_buf_t *obj, struct TestMessage_MstrEntry *m) {
+char *pb_parse_TestMessage_MstrEntry(char *p, pb_buf_t *obj, struct TestMessage_MstrEntry *m) {
 	(void) obj;
 	(void) m;
 	if (!pb_parse_map(&p)) {
@@ -3354,7 +3354,7 @@ bool pb_nonzero_TestMessage_MenEntry(struct TestMessage_MenEntry const *m) {
 	    || m->key
 	    || m->value;
 }
-const char *pb_parse_TestMessage_MenEntry(const char *p, struct TestMessage_MenEntry *m) {
+char *pb_parse_TestMessage_MenEntry(char *p, struct TestMessage_MenEntry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -3434,7 +3434,7 @@ int pb_maxsz_TestMessage_MenEntry(struct TestMessage_MenEntry const *m) {
 	return n;
 }
 
-const char *pb_parse_TestMessage_MmsgEntry(const char *p, pb_buf_t *obj, struct TestMessage_MmsgEntry *m) {
+char *pb_parse_TestMessage_MmsgEntry(char *p, pb_buf_t *obj, struct TestMessage_MmsgEntry *m) {
 	(void) obj;
 	(void) m;
 	if (!pb_parse_map(&p)) {
@@ -3534,7 +3534,7 @@ bool pb_nonzero_TestMessage_MpodEntry(struct TestMessage_MpodEntry const *m) {
 	    || m->key
 	    || pb_nonzero_TestPod(&m->value);
 }
-const char *pb_parse_TestMessage_MpodEntry(const char *p, struct TestMessage_MpodEntry *m) {
+char *pb_parse_TestMessage_MpodEntry(char *p, struct TestMessage_MpodEntry *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -3626,7 +3626,7 @@ bool pb_nonzero_TestPod(struct TestPod const *m) {
 	    || m->foo_type
 	    || m->foo.u;
 }
-const char *pb_parse_TestPod(const char *p, struct TestPod *m) {
+char *pb_parse_TestPod(char *p, struct TestPod *m) {
 	(void) m;
 	if (!pb_parse_map(&p)) {
 		return p;
@@ -3726,7 +3726,7 @@ char *pb_print_TestEnum(char *p, enum TestEnum v){
 		return p + 3;
 	}
 }
-const char *pb_parse_TestEnum(const char *p, enum TestEnum *v) {
+char *pb_parse_TestEnum(char *p, enum TestEnum *v) {
 	pb_string_t val;
 	*v = (enum TestEnum) 0;
 	switch (pb_parse_enum(&p, &val, 4) % 6) {

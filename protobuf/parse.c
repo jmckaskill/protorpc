@@ -2,16 +2,16 @@
 #include "../protobuf.h"
 #include <stdlib.h>
 
-const char pb_errret[] = {0}; 
+char pb_errret[] = {0}; 
 
-static const char *consume_space(const char *p) {
+static char *consume_space(char *p) {
     while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') {
         p++;
     }
     return p;
 }
 
-static const char *consume_string(const char *p) {
+static char *consume_string(char *p) {
     for (;;) {
         switch (*p) {
         case '"':
@@ -30,7 +30,7 @@ static const char *consume_string(const char *p) {
     }
 }
 
-const char *pb_parse_bool(const char *p, bool *v) {
+char *pb_parse_bool(char *p, bool *v) {
     if (!strncmp(p, "true", 4)) {
         *v = 1;
         return p + 4;
@@ -41,7 +41,7 @@ const char *pb_parse_bool(const char *p, bool *v) {
         return pb_errret;
     }
 }
-static const char *parse_number(const char *p, uint64_t *v, int *pnegate) {
+static char *parse_number(char *p, uint64_t *v, int *pnegate) {
     // json allows any floating number here, but we want a non-float
     // using strtod is slow, so instead we'll do a basic parse according to the json grammar
     int trailing = 0; // number of digits after the dot
@@ -117,31 +117,31 @@ static const char *parse_number(const char *p, uint64_t *v, int *pnegate) {
     *v = num;
     return p;
 }
-const char *pb_parse_i32(const char *p, int32_t *v) {
+char *pb_parse_i32(char *p, int32_t *v) {
     uint64_t num;
     int negate = 0;
     p = parse_number(p, &num, &negate);
     *v = (negate?-1:1) * (int32_t)num;
     return p;
 }
-const char *pb_parse_u32(const char *p, uint32_t *v) {
+char *pb_parse_u32(char *p, uint32_t *v) {
     uint64_t num;
     p = parse_number(p, &num, NULL);
     *v = (uint32_t)num;
     return p;
 }
-const char *pb_parse_i64(const char *p, int64_t *v) {
+char *pb_parse_i64(char *p, int64_t *v) {
     uint64_t num;
     int negate = 0;
     p = parse_number(p, &num, &negate);
     *v = (negate?-1:1) * (int64_t)num;
     return p;
 }
-const char *pb_parse_u64(const char *p, uint64_t *v) {
+char *pb_parse_u64(char *p, uint64_t *v) {
     p = parse_number(p, v, NULL);
     return p;
 }
-const char *pb_parse_float(const char *p, float *v) {
+char *pb_parse_float(char *p, float *v) {
     char *end;
     if (*p == '\"') {
 		p++;
@@ -155,7 +155,7 @@ const char *pb_parse_float(const char *p, float *v) {
 	}
     return end;
 }
-const char *pb_parse_double(const char *p, double *v) {
+char *pb_parse_double(char *p, double *v) {
     char *end;
     if (*p == '\"') {
 		p++;
@@ -207,7 +207,7 @@ static const signed char hexrev[256] = {
     -1,-1,-1,-1,-1,-1,-1,-1,    -1,-1,-1,-1,-1,-1,-1,-1,
 };
 
-const char *pb_parse_base64(const char *p, pb_bytes_t *v) {
+char *pb_parse_base64(char *p, pb_bytes_t *v) {
     uint8_t *in = (uint8_t*) p;
     uint8_t *out = (uint8_t*) p;
 	uint8_t *ret = (uint8_t*) p;
@@ -216,30 +216,27 @@ const char *pb_parse_base64(const char *p, pb_bytes_t *v) {
         int ch1 = base64rev[in[1]];
         int ch2 = base64rev[in[2]];
         int ch3 = base64rev[in[3]];
-        if (ch0 < 0) {
+        if (ch0 < 0 || ch1 < 0) {
 			v->p = ret;
 			v->len = (uint32_t) (out - ret);
             return (char*) in;
         } else if (ch1 < 0) {
             // 00000011 11112222 22333333
-            out[0] = (uint8_t) ((ch0 << 2));
 			v->p = ret;
-			v->len = (uint32_t) (out - ret + 1);
+			v->len = (uint32_t) (out - ret);
             return (char*) in + 1;
         } else if (ch2 < 0) {
             // 00000011 11112222 22333333
             out[0] = (uint8_t) ((ch0 << 2) | (ch1 >> 4));
-            out[1] = (uint8_t) ((ch1 << 4));
 			v->p = ret;
-			v->len = (uint32_t) (out - ret + 2);
+			v->len = (uint32_t) (out - ret + 1);
             return (char*) in + 2;
         } else if (ch3 < 0) {
             // 00000011 11112222 22333333
             out[0] = (uint8_t) ((ch0 << 2) | (ch1 >> 4));
             out[1] = (uint8_t) ((ch1 << 4) | (ch2 >> 2));
-            out[2] = (uint8_t) ((ch2 << 6));
 			v->p = ret;
-			v->len = (uint32_t) (out - ret + 3);
+			v->len = (uint32_t) (out - ret + 2);
             return (char*) in + 3;
         } else {
             // 00000011 11112222 22333333
@@ -252,18 +249,25 @@ const char *pb_parse_base64(const char *p, pb_bytes_t *v) {
     }
 }
 
-const char *pb_parse_bytes(const char *p, pb_bytes_t *v) {
+char *pb_parse_bytes(char *p, pb_bytes_t *v) {
     if (*p != '\"') {
         return pb_errret;
     }
-    p = pb_parse_base64(p, v);
+    p = pb_parse_base64(p+1, v);
+	if (*p == '=') {
+		p++;
+	}
+	if (*p == '=') {
+		p++;
+	}
     if (*p != '\"') {
         return pb_errret;
     }
+	v->p[v->len] = 0;
     return p+1;
 }
 
-const char *pb_parse_string(const char *p, pb_string_t *v) {
+char *pb_parse_string(char *p, pb_string_t *v) {
     if (*p != '\"') {
         return pb_errret;
     }
@@ -394,7 +398,7 @@ const char *pb_parse_string(const char *p, pb_string_t *v) {
     }
 }
 
-static bool parse_multi(const char **p, char start) {
+static bool parse_multi(char **p, char start) {
     if (**p == start) {
 		*p = consume_space(*p+1);
         return true;
@@ -407,15 +411,15 @@ static bool parse_multi(const char **p, char start) {
     }
 }
 
-bool pb_parse_array(const char **p) {
+bool pb_parse_array(char **p) {
 	return parse_multi(p, '[');
 }
 
-bool pb_parse_map(const char **p) {
+bool pb_parse_map(char **p) {
 	return parse_multi(p, '{');
 }
 
-bool pb_more_array(const char **p) {
+bool pb_more_array(char **p) {
     *p = consume_space(*p);
     if (**p == ']') {
         (*p)++;
@@ -429,9 +433,9 @@ bool pb_more_array(const char **p) {
         return false;
     }
 }
-uint32_t pb_parse_enum(const char **p, pb_string_t *v, uint32_t mul) {
+uint32_t pb_parse_enum(char **p, pb_string_t *v, uint32_t mul) {
     uint32_t hash = 0;
-    const char *ret;
+    char *ret;
     if (**p != '\"') {
         goto err;
     }
@@ -450,6 +454,7 @@ uint32_t pb_parse_enum(const char **p, pb_string_t *v, uint32_t mul) {
 next:
 	v->c_str = ret;
 	v->len = (int) (*p - ret);
+	**p = '\0';
 	(*p)++;
     return hash;
 err:
@@ -458,7 +463,7 @@ err:
 }
 
 
-uint32_t pb_parse_field(const char **p, pb_string_t *v, uint32_t mul) {
+uint32_t pb_parse_field(char **p, pb_string_t *v, uint32_t mul) {
     uint32_t hash = 0;
     *p = consume_space(*p);
     if (**p == '}') {
@@ -468,7 +473,7 @@ uint32_t pb_parse_field(const char **p, pb_string_t *v, uint32_t mul) {
         *p = consume_space(*p+1);
     }
 
-    const char *ret;
+    char *ret;
     if (**p != '\"') {
         goto err;
     }
@@ -487,6 +492,7 @@ uint32_t pb_parse_field(const char **p, pb_string_t *v, uint32_t mul) {
 next:
 	v->c_str = ret;
 	v->len = (int) (*p - ret);
+	**p = '\0';
     *p = consume_space(*p+1);
     if (**p != ':') {
         goto err;
@@ -498,7 +504,7 @@ err:
     return 0;
 }
 
-const char *pb_parse_skip(const char *p) {
+char *pb_parse_skip(char *p) {
     switch (*p) {
     case '[':
         p = consume_space(p+1);
@@ -611,39 +617,39 @@ err:
 	}																	\
 	return p
 
-const char *pb_parse_array_bool(const char *p, pb_buf_t *a, bool const **pv, int *plen) {
+char *pb_parse_array_bool(char *p, pb_buf_t *a, bool const **pv, int *plen) {
 	PARSE_ARRAY(bool, bool);
 }
 
-const char *pb_parse_array_i32(const char *p, pb_buf_t *a, int32_t const **pv, int *plen) {
+char *pb_parse_array_i32(char *p, pb_buf_t *a, int32_t const **pv, int *plen) {
 	PARSE_ARRAY(int32_t, i32);
 }
 
-const char *pb_parse_array_u32(const char *p, pb_buf_t *a, uint32_t const **pv, int *plen) {
+char *pb_parse_array_u32(char *p, pb_buf_t *a, uint32_t const **pv, int *plen) {
 	PARSE_ARRAY(uint32_t, u32);
 }
 
-const char *pb_parse_array_i64(const char *p, pb_buf_t *a, int64_t const **pv, int *plen) {
+char *pb_parse_array_i64(char *p, pb_buf_t *a, int64_t const **pv, int *plen) {
 	PARSE_ARRAY(int64_t, i64);
 }
 
-const char *pb_parse_array_u64(const char *p, pb_buf_t *a, uint64_t const **pv, int *plen) {
+char *pb_parse_array_u64(char *p, pb_buf_t *a, uint64_t const **pv, int *plen) {
 	PARSE_ARRAY(uint64_t, u64);
 }
 
-const char *pb_parse_array_float(const char *p, pb_buf_t *a, float const **pv, int *plen) {
+char *pb_parse_array_float(char *p, pb_buf_t *a, float const **pv, int *plen) {
 	PARSE_ARRAY(float, float);
 }
 
-const char *pb_parse_array_double(const char *p, pb_buf_t *a, double const **pv, int *plen) {
+char *pb_parse_array_double(char *p, pb_buf_t *a, double const **pv, int *plen) {
 	PARSE_ARRAY(double, double);
 }
 
-const char *pb_parse_array_bytes(const char *p, pb_buf_t *a, pb_bytes_t const **pv, int *plen) {
+char *pb_parse_array_bytes(char *p, pb_buf_t *a, pb_bytes_t const **pv, int *plen) {
 	PARSE_ARRAY(pb_bytes_t, bytes);
 }
 
-const char *pb_parse_array_string(const char *p, pb_buf_t *a, pb_string_t const **pv, int *plen) {
+char *pb_parse_array_string(char *p, pb_buf_t *a, pb_string_t const **pv, int *plen) {
 	PARSE_ARRAY(pb_string_t, string);
 }
 

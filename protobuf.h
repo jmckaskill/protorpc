@@ -224,36 +224,36 @@ static inline char *pb_put_tag_4(char *p, uint32_t v) {
 
 // JSON reading
 
-extern const char pb_errret[];
+extern char pb_errret[];
 
-const char *pb_parse_base64(const char *p, pb_bytes_t *v);
+char *pb_parse_base64(char *p, pb_bytes_t *v);
 
-const char *pb_parse_bool(const char *p, bool *v);
-const char *pb_parse_i32(const char *p, int32_t *v);
-const char *pb_parse_u32(const char *p, uint32_t *v);
-const char *pb_parse_i64(const char *p, int64_t *v);
-const char *pb_parse_u64(const char *p, uint64_t *v);
-const char *pb_parse_float(const char *p, float *v);
-const char *pb_parse_double(const char *p, double *v);
-const char *pb_parse_bytes(const char *p, pb_bytes_t *v);
-const char *pb_parse_string(const char *p, pb_string_t *v);
+char *pb_parse_bool(char *p, bool *v);
+char *pb_parse_i32(char *p, int32_t *v);
+char *pb_parse_u32(char *p, uint32_t *v);
+char *pb_parse_i64(char *p, int64_t *v);
+char *pb_parse_u64(char *p, uint64_t *v);
+char *pb_parse_float(char *p, float *v);
+char *pb_parse_double(char *p, double *v);
+char *pb_parse_bytes(char *p, pb_bytes_t *v);
+char *pb_parse_string(char *p, pb_string_t *v);
 
-const char *pb_parse_array_bool(const char *p, pb_buf_t *a, bool const **pv, int *plen);
-const char *pb_parse_array_i32(const char *p, pb_buf_t *a, int32_t const **pv, int *plen);
-const char *pb_parse_array_u32(const char *p, pb_buf_t *a, uint32_t const **pv, int *plen);
-const char *pb_parse_array_i64(const char *p, pb_buf_t *a, int64_t const **pv, int *plen);
-const char *pb_parse_array_u64(const char *p, pb_buf_t *a, uint64_t const **pv, int *plen);
-const char *pb_parse_array_float(const char *p, pb_buf_t *a, float const **pv, int *plen);
-const char *pb_parse_array_double(const char *p, pb_buf_t *a, double const **pv, int *plen);
-const char *pb_parse_array_bytes(const char *p, pb_buf_t *a, pb_bytes_t const **pv, int *plen);
-const char *pb_parse_array_string(const char *p, pb_buf_t *a, pb_string_t const **pv, int *plen);
+char *pb_parse_array_bool(char *p, pb_buf_t *a, bool const **pv, int *plen);
+char *pb_parse_array_i32(char *p, pb_buf_t *a, int32_t const **pv, int *plen);
+char *pb_parse_array_u32(char *p, pb_buf_t *a, uint32_t const **pv, int *plen);
+char *pb_parse_array_i64(char *p, pb_buf_t *a, int64_t const **pv, int *plen);
+char *pb_parse_array_u64(char *p, pb_buf_t *a, uint64_t const **pv, int *plen);
+char *pb_parse_array_float(char *p, pb_buf_t *a, float const **pv, int *plen);
+char *pb_parse_array_double(char *p, pb_buf_t *a, double const **pv, int *plen);
+char *pb_parse_array_bytes(char *p, pb_buf_t *a, pb_bytes_t const **pv, int *plen);
+char *pb_parse_array_string(char *p, pb_buf_t *a, pb_string_t const **pv, int *plen);
 
-bool pb_parse_array(const char **p);
-bool pb_parse_map(const char **p);
-bool pb_more_array(const char **p);
-uint32_t pb_parse_enum(const char **p, pb_string_t *v, uint32_t mul);
-uint32_t pb_parse_field(const char **p, pb_string_t *v, uint32_t mul);
-const char *pb_parse_skip(const char *p);
+bool pb_parse_array(char **p);
+bool pb_parse_map(char **p);
+bool pb_more_array(char **p);
+uint32_t pb_parse_enum(char **p, pb_string_t *v, uint32_t mul);
+uint32_t pb_parse_field(char **p, pb_string_t *v, uint32_t mul);
+char *pb_parse_skip(char *p);
 
 
 
