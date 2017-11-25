@@ -26,36 +26,36 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 // };
 
 // returns zero on success, non-zero on failure
-#define ca_setlen(P, SZ) 		(assert(sizeof((P)->buf) != sizeof(char*)), (P)->len = (SZ), (P)->buf[(P)->len] = '\0')
-#define ca_set2(P, SRC, SRCSZ) 	(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (SRCSZ)))
-#define ca_set(P, SRC) 			(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (int) strlen(SRC)))
-#define ca_setstr(P, ADD) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_set2_((P)->buf, sizeof((P)->buf), &(P)->len, (ADD).buf, (ADD).len))
-#define ca_add2(P, SRC, SRCSZ) 	(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (SRCSZ)))
-#define ca_add(P, SRC) 			(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (SRC), (int) strlen(SRC)))
-#define ca_addstr(P, ADD) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_add2_((P)->buf, sizeof((P)->buf), &(P)->len, (ADD).buf, (ADD).len))
-#define ca_vaddf(P, FMT, AP) 	(assert(sizeof((P)->buf) != sizeof(char*)), ca_vaddf_((P)->buf, sizeof((P)->buf), &(P)->len, (FMT), (AP)))
-#define ca_addf(P, ...) 		(assert(sizeof((P)->buf) != sizeof(char*)), ca_addf_((P)->buf, sizeof((P)->buf), &(P)->len, __VA_ARGS__))
+#define ca_setlen(P, SZ) 		(assert(sizeof((P)->c_str) != sizeof(char*)), (P)->len = (SZ), (P)->c_str[(P)->len] = '\0')
+#define ca_set2(P, SRC, SRCSZ) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (SRCSZ)))
+#define ca_set(P, SRC) 			(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (int) strlen(SRC)))
+#define ca_setstr(P, ADD) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (ADD).c_str, (ADD).len))
+#define ca_add2(P, SRC, SRCSZ) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (SRCSZ)))
+#define ca_add(P, SRC) 			(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (int) strlen(SRC)))
+#define ca_addstr(P, ADD) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (ADD).c_str, (ADD).len))
+#define ca_vaddf(P, FMT, AP) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_vaddf_((P)->c_str, sizeof((P)->c_str), &(P)->len, (FMT), (AP)))
+#define ca_addf(P, ...) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_addf_((P)->c_str, sizeof((P)->c_str), &(P)->len, __VA_ARGS__))
 
 // comparison functions can be used with str_t, slice_t or a char buffer like above
 
 typedef struct {
 	int len;
-	const char *buf;
+	const char *c_str;
 } slice_t;
 
 // can be used with fixed sized arrays as well as str_t
-#define str_ends_with(P, TEST) 		(strlen(TEST) <= (size_t) (P).len && !memcmp((P).buf + (P).len - strlen(TEST), (TEST), strlen(TEST)))
-#define str_iends_with(P, TEST) 	(strlen(TEST) <= (size_t) (P).len && !strncasecmp((P).buf + (P).len - strlen(TEST), (TEST), strlen(TEST)))
-#define str_begins_with(P, TEST)	(strlen(TEST) <= (size_t) (P).len && !memcmp((P).buf, (TEST), strlen(TEST)))
-#define str_ibegins_with(P, TEST)	(strlen(TEST) <= (size_t) (P).len && !strncasecmp((P).buf, (TEST), strlen(TEST)))
+#define str_ends_with(P, TEST) 		(strlen(TEST) <= (size_t) (P).len && !memcmp((P).c_str + (P).len - strlen(TEST), (TEST), strlen(TEST)))
+#define str_iends_with(P, TEST) 	(strlen(TEST) <= (size_t) (P).len && !strncasecmp((P).c_str + (P).len - strlen(TEST), (TEST), strlen(TEST)))
+#define str_begins_with(P, TEST)	(strlen(TEST) <= (size_t) (P).len && !memcmp((P).c_str, (TEST), strlen(TEST)))
+#define str_ibegins_with(P, TEST)	(strlen(TEST) <= (size_t) (P).len && !strncasecmp((P).c_str, (TEST), strlen(TEST)))
 
-#define str_test(P, TEST) 	(strlen(TEST) == (size_t) (P).len && !memcmp((P).buf, (TEST), (P).len))
-#define str_itest(P, TEST)	(strlen(TEST) == (size_t) (P).len && !strncasecmp((P).buf, (TEST), (P).len))
+#define str_test(P, TEST) 	(strlen(TEST) == (size_t) (P).len && !memcmp((P).c_str, (TEST), (P).len))
+#define str_itest(P, TEST)	(strlen(TEST) == (size_t) (P).len && !strncasecmp((P).c_str, (TEST), (P).len))
 
-#define str_equals(A, B) ((A).len == (B).len && !memcmp((A).buf, (B).buf, (A).len))
+#define str_equals(A, B) ((A).len == (B).len && !memcmp((A).c_str, (B).c_str, (A).len))
 
-#define str_find_char(P, CH)    ((const char*) memchr((P).buf, (CH), (P).len))
-#define str_rfind_char(P, CH) 	((const char*) memrchr((P).buf, (CH), (P).len))
+#define str_find_char(P, CH)    ((const char*) memchr((P).c_str, (CH), (P).len))
+#define str_rfind_char(P, CH) 	((const char*) memrchr((P).c_str, (CH), (P).len))
 
 // the following are the implementation functions
 

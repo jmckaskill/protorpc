@@ -7,17 +7,17 @@ static uint32_t string_hash(slice_t key) {
         return 0;
     }
 
-    uint32_t h = (uint8_t) *key.buf;
+    uint32_t h = (uint8_t) *key.c_str;
 
     for (int i = 1; i < key.len; i++) {
-        h = (h << 5) - h + (uint8_t) key.buf[i];
+        h = (h << 5) - h + (uint8_t) key.c_str[i];
     }
 
     return h;
 }
 
 static bool string_equal(slice_t a, slice_t b) {
-	return a.len == b.len && !memcmp(a.buf, b.buf, a.len);
+	return a.len == b.len && !memcmp(a.c_str, b.c_str, a.len);
 }
 
 KHASH_INIT(string, slice_t, 1, string_hash, string_equal)
@@ -59,7 +59,7 @@ bool imap_64_get_base(const map_t* h, int64_t key) {
 
 bool smap_get_base(const map_t* h, const char *key, int len) {
 	slice_t skey;
-	skey.buf = (char*) key;
+	skey.c_str = (char*) key;
 	skey.len = len;
 	((map_t*) h)->idx = kh_get_string((kh_string_t*) h, skey);
 	return h->idx != (int) kh_end(h);
@@ -80,7 +80,7 @@ bool imap_64_add_base(map_t* h, int64_t key, size_t valsz) {
 bool smap_add_base(map_t* h, const char *key, int len, size_t valsz) {
 	int ret;
 	slice_t skey;
-	skey.buf = (char*) key;
+	skey.c_str = (char*) key;
 	skey.len = len;
 	((map_t*) h)->idx = kh_put_string((kh_string_t*) h, skey, valsz, &ret);
 	return ret != 0;

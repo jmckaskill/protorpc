@@ -25,9 +25,9 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
     str_addf(o, "\tif (pb_skipto_%u(&p, e, %u)) {" EOL, tagsz, tag);
     
     // hacks to support bootstapping descriptor.proto as 0 are useful values for these fields
-    if (!strcmp(t->name.buf, ".google.protobuf.FieldDescriptorProto") && !pb_cmp(f->name, "oneof_index")) {
+    if (!strcmp(t->name.c_str, ".google.protobuf.FieldDescriptorProto") && !pb_cmp(f->name, "oneof_index")) {
         str_add(o, "\t\tm->oneof_index_set = true;" EOL);
-    } else if (!strcmp(t->name.buf, ".google.protobuf.FieldOptions") && !pb_cmp(f->name, "packed")) {
+    } else if (!strcmp(t->name.c_str, ".google.protobuf.FieldOptions") && !pb_cmp(f->name, "packed")) {
 		str_add(o, "\t\tm->packed_set = true;" EOL);
 	}
 
@@ -37,7 +37,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 		str_add(o, "\t\tm->");
 		str_addstr(o, oneof);
 		str_add(o, "_type = ");
-		pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
+		pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
 		to_upper(o, ps);
 		str_add(o, "_");
 		to_upper(o, f->name);
@@ -51,89 +51,89 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 
 	if (f->label == LABEL_REPEATED) {
 		if (ft->pod_message) {
-			str_addf(o, "\t\t%s.v = (%s*) obj->next;" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t%s.v = (%s*) obj->next;" EOL, mbr.c_str, ft->c_type.c_str);
 			str_add(o, "\t\tdo {" EOL);
-			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.c_str, ft->c_type.c_str);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
 			str_add(o, "\t\t\tpb_string_t msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
-			str_addf(o, "\t\t\tif (pb_get_%s(msg.buf, msg.buf + msg.len, (%s*) &%s.v[%s.len])) {" EOL, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf, mbr.buf);
+			str_addf(o, "\t\t\tif (pb_get_%s(msg.c_str, msg.c_str + msg.len, (%s*) &%s.v[%s.len])) {" EOL, ft->proto_suffix.c_str, ft->c_type.c_str, mbr.c_str, mbr.c_str);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
-			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
+			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.c_str);
 			str_addf(o, "\t\t} while (!pb_cmp_tag_%u(p, e, %u));" EOL, tagsz, tag);
 			str_add(o, EOL);
-			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.c_str, ft->c_type.c_str);
 		} else if (ft->msg) {
-			str_addf(o, "\t\t%s *prev = NULL;" EOL, ft->c_type.buf);
+			str_addf(o, "\t\t%s *prev = NULL;" EOL, ft->c_type.c_str);
 			str_add(o, "\t\tdo {" EOL);
 			str_add(o, "\t\t\tpb_string_t msg;" EOL);
 			str_addf(o, "\t\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
-			str_addf(o, "\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\t\tif (!c || pb_get_%s(msg.buf, msg.buf + msg.len, obj, c)) {" EOL, ft->proto_suffix.buf);
+			str_addf(o, "\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.c_str, ft->c_type.c_str, ft->c_type.c_str);
+			str_addf(o, "\t\t\tif (!c || pb_get_%s(msg.c_str, msg.c_str + msg.len, obj, c)) {" EOL, ft->proto_suffix.c_str);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
-			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
+			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.c_str);
 			str_add(o, "\t\t\tc->pb_hdr.prev = prev;" EOL);
 			str_add(o, "\t\t\tprev = c;" EOL);
 			str_addf(o, "\t\t} while (!pb_cmp_tag_%u(p, e, %u));" EOL, tagsz, tag);
 			str_add(o, EOL);
-			str_addf(o, "\t\t%s.v = (const %s**) pb_calloc(obj, %s.len * sizeof(%s*));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
-			str_addf(o, "\t\tif (!%s.v) {" EOL, mbr.buf);
+			str_addf(o, "\t\t%s.v = (const %s**) pb_calloc(obj, %s.len * sizeof(%s*));" EOL, mbr.c_str, ft->c_type.c_str, mbr.c_str, ft->c_type.c_str);
+			str_addf(o, "\t\tif (!%s.v) {" EOL, mbr.c_str);
 			str_add(o, "\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t}" EOL);
 			str_add(o, EOL);
-			str_addf(o, "\t\tfor (int i = %s.len - 1; i >= 0; i--) {" EOL, mbr.buf);
-			str_addf(o, "\t\t\t%s.v[i] = prev;" EOL, mbr.buf);
-			str_addf(o, "\t\t\tprev = (%s*) prev->pb_hdr.prev;" EOL, ft->c_type.buf);
+			str_addf(o, "\t\tfor (int i = %s.len - 1; i >= 0; i--) {" EOL, mbr.c_str);
+			str_addf(o, "\t\t\t%s.v[i] = prev;" EOL, mbr.c_str);
+			str_addf(o, "\t\t\tprev = (%s*) prev->pb_hdr.prev;" EOL, ft->c_type.c_str);
 			str_add(o, "\t\t}" EOL);
 		} else if (is_field_packed(t, f)) {
-			str_addf(o, "\t\tp = pb_get_packed_%s(p, e, obj, ", ft->proto_suffix.buf);
+			str_addf(o, "\t\tp = pb_get_packed_%s(p, e, obj, ", ft->proto_suffix.c_str);
 			get_proto_cast(o, f, 1, 0);
-			str_addf(o, "&%s.v, &%s.len);" EOL, mbr.buf, mbr.buf);
+			str_addf(o, "&%s.v, &%s.len);" EOL, mbr.c_str, mbr.c_str);
 		} else {
-			str_addf(o, "\t\t%s.v = (%s*) obj->next;" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t%s.v = (%s*) obj->next;" EOL, mbr.c_str, ft->c_type.c_str);
 			str_add(o, "\t\tdo {" EOL);
-			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\t\tif (obj->next + %s.len * sizeof(%s) > obj->end) {" EOL, mbr.c_str, ft->c_type.c_str);
 			str_add(o, "\t\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t\t}" EOL);
-			str_addf(o, "\t\t\tp = pb_get_%s(p + %u, e, ", ft->proto_suffix.buf, tagsz);
+			str_addf(o, "\t\t\tp = pb_get_%s(p + %u, e, ", ft->proto_suffix.c_str, tagsz);
 			get_proto_cast(o, f, 0, 0);
-			str_addf(o, "&%s.v[%s.len]);" EOL, mbr.buf, mbr.buf);
-			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.buf);
+			str_addf(o, "&%s.v[%s.len]);" EOL, mbr.c_str, mbr.c_str);
+			str_addf(o, "\t\t\t%s.len++;" EOL, mbr.c_str);
 			str_addf(o, "\t\t} while (!pb_cmp_tag_%u(p, e, %u));" EOL, tagsz, tag);
 			str_add(o, EOL);
-			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.buf, ft->c_type.buf);
+			str_addf(o, "\t\tobj->next += %s.len * sizeof(%s);" EOL, mbr.c_str, ft->c_type.c_str);
 		}
     } else if (ft->msg) {
         str_add(o, "\t\tpb_string_t msg;" EOL);
         str_addf(o, "\t\tp = pb_get_string(p + %u, e, &msg);" EOL, tagsz);
 		if (ft->pod_message) {
-			str_addf(o, "\t\tif (pb_get_%s(msg.buf, msg.buf + msg.len, &%s)) {" EOL, ft->proto_suffix.buf, mbr.buf);
+			str_addf(o, "\t\tif (pb_get_%s(msg.c_str, msg.c_str + msg.len, &%s)) {" EOL, ft->proto_suffix.c_str, mbr.c_str);
 			str_add(o, "\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t}" EOL);
 		} else {
-			str_addf(o, "\t\t%s = (%s*) pb_calloc(obj, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\tif (!%s || pb_get_%s(msg.buf, msg.buf + msg.len, obj, (%s*) %s)) {" EOL, mbr.buf, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+			str_addf(o, "\t\t%s = (%s*) pb_calloc(obj, sizeof(%s));" EOL, mbr.c_str, ft->c_type.c_str, ft->c_type.c_str);
+			str_addf(o, "\t\tif (!%s || pb_get_%s(msg.c_str, msg.c_str + msg.len, obj, (%s*) %s)) {" EOL, mbr.c_str, ft->proto_suffix.c_str, ft->c_type.c_str, mbr.c_str);
 			str_add(o, "\t\t\treturn -1;" EOL);
 			str_add(o, "\t\t}" EOL);
 		}
     } else {
-        str_addf(o, "\t\tp = pb_get_%s(p + %u, e, ", ft->proto_suffix.buf, tagsz);
+        str_addf(o, "\t\tp = pb_get_%s(p + %u, e, ", ft->proto_suffix.c_str, tagsz);
         get_proto_cast(o, f, 0, 0);
-        str_addf(o, "&%s);" EOL, mbr.buf);
+        str_addf(o, "&%s);" EOL, mbr.c_str);
     }
 
     str_add(o, "\t}" EOL);
 }
 
 void do_decode(str_t *o, const struct type *t, bool define) {
-	str_addf(o, "int pb_get_%s(const char *p, const char *e", t->proto_suffix.buf);
+	str_addf(o, "int pb_get_%s(const char *p, const char *e", t->proto_suffix.c_str);
 	if (!t->pod_message) {
 		str_add(o, ", pb_buf_t *obj");
 	}
-	str_addf(o, ", %s *m)", t->c_type.buf);
+	str_addf(o, ", %s *m)", t->c_type.c_str);
     if (!define) {
         str_add(o, ";" EOL);
         return;

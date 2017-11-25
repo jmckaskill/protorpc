@@ -3,7 +3,7 @@
 static uint32_t compute_hash(pb_string_t s, uint32_t mul) {
 	uint32_t hash = 0;
 	for (int i = 0; i < s.len; i++) {
-		hash = (hash * mul) + (uint8_t)s.buf[i];
+		hash = (hash * mul) + (uint8_t)s.c_str[i];
 	}
 	return hash;
 }

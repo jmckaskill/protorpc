@@ -3,10 +3,10 @@
 
 void to_upper(str_t *o, pb_string_t s) {
 	for (int i = 0; i < s.len; i++) {
-		if ('a' <= s.buf[i] && s.buf[i] <= 'z') {
-            str_addch(o, s.buf[i] - 'a' + 'A');
+		if ('a' <= s.c_str[i] && s.c_str[i] <= 'z') {
+            str_addch(o, s.c_str[i] - 'a' + 'A');
 		} else {
-            str_addch(o, s.buf[i]);
+            str_addch(o, s.c_str[i]);
 		}
 	}
 }
@@ -65,7 +65,7 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
 	while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index_set && t->msg->field.v[i]->oneof_index == oneof) {
         const struct FieldDescriptorProto* f = t->msg->field.v[i];
         str_add(o, "\t");
-        pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
+        pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
         to_upper(o, ps);
         str_add(o, "_");
         to_upper(o, f->name);
@@ -156,10 +156,10 @@ void define_struct(str_t *o, struct type *t) {
     }
 
     // hacks to support bootstrapping descriptor.proto as 0 are useful values for these fields
-    if (!strcmp(t->name.buf, ".google.protobuf.FieldDescriptorProto")) {
+    if (!strcmp(t->name.c_str, ".google.protobuf.FieldDescriptorProto")) {
         str_add(o, "\tbool oneof_index_set;" EOL);
 
-    } else if (!strcmp(t->name.buf, ".google.protobuf.FieldOptions")) {
+    } else if (!strcmp(t->name.c_str, ".google.protobuf.FieldOptions")) {
         str_add(o, "\tbool packed_set;" EOL);
 	}
 

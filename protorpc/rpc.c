@@ -32,14 +32,14 @@ static int get_line(slice_t *p, slice_t *line) {
 		return PR_ERROR;
 	} else if (!nl) {
 		return PR_CONTINUE;
-	} else if (nl == p->buf || nl[-1] != '\r') {
+	} else if (nl == p->c_str || nl[-1] != '\r') {
 		return PR_ERROR;
 	}
 
-	line->buf = p->buf;
-	line->len = nl - 1 - p->buf; // don't include the \r
-	p->len -= nl+1 - p->buf;
-	p->buf = nl + 1;
+	line->c_str = p->c_str;
+	line->len = nl - 1 - p->c_str; // don't include the \r
+	p->len -= nl+1 - p->c_str;
+	p->c_str = nl + 1;
 	return PR_FINISHED;
 }
 
@@ -48,11 +48,11 @@ static int split(slice_t in, slice_t *left, slice_t *right, char ch) {
 	if (!p) {
 		return -1;
 	}
-	const char *b = in.buf;
-	const char *e = in.buf + in.len;
-	left->buf = b;
+	const char *b = in.c_str;
+	const char *e = in.c_str + in.len;
+	left->c_str = b;
 	left->len = (int) (p - b);
-	right->buf = p+1;
+	right->c_str = p+1;
 	right->len = (int) (e - (p+1));
 	return 0;
 }
@@ -99,34 +99,34 @@ static int parse_request_header(struct pr_http *h, slice_t *data) {
     }
 
 	// check for an absolute form address e.g. GET http://www.example.com:80/foo HTTP/1.1
-    const char *scheme = (const char*) memmem(path.buf, path.len, "://", 3);
+    const char *scheme = (const char*) memmem(path.c_str, path.len, "://", 3);
     if (scheme) {
-		const char *pathe = path.buf + path.len;
+		const char *pathe = path.c_str + path.len;
 		slice_t host = {pathe - (scheme+3), scheme+3};
         const char *slash = str_find_char(host, '/');
         if (slash) {
             path.len = pathe - slash;
-            path.buf = slash;
+            path.c_str = slash;
         } else {
             path.len = 1;
-            path.buf = "/";
+            path.c_str = "/";
         }
     }
 
     // remove the query string
     const char *query = str_find_char(path, '?');
     if (query) {
-        path.len = (int) (query - path.buf);
+        path.len = (int) (query - path.c_str);
     }
 
 	// path checks - generally refuse anything that may cause a root path escape
 	// or we don't want to process
     if (str_find_char(path, '%')
-	 || memmem(path.buf, path.len, "/..", 3)
-	 || memmem(path.buf, path.len, "//", 2)
+	 || memmem(path.c_str, path.len, "/..", 3)
+	 || memmem(path.c_str, path.len, "//", 2)
 	 || str_find_char(path, '\\')
 	 || path.len == 0
-	 || path.buf[0] != '/') {
+	 || path.c_str[0] != '/') {
         h->error_string = "400 Malformed Path";
         return PR_ERROR;
     }
@@ -142,8 +142,8 @@ static int parse_request_header(struct pr_http *h, slice_t *data) {
 }
 
 static void consume_whitespace(slice_t *p) {
-	while (p->len && (p->buf[0] == ' ' || p->buf[0] == '\t')) {
-		p->buf++;
+	while (p->len && (p->c_str[0] == ' ' || p->c_str[0] == '\t')) {
+		p->c_str++;
 		p->len--;
 	}
 }
@@ -153,17 +153,17 @@ static slice_t next_element(slice_t *p, bool *more) {
 	consume_whitespace(p);
 	slice_t ret = *p;
 
-	while (p->len && (p->buf[0] != ' ' && p->buf[0] != '\t' && p->buf[0] != ';' && p->buf[0] != ',')) {
-		p->buf++;
+	while (p->len && (p->c_str[0] != ' ' && p->c_str[0] != '\t' && p->c_str[0] != ';' && p->c_str[0] != ',')) {
+		p->c_str++;
 		p->len--;
     }
 
-	ret.len = (int) (p->buf - ret.buf);
+	ret.len = (int) (p->c_str - ret.c_str);
 	consume_whitespace(p);
 
-    if (more && p->len && (p->buf[0] == ',' || p->buf[0] == ';')) {
+    if (more && p->len && (p->c_str[0] == ',' || p->c_str[0] == ';')) {
 		// another element after this one
-		p->buf++;
+		p->c_str++;
 		p->len--;
 		*more = true;
     } else if (!p->len) {
@@ -173,7 +173,7 @@ static slice_t next_element(slice_t *p, bool *more) {
 		}
     } else {
 		// invalid line
-		ret.buf = NULL;
+		ret.c_str = NULL;
 		ret.len = 0;
     }
 
@@ -240,7 +240,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 					n = next_element(&val, &more);
 					if (str_ibegins_with(n, "boundary=")) {
 						size_t off = strlen("boundary=");
-						ca_set2(&h->boundary, n.buf + off, n.len - off);
+						ca_set2(&h->boundary, n.c_str + off, n.len - off);
 					}
 				}
 
@@ -263,7 +263,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
                 return PR_ERROR;
             }
             while (n.len) {
-                if (n.buf[0] < '0' || n.buf[0] > '9') {
+                if (n.c_str[0] < '0' || n.c_str[0] > '9') {
                     h->error_string = "400 Malformed Content-Length";
                     return PR_ERROR;
                 }
@@ -272,8 +272,8 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
                     h->error_string = "413 Request Too Large";
                     return PR_ERROR;
                 }
-				h->content_length = (h->content_length * 10) + (n.buf[0] - '0');
-				n.buf++;
+				h->content_length = (h->content_length * 10) + (n.c_str[0] - '0');
+				n.c_str++;
 				n.len--;
             }
 			h->length_type = PR_HTTP_LENGTH_FIXED;
@@ -336,7 +336,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
             if (n.len == HTTP_ETAG_LENGTH) {
 				h->etag = 0;
                 for (int i = 0; i < HTTP_ETAG_LENGTH; i++) {
-                    h->etag = (h->etag << 4) | (uint64_t) (n.buf[i] - 'A');
+                    h->etag = (h->etag << 4) | (uint64_t) (n.c_str[i] - 'A');
                 }
                 h->have_etag = 1;
             }
@@ -356,7 +356,7 @@ int pr_parse_request(struct pr_http *h, const char **data, int *sz) {
     }
 	assert(err != PR_ERROR || h->error_string);
 
-	*data = p.buf;
+	*data = p.c_str;
 	*sz = p.len;
     return err;
 }
@@ -397,7 +397,7 @@ int pr_parse_body(struct pr_http *h, const char **data, int *sz) {
 uint32_t pr_hash_path(pb_string_t p, uint32_t mul) {
 	uint32_t hash = 0;
 	for (int i = 0; i < p.len; i++) {
-		hash = (hash * mul) + (uint32_t)p.buf[i];
+		hash = (hash * mul) + (uint32_t)p.c_str[i];
 	}
 	return hash;
 }
@@ -458,12 +458,12 @@ int pr_parse_multipart(struct pr_multipart *m, char **data, int *sz) {
 	m->next_out = *p;
 
 	for (;;) {
-		if (e - *p < m->boundary.len && !memcmp(*p, m->boundary.buf, e - *p)) {
+		if (e - *p < m->boundary.len && !memcmp(*p, m->boundary.c_str, e - *p)) {
 			// we have an incomplete boundary at the head of the incoming buffer
 			return PR_CONTINUE;
 		}
 
-		if (e - *p >= m->boundary.len + 2 && !memcmp(*p, m->boundary.buf, m->boundary.len)) {
+		if (e - *p >= m->boundary.len + 2 && !memcmp(*p, m->boundary.c_str, m->boundary.len)) {
 			// we have a complete boundary at the head of the incoming buffer
 			if (e - *p < m->boundary.len + 2) {
 				return PR_CONTINUE;

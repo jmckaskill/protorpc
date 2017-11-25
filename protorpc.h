@@ -37,10 +37,10 @@ struct pr_http {
     const char *body_chunk;
     int chunk_size;
     pb_buf_t request_objects;
-    struct {int len; char buf[64];} login;
-    struct {int len; char buf[6];} lang;
-	struct {int len; char buf[256];} boundary;
-    struct {int len; char buf[256];} name;
+    struct {int len; char c_str[64];} login;
+    struct {int len; char c_str[6];} lang;
+	struct {int len; char c_str[256];} boundary;
+    struct {int len; char c_str[256];} name;
 };
 
 // error codes for pr_parse* functions

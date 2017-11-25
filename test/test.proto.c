@@ -1072,14 +1072,14 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 		pb_string_t msg;
 		p = pb_get_string(p + 2, e, &msg);
 		m->msg = (struct TestMessage*) pb_calloc(obj, sizeof(struct TestMessage));
-		if (!m->msg || pb_get_TestMessage(msg.buf, msg.buf + msg.len, obj, (struct TestMessage*) m->msg)) {
+		if (!m->msg || pb_get_TestMessage(msg.c_str, msg.c_str + msg.len, obj, (struct TestMessage*) m->msg)) {
 			return -1;
 		}
 	}
 	if (pb_skipto_2(&p, e, 402)) {
 		pb_string_t msg;
 		p = pb_get_string(p + 2, e, &msg);
-		if (pb_get_TestPod(msg.buf, msg.buf + msg.len, &m->pod)) {
+		if (pb_get_TestPod(msg.c_str, msg.c_str + msg.len, &m->pod)) {
 			return -1;
 		}
 	}
@@ -1155,7 +1155,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct TestMessage *c = (struct TestMessage*) pb_calloc(obj, sizeof(struct TestMessage));
-			if (!c || pb_get_TestMessage(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_TestMessage(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->rmsg.len++;
@@ -1181,7 +1181,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestPod(msg.buf, msg.buf + msg.len, (struct TestPod*) &m->rpod.v[m->rpod.len])) {
+			if (pb_get_TestPod(msg.c_str, msg.c_str + msg.len, (struct TestPod*) &m->rpod.v[m->rpod.len])) {
 				return -1;
 			}
 			m->rpod.len++;
@@ -1197,7 +1197,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_MbEntry(msg.buf, msg.buf + msg.len, (struct TestMessage_MbEntry*) &m->mb.v[m->mb.len])) {
+			if (pb_get_TestMessage_MbEntry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_MbEntry*) &m->mb.v[m->mb.len])) {
 				return -1;
 			}
 			m->mb.len++;
@@ -1213,7 +1213,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Mi32Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Mi32Entry*) &m->mi32.v[m->mi32.len])) {
+			if (pb_get_TestMessage_Mi32Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Mi32Entry*) &m->mi32.v[m->mi32.len])) {
 				return -1;
 			}
 			m->mi32.len++;
@@ -1229,7 +1229,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Ms32Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Ms32Entry*) &m->ms32.v[m->ms32.len])) {
+			if (pb_get_TestMessage_Ms32Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Ms32Entry*) &m->ms32.v[m->ms32.len])) {
 				return -1;
 			}
 			m->ms32.len++;
@@ -1245,7 +1245,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Msf32Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Msf32Entry*) &m->msf32.v[m->msf32.len])) {
+			if (pb_get_TestMessage_Msf32Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Msf32Entry*) &m->msf32.v[m->msf32.len])) {
 				return -1;
 			}
 			m->msf32.len++;
@@ -1261,7 +1261,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Mu32Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Mu32Entry*) &m->mu32.v[m->mu32.len])) {
+			if (pb_get_TestMessage_Mu32Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Mu32Entry*) &m->mu32.v[m->mu32.len])) {
 				return -1;
 			}
 			m->mu32.len++;
@@ -1277,7 +1277,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Mf32Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Mf32Entry*) &m->mf32.v[m->mf32.len])) {
+			if (pb_get_TestMessage_Mf32Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Mf32Entry*) &m->mf32.v[m->mf32.len])) {
 				return -1;
 			}
 			m->mf32.len++;
@@ -1293,7 +1293,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Mi64Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Mi64Entry*) &m->mi64.v[m->mi64.len])) {
+			if (pb_get_TestMessage_Mi64Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Mi64Entry*) &m->mi64.v[m->mi64.len])) {
 				return -1;
 			}
 			m->mi64.len++;
@@ -1309,7 +1309,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Msf64Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Msf64Entry*) &m->msf64.v[m->msf64.len])) {
+			if (pb_get_TestMessage_Msf64Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Msf64Entry*) &m->msf64.v[m->msf64.len])) {
 				return -1;
 			}
 			m->msf64.len++;
@@ -1325,7 +1325,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
-			if (pb_get_TestMessage_Ms64Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Ms64Entry*) &m->ms64.v[m->ms64.len])) {
+			if (pb_get_TestMessage_Ms64Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Ms64Entry*) &m->ms64.v[m->ms64.len])) {
 				return -1;
 			}
 			m->ms64.len++;
@@ -1342,7 +1342,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
-			if (pb_get_TestMessage_Mu64Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Mu64Entry*) &m->mu64.v[m->mu64.len])) {
+			if (pb_get_TestMessage_Mu64Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Mu64Entry*) &m->mu64.v[m->mu64.len])) {
 				return -1;
 			}
 			m->mu64.len++;
@@ -1358,7 +1358,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
-			if (pb_get_TestMessage_Mf64Entry(msg.buf, msg.buf + msg.len, (struct TestMessage_Mf64Entry*) &m->mf64.v[m->mf64.len])) {
+			if (pb_get_TestMessage_Mf64Entry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_Mf64Entry*) &m->mf64.v[m->mf64.len])) {
 				return -1;
 			}
 			m->mf64.len++;
@@ -1374,7 +1374,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
-			if (pb_get_TestMessage_MfEntry(msg.buf, msg.buf + msg.len, (struct TestMessage_MfEntry*) &m->mf.v[m->mf.len])) {
+			if (pb_get_TestMessage_MfEntry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_MfEntry*) &m->mf.v[m->mf.len])) {
 				return -1;
 			}
 			m->mf.len++;
@@ -1390,7 +1390,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
-			if (pb_get_TestMessage_MdEntry(msg.buf, msg.buf + msg.len, (struct TestMessage_MdEntry*) &m->md.v[m->md.len])) {
+			if (pb_get_TestMessage_MdEntry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_MdEntry*) &m->md.v[m->md.len])) {
 				return -1;
 			}
 			m->md.len++;
@@ -1404,7 +1404,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
 			struct TestMessage_MbyEntry *c = (struct TestMessage_MbyEntry*) pb_calloc(obj, sizeof(struct TestMessage_MbyEntry));
-			if (!c || pb_get_TestMessage_MbyEntry(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_TestMessage_MbyEntry(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->mby.len++;
@@ -1428,7 +1428,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
 			struct TestMessage_MstrEntry *c = (struct TestMessage_MstrEntry*) pb_calloc(obj, sizeof(struct TestMessage_MstrEntry));
-			if (!c || pb_get_TestMessage_MstrEntry(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_TestMessage_MstrEntry(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->mstr.len++;
@@ -1454,7 +1454,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
-			if (pb_get_TestMessage_MenEntry(msg.buf, msg.buf + msg.len, (struct TestMessage_MenEntry*) &m->men.v[m->men.len])) {
+			if (pb_get_TestMessage_MenEntry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_MenEntry*) &m->men.v[m->men.len])) {
 				return -1;
 			}
 			m->men.len++;
@@ -1468,7 +1468,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
 			struct TestMessage_MmsgEntry *c = (struct TestMessage_MmsgEntry*) pb_calloc(obj, sizeof(struct TestMessage_MmsgEntry));
-			if (!c || pb_get_TestMessage_MmsgEntry(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_TestMessage_MmsgEntry(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->mmsg.len++;
@@ -1494,7 +1494,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 3, e, &msg);
-			if (pb_get_TestMessage_MpodEntry(msg.buf, msg.buf + msg.len, (struct TestMessage_MpodEntry*) &m->mpod.v[m->mpod.len])) {
+			if (pb_get_TestMessage_MpodEntry(msg.c_str, msg.c_str + msg.len, (struct TestMessage_MpodEntry*) &m->mpod.v[m->mpod.len])) {
 				return -1;
 			}
 			m->mpod.len++;
@@ -1505,20 +1505,20 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 	return 0;
 }
 void pb_term_TestMessage(struct TestMessage *m) {
-	if (m->str.buf) {
-		((char*)m->str.buf)[m->str.len] = '\0';
+	if (m->str.c_str) {
+		((char*)m->str.c_str)[m->str.len] = '\0';
 	} else {
-		m->str.buf = "";
+		m->str.c_str = "";
 	}
 	if (m->msg) {
 		pb_term_TestMessage((struct TestMessage*) m->msg);
 	}
 	pb_term_TestPod((struct TestPod*) &m->pod);
 	for (int i = 0; i < m->rstr.len; i++) {
-		if (m->rstr.v[i].buf) {
-			((char*)m->rstr.v[i].buf)[m->rstr.v[i].len] = '\0';
+		if (m->rstr.v[i].c_str) {
+			((char*)m->rstr.v[i].c_str)[m->rstr.v[i].len] = '\0';
 		} else {
-			((pb_string_t*)m->rstr.v)[i].buf = "";
+			((pb_string_t*)m->rstr.v)[i].c_str = "";
 		}
 	}
 	for (int i = 0; i < m->rmsg.len; i++) {
@@ -3319,10 +3319,10 @@ int pb_get_TestMessage_MstrEntry(const char *p, const char *e, pb_buf_t *obj, st
 	return 0;
 }
 void pb_term_TestMessage_MstrEntry(struct TestMessage_MstrEntry *m) {
-	if (m->value.buf) {
-		((char*)m->value.buf)[m->value.len] = '\0';
+	if (m->value.c_str) {
+		((char*)m->value.c_str)[m->value.len] = '\0';
 	} else {
-		m->value.buf = "";
+		m->value.c_str = "";
 	}
 }
 char *pb_encode_TestMessage_MstrEntry(char *p, struct TestMessage_MstrEntry const *m) {
@@ -3491,7 +3491,7 @@ int pb_get_TestMessage_MmsgEntry(const char *p, const char *e, pb_buf_t *obj, st
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->value = (struct TestMessage*) pb_calloc(obj, sizeof(struct TestMessage));
-		if (!m->value || pb_get_TestMessage(msg.buf, msg.buf + msg.len, obj, (struct TestMessage*) m->value)) {
+		if (!m->value || pb_get_TestMessage(msg.c_str, msg.c_str + msg.len, obj, (struct TestMessage*) m->value)) {
 			return -1;
 		}
 	}
@@ -3586,7 +3586,7 @@ int pb_get_TestMessage_MpodEntry(const char *p, const char *e, struct TestMessag
 	if (pb_skipto_1(&p, e, 18)) {
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
-		if (pb_get_TestPod(msg.buf, msg.buf + msg.len, &m->value)) {
+		if (pb_get_TestPod(msg.c_str, msg.c_str + msg.len, &m->value)) {
 			return -1;
 		}
 	}
@@ -3749,7 +3749,7 @@ const char *pb_parse_TestEnum(const char *p, enum TestEnum *v) {
 	return p;
 }
 const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, pb_string_t body, pb_buf_t *resp) {
-	pb_string_t path = {h->name.len, h->name.buf};
+	pb_string_t path = {h->name.len, h->name.c_str};
 	switch (pr_hash_path(path, 13) % 5) {
 	case 2:
 		if(pb_cmp(path, "/TestService/Test")) {
@@ -3757,7 +3757,7 @@ const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, pb_strin
 		} else {
 			struct TestMessage in;
 			struct TestMessage out;
-			if (pb_parse_TestMessage((char*)body.buf, &h->request_objects, &in) == pb_errret) {
+			if (pb_parse_TestMessage((char*)body.c_str, &h->request_objects, &in) == pb_errret) {
 				return pr_parse_error;
 			}
 			const char *ret = rpc->Test(rpc, h, NULL, &out);

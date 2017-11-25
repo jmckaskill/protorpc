@@ -22,7 +22,7 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
         #endif
         str_add2(&path, my_exe, (int) ((bslash ? bslash : slash) - my_exe));
         // putenv doesn't copy the input, so don't free the string
-		putenv(path.buf);
+		putenv(path.c_str);
     }
 #ifdef WIN32
     str_t cmdline = STR_INIT;
@@ -35,7 +35,7 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
     PROCESS_INFORMATION pi;
     STARTUPINFO si = {0};
     si.cb = sizeof(si);
-    CreateProcessA(NULL, cmdline.buf, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+    CreateProcessA(NULL, cmdline.c_str, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
     WaitForSingleObject(pi.hProcess, INFINITE);
     DWORD code;
     GetExitCodeProcess(pi.hProcess, &code);

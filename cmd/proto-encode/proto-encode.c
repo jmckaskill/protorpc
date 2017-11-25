@@ -302,7 +302,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    fwrite(s[0].buf, 1, s[0].len, out);
+    fwrite(s[0].c_str, 1, s[0].len, out);
     fflush(out);
     return 0;
 }

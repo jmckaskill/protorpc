@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
         str_init(&out[i]);
     }
 
-    begin[0] = (uint8_t*) inbuf.buf;
+    begin[0] = (uint8_t*) inbuf.c_str;
     end[0] = begin[0] + inbuf.len;
     uint8_t *p = begin[0];
 
@@ -211,6 +211,6 @@ backtrack:
         depth--;
     }
 
-    fwrite(out[0].buf, 1, out[0].len, stdout);
+    fwrite(out[0].c_str, 1, out[0].len, stdout);
     return 0;
 }

@@ -5,7 +5,7 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 		return;
 	}
 
-	str_addf(o, "bool pb_nonzero_%s(%s const *m)", t->json_suffix.buf, t->c_type.buf);
+	str_addf(o, "bool pb_nonzero_%s(%s const *m)", t->json_suffix.c_str, t->c_type.c_str);
 	if (!define) {
 		str_add(o, ";" EOL);
 		return;
@@ -49,11 +49,11 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 		const struct type *ft = get_field_type(f);
 		str_add(o, EOL);
 		if (f->label == LABEL_REPEATED || f->type == TYPE_STRING || f->type == TYPE_BYTES) {
-			str_addf(o, "\t    || %s.len", mbr.buf);
+			str_addf(o, "\t    || %s.len", mbr.c_str);
 		} else if (ft->pod_message) {
-			str_addf(o, "\t    || pb_nonzero_%s(&%s)", ft->json_suffix.buf, mbr.buf);
+			str_addf(o, "\t    || pb_nonzero_%s(&%s)", ft->json_suffix.c_str, mbr.c_str);
 		} else {
-			str_addf(o, "\t    || %s", mbr.buf);
+			str_addf(o, "\t    || %s", mbr.c_str);
 		}
 	}
 	str_add(o, ";" EOL);
@@ -61,7 +61,7 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 }
 
 void do_print(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "int pb_print_%s(pb_buf_t *a, %s const *m)", t->json_suffix.buf, t->c_type.buf);
+    str_addf(o, "int pb_print_%s(pb_buf_t *a, %s const *m)", t->json_suffix.c_str, t->c_type.c_str);
     if (!define) {
         str_add(o, ";" EOL);
 		return;
@@ -97,7 +97,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
                 str_add(o, "\tif(m->");
                 str_addstr(o, oneof);
                 str_add(o, "_type == ");
-                pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
+                pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
                 to_upper(o, ps);
                 str_add(o, "_");
                 to_upper(o, f->name);
@@ -108,12 +108,12 @@ void do_print(str_t *o, const struct type *t, bool define) {
                 str_addch(&mbr, '.');
                 str_addstr(&mbr, f->name);
             } else {
-                str_addf(o, "\tif (%s) {" EOL, mbr.buf);
+                str_addf(o, "\tif (%s) {" EOL, mbr.c_str);
             }
 
-            str_addf(o, "\t\tmemcpy(p, \"\\\"%s\\\":\", %u);" EOL, f->name.buf, f->name.len + 3 /*"":*/);
+            str_addf(o, "\t\tmemcpy(p, \"\\\"%s\\\":\", %u);" EOL, f->name.c_str, f->name.len + 3 /*"":*/);
             str_addf(o, "\t\tp += %u;" EOL, f->name.len + 3);
-            str_addf(o, "\t\tp = pb_print_%s(p, %s);" EOL, ft->json_suffix.buf, mbr.buf);
+            str_addf(o, "\t\tp = pb_print_%s(p, %s);" EOL, ft->json_suffix.c_str, mbr.c_str);
             str_add(o, "\t}" EOL);
         }
     }
@@ -136,7 +136,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");
-            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
             to_upper(o, ps);
             str_add(o, "_");
             to_upper(o, f->name);
@@ -148,43 +148,43 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_addstr(&mbr, f->name);
 
 		} else if (f->label == LABEL_REPEATED || f->type == TYPE_STRING || f->type == TYPE_BYTES) {
-			str_addf(o, "\tif (%s.len) {" EOL, mbr.buf);
+			str_addf(o, "\tif (%s.len) {" EOL, mbr.c_str);
 		} else if (ft->pod_message) {
-			str_addf(o, "\tif (pb_nonzero_%s(&%s)) {" EOL, ft->json_suffix.buf, mbr.buf);
+			str_addf(o, "\tif (pb_nonzero_%s(&%s)) {" EOL, ft->json_suffix.c_str, mbr.c_str);
         } else {
-            str_addf(o, "\tif (%s) {" EOL, mbr.buf);
+            str_addf(o, "\tif (%s) {" EOL, mbr.c_str);
         }
 
-		str_addf(o, "\t\tif (pb_append(a, \"\\\"%s\\\":\", %d)) {return -1;}" EOL, f->name.buf, f->name.len + 3);
+		str_addf(o, "\t\tif (pb_append(a, \"\\\"%s\\\":\", %d)) {return -1;}" EOL, f->name.c_str, f->name.len + 3);
 
         if (f->label == LABEL_REPEATED) {
 			if (isfinite(ft->max_print_size)) {
-				str_addf(o, "\t\tchar *mp = pb_appendsz(a, 3 /*[],*/ + %s.len * %d);" EOL, mbr.buf, (int) ft->max_print_size);
+				str_addf(o, "\t\tchar *mp = pb_appendsz(a, 3 /*[],*/ + %s.len * %d);" EOL, mbr.c_str, (int) ft->max_print_size);
 				str_add(o, "\t\tif (!mp) {return -1;}" EOL);
                 str_add(o, "\t\t*mp++ = '[';" EOL);
-                str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.buf);
-                str_addf(o, "\t\t\tmp = pb_print_%s(mp, %s.v[i]);" EOL, ft->json_suffix.buf, mbr.buf);
+                str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.c_str);
+                str_addf(o, "\t\t\tmp = pb_print_%s(mp, %s.v[i]);" EOL, ft->json_suffix.c_str, mbr.c_str);
                 str_add(o, "\t\t}" EOL);
                 str_add(o, "\t\tmp = pb_print_array_end_i(mp);" EOL);
 				str_add(o, "\t\ta->next = mp;" EOL);
 			} else {
 				str_add(o, "\t\tif (pb_append(a, \"[\", 1)) {return -1;}" EOL);
-                str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.buf);
-				str_addf(o, "\t\t\tif (pb_print_%s(a, ", ft->json_suffix.buf);
+                str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.c_str);
+				str_addf(o, "\t\t\tif (pb_print_%s(a, ", ft->json_suffix.c_str);
 				if (ft->pod_message) {
 					str_addch(o, '&');
 				}
-				str_addf(o, "%s.v[i])) {return -1;}" EOL, mbr.buf);
+				str_addf(o, "%s.v[i])) {return -1;}" EOL, mbr.c_str);
 				str_add(o, "\t\t\ta->next[-1] = ','; // replace trailing newline" EOL);
                 str_add(o, "\t\t}" EOL);
 				str_add(o, "\t\tif (pb_print_array_end(a)) {return -1;}" EOL);
 			}
         } else {
-			str_addf(o, "\t\tif (pb_print_%s(a, ", ft->json_suffix.buf);
+			str_addf(o, "\t\tif (pb_print_%s(a, ", ft->json_suffix.c_str);
 			if (ft->pod_message) {
 				str_addch(o, '&');
 			}
-			str_addf(o, "%s)) {return -1;}" EOL, mbr.buf);
+			str_addf(o, "%s)) {return -1;}" EOL, mbr.c_str);
 			str_add(o, "\t\ta->next[-1] = ','; // replace trailing newline" EOL);
         }
 
@@ -195,7 +195,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
 }
 
 void do_print_enum(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "char *pb_print_%s(char *p, %s v)", t->json_suffix.buf, t->c_type.buf);
+    str_addf(o, "char *pb_print_%s(char *p, %s v)", t->json_suffix.c_str, t->c_type.c_str);
     if (!define) {
         str_add(o, ";" EOL);
         return;
@@ -206,7 +206,7 @@ void do_print_enum(str_t *o, const struct type *t, bool define) {
         const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         // "enum",
         str_addf(o, "\tcase %d:" EOL, v->number);
-        str_addf(o, "\t\tmemcpy(p, \"\\\"%s\\\",\", %u);" EOL, v->name.buf, v->name.len + 3 /*"",*/);
+        str_addf(o, "\t\tmemcpy(p, \"\\\"%s\\\",\", %u);" EOL, v->name.c_str, v->name.len + 3 /*"",*/);
         str_addf(o, "\t\treturn p + %u;" EOL, v->name.len + 3);
     }
     str_add(o, "\tdefault:" EOL);

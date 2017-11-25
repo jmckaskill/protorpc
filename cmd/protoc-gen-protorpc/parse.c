@@ -10,7 +10,7 @@ struct parser {
 
 
 void do_parse_enum(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "const char *pb_parse_%s(const char *p, %s *v)", t->json_suffix.buf, t->c_type.buf);
+    str_addf(o, "const char *pb_parse_%s(const char *p, %s *v)", t->json_suffix.c_str, t->c_type.c_str);
     if (!define) {
         str_add(o, ";" EOL);
         return;
@@ -26,15 +26,15 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
     calc_hash_values(hashes, t->en->value.len, &hashmul, &hashsz);
 
     str_add(o, "\tpb_string_t val;" EOL);
-    str_addf(o, "\t*v = (%s) 0;" EOL, t->c_type.buf);
+    str_addf(o, "\t*v = (%s) 0;" EOL, t->c_type.c_str);
     str_addf(o, "\tswitch (pb_parse_enum(&p, &val, %u) %% %u) {" EOL, hashmul, hashsz);
 
     for (int i = 0; i < t->en->value.len; i++) {
 		struct hash_entry *h = &hashes[i];
 		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         str_addf(o, "\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\tif (!pb_cmp(val, \"%s\")) {" EOL, h->str.buf);
-        str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.buf, v->number);
+        str_addf(o, "\t\tif (!pb_cmp(val, \"%s\")) {" EOL, h->str.c_str);
+        str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.c_str, v->number);
         str_add(o, "\t\t}" EOL);
         str_add(o, "\t\tbreak;" EOL);
     }
@@ -47,11 +47,11 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 }
 
 void do_parse(str_t *o, const struct type *t, bool define) {
-    str_addf(o, "const char *pb_parse_%s(const char *p", t->json_suffix.buf);
+    str_addf(o, "const char *pb_parse_%s(const char *p", t->json_suffix.c_str);
 	if (!t->pod_message) {
 		str_add(o, ", pb_buf_t *obj");
 	}
-	str_addf(o, ", %s *m)", t->c_type.buf);
+	str_addf(o, ", %s *m)", t->c_type.c_str);
     if (!define) {
         str_add(o, ";" EOL);
         return;
@@ -90,7 +90,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
         str_addstr(&mbr, f->name);
 
         str_addf(o, "\t\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\t\tif (pb_cmp(key, \"%s\")) {" EOL, h->str.buf);
+        str_addf(o, "\t\t\tif (pb_cmp(key, \"%s\")) {" EOL, h->str.c_str);
         str_add(o, "\t\t\t\tgoto unknown;" EOL);
         str_add(o, "\t\t\t}"  EOL);
 
@@ -99,7 +99,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
             str_add(o, "\t\t\tm->");
             str_addstr(o, oneof);
             str_add(o, "_type = ");
-            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.buf};
+            pb_string_t ps = {t->proto_suffix.len, t->proto_suffix.c_str};
             to_upper(o, ps);
             str_add(o, "_");
             to_upper(o, f->name);
@@ -114,44 +114,44 @@ void do_parse(str_t *o, const struct type *t, bool define) {
         if (f->label == LABEL_REPEATED) {
 			if (ft->msg && !ft->pod_message) {
                 str_add(o, "\t\t\tif (pb_parse_array(&p)) {" EOL);
-                str_addf(o, "\t\t\t\t%s *prev = NULL;" EOL, ft->c_type.buf);
+                str_addf(o, "\t\t\t\t%s *prev = NULL;" EOL, ft->c_type.c_str);
                 str_add(o, "\t\t\t\tdo {" EOL);
-                str_addf(o, "\t\t\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.buf, ft->c_type.buf, ft->c_type.buf);
+                str_addf(o, "\t\t\t\t\t%s *c = (%s*) pb_calloc(obj, sizeof(%s));" EOL, ft->c_type.c_str, ft->c_type.c_str, ft->c_type.c_str);
 				str_add(o, "\t\t\t\t\tif (!c) {return pb_errret;}" EOL);
-                str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, obj, c);" EOL, ft->json_suffix.buf);
-                str_addf(o, "\t\t\t\t\t%s.len++;" EOL, mbr.buf);
+                str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, obj, c);" EOL, ft->json_suffix.c_str);
+                str_addf(o, "\t\t\t\t\t%s.len++;" EOL, mbr.c_str);
                 str_add(o, "\t\t\t\t\tc->pb_hdr.prev = prev;" EOL);
                 str_add(o, "\t\t\t\t\tprev = c;" EOL);
                 str_add(o, "\t\t\t\t} while (pb_more_array(&p));" EOL);
                 str_add(o, EOL);
-                str_addf(o, "\t\t\t\t%s.v = (const %s**) pb_calloc(obj, %s.len * sizeof(%s*));" EOL, mbr.buf, ft->c_type.buf, mbr.buf, ft->c_type.buf);
-				str_addf(o, "\t\t\t\tif (!%s.v) {return pb_errret;}" EOL, mbr.buf);
+                str_addf(o, "\t\t\t\t%s.v = (const %s**) pb_calloc(obj, %s.len * sizeof(%s*));" EOL, mbr.c_str, ft->c_type.c_str, mbr.c_str, ft->c_type.c_str);
+				str_addf(o, "\t\t\t\tif (!%s.v) {return pb_errret;}" EOL, mbr.c_str);
                 str_add(o, EOL);
-                str_addf(o, "\t\t\t\tfor (int i = %s.len - 1; i >= 0; i--) {" EOL, mbr.buf);
-                str_addf(o, "\t\t\t\t\t%s.v[i] = prev;" EOL, mbr.buf);
-                str_addf(o, "\t\t\t\t\tprev = (%s*) prev->pb_hdr.prev;" EOL, ft->c_type.buf);
+                str_addf(o, "\t\t\t\tfor (int i = %s.len - 1; i >= 0; i--) {" EOL, mbr.c_str);
+                str_addf(o, "\t\t\t\t\t%s.v[i] = prev;" EOL, mbr.c_str);
+                str_addf(o, "\t\t\t\t\tprev = (%s*) prev->pb_hdr.prev;" EOL, ft->c_type.c_str);
                 str_add(o, "\t\t\t\t}" EOL);
                 str_add(o, "\t\t\t}" EOL);
 			} else if (ft->en || ft->pod_message) {
                 str_add(o, "\t\t\tif (pb_parse_array(&p)) {" EOL);
                 str_add(o, "\t\t\t\tint n = 0;" EOL);
-				str_addf(o, "\t\t\t\t%s.v = (%s*) obj->next;" EOL, mbr.buf, ft->c_type.buf);
+				str_addf(o, "\t\t\t\t%s.v = (%s*) obj->next;" EOL, mbr.c_str, ft->c_type.c_str);
                 str_add(o, "\t\t\t\tdo {" EOL);
-				str_addf(o, "\t\t\t\t\tif (obj->next + n * sizeof(%s) > obj->end) {return pb_errret;}" EOL, ft->c_type.buf);
-				str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, (%s*) &%s.v[n++]); " EOL, ft->json_suffix.buf, ft->c_type.buf, mbr.buf);
+				str_addf(o, "\t\t\t\t\tif (obj->next + n * sizeof(%s) > obj->end) {return pb_errret;}" EOL, ft->c_type.c_str);
+				str_addf(o, "\t\t\t\t\tp = pb_parse_%s(p, (%s*) &%s.v[n++]); " EOL, ft->json_suffix.c_str, ft->c_type.c_str, mbr.c_str);
                 str_add(o, "\t\t\t\t} while (pb_more_array(&p));" EOL);
-				str_addf(o, "\t\t\t\tobj->next += n * sizeof(%s);" EOL, ft->c_type.buf);
-                str_addf(o, "\t\t\t\t%s.len = n;" EOL, mbr.buf);
+				str_addf(o, "\t\t\t\tobj->next += n * sizeof(%s);" EOL, ft->c_type.c_str);
+                str_addf(o, "\t\t\t\t%s.len = n;" EOL, mbr.c_str);
                 str_add(o, "\t\t\t}" EOL);
 			} else {
-                str_addf(o, "\t\t\tp = pb_parse_array_%s(p, obj, &%s.v, &%s.len);" EOL, ft->json_suffix.buf, mbr.buf, mbr.buf);
+                str_addf(o, "\t\t\tp = pb_parse_array_%s(p, obj, &%s.v, &%s.len);" EOL, ft->json_suffix.c_str, mbr.c_str, mbr.c_str);
 			}
         } else if (ft->msg && !ft->pod_message) {
-            str_addf(o, "\t\t\t%s = (%s*) pb_calloc(obj, sizeof(%s));" EOL, mbr.buf, ft->c_type.buf, ft->c_type.buf);
-			str_addf(o, "\t\t\tif (!%s) {return pb_errret;}" EOL, mbr.buf);
-            str_addf(o, "\t\t\tp = pb_parse_%s(p, obj, (%s*) %s);" EOL, ft->json_suffix.buf, ft->c_type.buf, mbr.buf);
+            str_addf(o, "\t\t\t%s = (%s*) pb_calloc(obj, sizeof(%s));" EOL, mbr.c_str, ft->c_type.c_str, ft->c_type.c_str);
+			str_addf(o, "\t\t\tif (!%s) {return pb_errret;}" EOL, mbr.c_str);
+            str_addf(o, "\t\t\tp = pb_parse_%s(p, obj, (%s*) %s);" EOL, ft->json_suffix.c_str, ft->c_type.c_str, mbr.c_str);
         } else {
-            str_addf(o, "\t\t\tp = pb_parse_%s(p, &%s);" EOL, ft->json_suffix.buf, mbr.buf);
+            str_addf(o, "\t\t\tp = pb_parse_%s(p, &%s);" EOL, ft->json_suffix.c_str, mbr.c_str);
         }
         str_add(o, "\t\t\tcontinue;" EOL);
     }

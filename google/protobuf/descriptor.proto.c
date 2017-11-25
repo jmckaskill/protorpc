@@ -8,7 +8,7 @@ int pb_get_FileDescriptorSet(const char *p, const char *e, pb_buf_t *obj, struct
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FileDescriptorProto *c = (struct FileDescriptorProto*) pb_calloc(obj, sizeof(struct FileDescriptorProto));
-			if (!c || pb_get_FileDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_FileDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->file.len++;
@@ -60,7 +60,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct DescriptorProto *c = (struct DescriptorProto*) pb_calloc(obj, sizeof(struct DescriptorProto));
-			if (!c || pb_get_DescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_DescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->message_type.len++;
@@ -84,7 +84,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct EnumDescriptorProto *c = (struct EnumDescriptorProto*) pb_calloc(obj, sizeof(struct EnumDescriptorProto));
-			if (!c || pb_get_EnumDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_EnumDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->enum_type.len++;
@@ -108,7 +108,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct ServiceDescriptorProto *c = (struct ServiceDescriptorProto*) pb_calloc(obj, sizeof(struct ServiceDescriptorProto));
-			if (!c || pb_get_ServiceDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_ServiceDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->service.len++;
@@ -132,7 +132,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FieldDescriptorProto *c = (struct FieldDescriptorProto*) pb_calloc(obj, sizeof(struct FieldDescriptorProto));
-			if (!c || pb_get_FieldDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_FieldDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->extension.len++;
@@ -154,7 +154,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct FileOptions*) pb_calloc(obj, sizeof(struct FileOptions));
-		if (!m->options || pb_get_FileOptions(msg.buf, msg.buf + msg.len, obj, (struct FileOptions*) m->options)) {
+		if (!m->options || pb_get_FileOptions(msg.c_str, msg.c_str + msg.len, obj, (struct FileOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -162,7 +162,7 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->source_code_info = (struct SourceCodeInfo*) pb_calloc(obj, sizeof(struct SourceCodeInfo));
-		if (!m->source_code_info || pb_get_SourceCodeInfo(msg.buf, msg.buf + msg.len, obj, (struct SourceCodeInfo*) m->source_code_info)) {
+		if (!m->source_code_info || pb_get_SourceCodeInfo(msg.c_str, msg.c_str + msg.len, obj, (struct SourceCodeInfo*) m->source_code_info)) {
 			return -1;
 		}
 	}
@@ -196,21 +196,21 @@ int pb_get_FileDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 	return 0;
 }
 void pb_term_FileDescriptorProto(struct FileDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
-	if (m->package.buf) {
-		((char*)m->package.buf)[m->package.len] = '\0';
+	if (m->package.c_str) {
+		((char*)m->package.c_str)[m->package.len] = '\0';
 	} else {
-		m->package.buf = "";
+		m->package.c_str = "";
 	}
 	for (int i = 0; i < m->dependency.len; i++) {
-		if (m->dependency.v[i].buf) {
-			((char*)m->dependency.v[i].buf)[m->dependency.v[i].len] = '\0';
+		if (m->dependency.v[i].c_str) {
+			((char*)m->dependency.v[i].c_str)[m->dependency.v[i].len] = '\0';
 		} else {
-			((pb_string_t*)m->dependency.v)[i].buf = "";
+			((pb_string_t*)m->dependency.v)[i].c_str = "";
 		}
 	}
 	for (int i = 0; i < m->message_type.len; i++) {
@@ -231,10 +231,10 @@ void pb_term_FileDescriptorProto(struct FileDescriptorProto *m) {
 	if (m->source_code_info) {
 		pb_term_SourceCodeInfo((struct SourceCodeInfo*) m->source_code_info);
 	}
-	if (m->syntax.buf) {
-		((char*)m->syntax.buf)[m->syntax.len] = '\0';
+	if (m->syntax.c_str) {
+		((char*)m->syntax.c_str)[m->syntax.len] = '\0';
 	} else {
-		m->syntax.buf = "";
+		m->syntax.c_str = "";
 	}
 }
 
@@ -249,7 +249,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FieldDescriptorProto *c = (struct FieldDescriptorProto*) pb_calloc(obj, sizeof(struct FieldDescriptorProto));
-			if (!c || pb_get_FieldDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_FieldDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->field.len++;
@@ -273,7 +273,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct DescriptorProto *c = (struct DescriptorProto*) pb_calloc(obj, sizeof(struct DescriptorProto));
-			if (!c || pb_get_DescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_DescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->nested_type.len++;
@@ -297,7 +297,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct EnumDescriptorProto *c = (struct EnumDescriptorProto*) pb_calloc(obj, sizeof(struct EnumDescriptorProto));
-			if (!c || pb_get_EnumDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_EnumDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->enum_type.len++;
@@ -321,7 +321,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct DescriptorProto_ExtensionRange *c = (struct DescriptorProto_ExtensionRange*) pb_calloc(obj, sizeof(struct DescriptorProto_ExtensionRange));
-			if (!c || pb_get_DescriptorProto_ExtensionRange(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_DescriptorProto_ExtensionRange(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->extension_range.len++;
@@ -345,7 +345,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FieldDescriptorProto *c = (struct FieldDescriptorProto*) pb_calloc(obj, sizeof(struct FieldDescriptorProto));
-			if (!c || pb_get_FieldDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_FieldDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->extension.len++;
@@ -367,7 +367,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct MessageOptions*) pb_calloc(obj, sizeof(struct MessageOptions));
-		if (!m->options || pb_get_MessageOptions(msg.buf, msg.buf + msg.len, obj, (struct MessageOptions*) m->options)) {
+		if (!m->options || pb_get_MessageOptions(msg.c_str, msg.c_str + msg.len, obj, (struct MessageOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -377,7 +377,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct OneofDescriptorProto *c = (struct OneofDescriptorProto*) pb_calloc(obj, sizeof(struct OneofDescriptorProto));
-			if (!c || pb_get_OneofDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_OneofDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->oneof_decl.len++;
@@ -403,7 +403,7 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
-			if (pb_get_DescriptorProto_ReservedRange(msg.buf, msg.buf + msg.len, (struct DescriptorProto_ReservedRange*) &m->reserved_range.v[m->reserved_range.len])) {
+			if (pb_get_DescriptorProto_ReservedRange(msg.c_str, msg.c_str + msg.len, (struct DescriptorProto_ReservedRange*) &m->reserved_range.v[m->reserved_range.len])) {
 				return -1;
 			}
 			m->reserved_range.len++;
@@ -426,10 +426,10 @@ int pb_get_DescriptorProto(const char *p, const char *e, pb_buf_t *obj, struct D
 	return 0;
 }
 void pb_term_DescriptorProto(struct DescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
 	for (int i = 0; i < m->field.len; i++) {
 		pb_term_FieldDescriptorProto((struct FieldDescriptorProto*) m->field.v[i]);
@@ -456,10 +456,10 @@ void pb_term_DescriptorProto(struct DescriptorProto *m) {
 		pb_term_DescriptorProto_ReservedRange((struct DescriptorProto_ReservedRange*) &m->reserved_range.v[i]);
 	}
 	for (int i = 0; i < m->reserved_name.len; i++) {
-		if (m->reserved_name.v[i].buf) {
-			((char*)m->reserved_name.v[i].buf)[m->reserved_name.v[i].len] = '\0';
+		if (m->reserved_name.v[i].c_str) {
+			((char*)m->reserved_name.v[i].c_str)[m->reserved_name.v[i].len] = '\0';
 		} else {
-			((pb_string_t*)m->reserved_name.v)[i].buf = "";
+			((pb_string_t*)m->reserved_name.v)[i].c_str = "";
 		}
 	}
 }
@@ -476,7 +476,7 @@ int pb_get_DescriptorProto_ExtensionRange(const char *p, const char *e, pb_buf_t
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct ExtensionRangeOptions*) pb_calloc(obj, sizeof(struct ExtensionRangeOptions));
-		if (!m->options || pb_get_ExtensionRangeOptions(msg.buf, msg.buf + msg.len, obj, (struct ExtensionRangeOptions*) m->options)) {
+		if (!m->options || pb_get_ExtensionRangeOptions(msg.c_str, msg.c_str + msg.len, obj, (struct ExtensionRangeOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -509,7 +509,7 @@ int pb_get_ExtensionRangeOptions(const char *p, const char *e, pb_buf_t *obj, st
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -562,7 +562,7 @@ int pb_get_FieldDescriptorProto(const char *p, const char *e, pb_buf_t *obj, str
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct FieldOptions*) pb_calloc(obj, sizeof(struct FieldOptions));
-		if (!m->options || pb_get_FieldOptions(msg.buf, msg.buf + msg.len, obj, (struct FieldOptions*) m->options)) {
+		if (!m->options || pb_get_FieldOptions(msg.c_str, msg.c_str + msg.len, obj, (struct FieldOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -576,33 +576,33 @@ int pb_get_FieldDescriptorProto(const char *p, const char *e, pb_buf_t *obj, str
 	return 0;
 }
 void pb_term_FieldDescriptorProto(struct FieldDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
-	if (m->extendee.buf) {
-		((char*)m->extendee.buf)[m->extendee.len] = '\0';
+	if (m->extendee.c_str) {
+		((char*)m->extendee.c_str)[m->extendee.len] = '\0';
 	} else {
-		m->extendee.buf = "";
+		m->extendee.c_str = "";
 	}
-	if (m->type_name.buf) {
-		((char*)m->type_name.buf)[m->type_name.len] = '\0';
+	if (m->type_name.c_str) {
+		((char*)m->type_name.c_str)[m->type_name.len] = '\0';
 	} else {
-		m->type_name.buf = "";
+		m->type_name.c_str = "";
 	}
-	if (m->default_value.buf) {
-		((char*)m->default_value.buf)[m->default_value.len] = '\0';
+	if (m->default_value.c_str) {
+		((char*)m->default_value.c_str)[m->default_value.len] = '\0';
 	} else {
-		m->default_value.buf = "";
+		m->default_value.c_str = "";
 	}
 	if (m->options) {
 		pb_term_FieldOptions((struct FieldOptions*) m->options);
 	}
-	if (m->json_name.buf) {
-		((char*)m->json_name.buf)[m->json_name.len] = '\0';
+	if (m->json_name.c_str) {
+		((char*)m->json_name.c_str)[m->json_name.len] = '\0';
 	} else {
-		m->json_name.buf = "";
+		m->json_name.c_str = "";
 	}
 }
 
@@ -615,17 +615,17 @@ int pb_get_OneofDescriptorProto(const char *p, const char *e, pb_buf_t *obj, str
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct OneofOptions*) pb_calloc(obj, sizeof(struct OneofOptions));
-		if (!m->options || pb_get_OneofOptions(msg.buf, msg.buf + msg.len, obj, (struct OneofOptions*) m->options)) {
+		if (!m->options || pb_get_OneofOptions(msg.c_str, msg.c_str + msg.len, obj, (struct OneofOptions*) m->options)) {
 			return -1;
 		}
 	}
 	return 0;
 }
 void pb_term_OneofDescriptorProto(struct OneofDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
 	if (m->options) {
 		pb_term_OneofOptions((struct OneofOptions*) m->options);
@@ -643,7 +643,7 @@ int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct EnumValueDescriptorProto *c = (struct EnumValueDescriptorProto*) pb_calloc(obj, sizeof(struct EnumValueDescriptorProto));
-			if (!c || pb_get_EnumValueDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_EnumValueDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->value.len++;
@@ -665,7 +665,7 @@ int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct EnumOptions*) pb_calloc(obj, sizeof(struct EnumOptions));
-		if (!m->options || pb_get_EnumOptions(msg.buf, msg.buf + msg.len, obj, (struct EnumOptions*) m->options)) {
+		if (!m->options || pb_get_EnumOptions(msg.c_str, msg.c_str + msg.len, obj, (struct EnumOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -677,7 +677,7 @@ int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 			}
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
-			if (pb_get_EnumDescriptorProto_EnumReservedRange(msg.buf, msg.buf + msg.len, (struct EnumDescriptorProto_EnumReservedRange*) &m->reserved_range.v[m->reserved_range.len])) {
+			if (pb_get_EnumDescriptorProto_EnumReservedRange(msg.c_str, msg.c_str + msg.len, (struct EnumDescriptorProto_EnumReservedRange*) &m->reserved_range.v[m->reserved_range.len])) {
 				return -1;
 			}
 			m->reserved_range.len++;
@@ -700,10 +700,10 @@ int pb_get_EnumDescriptorProto(const char *p, const char *e, pb_buf_t *obj, stru
 	return 0;
 }
 void pb_term_EnumDescriptorProto(struct EnumDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
 	for (int i = 0; i < m->value.len; i++) {
 		pb_term_EnumValueDescriptorProto((struct EnumValueDescriptorProto*) m->value.v[i]);
@@ -715,10 +715,10 @@ void pb_term_EnumDescriptorProto(struct EnumDescriptorProto *m) {
 		pb_term_EnumDescriptorProto_EnumReservedRange((struct EnumDescriptorProto_EnumReservedRange*) &m->reserved_range.v[i]);
 	}
 	for (int i = 0; i < m->reserved_name.len; i++) {
-		if (m->reserved_name.v[i].buf) {
-			((char*)m->reserved_name.v[i].buf)[m->reserved_name.v[i].len] = '\0';
+		if (m->reserved_name.v[i].c_str) {
+			((char*)m->reserved_name.v[i].c_str)[m->reserved_name.v[i].len] = '\0';
 		} else {
-			((pb_string_t*)m->reserved_name.v)[i].buf = "";
+			((pb_string_t*)m->reserved_name.v)[i].c_str = "";
 		}
 	}
 }
@@ -747,17 +747,17 @@ int pb_get_EnumValueDescriptorProto(const char *p, const char *e, pb_buf_t *obj,
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct EnumValueOptions*) pb_calloc(obj, sizeof(struct EnumValueOptions));
-		if (!m->options || pb_get_EnumValueOptions(msg.buf, msg.buf + msg.len, obj, (struct EnumValueOptions*) m->options)) {
+		if (!m->options || pb_get_EnumValueOptions(msg.c_str, msg.c_str + msg.len, obj, (struct EnumValueOptions*) m->options)) {
 			return -1;
 		}
 	}
 	return 0;
 }
 void pb_term_EnumValueDescriptorProto(struct EnumValueDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
 	if (m->options) {
 		pb_term_EnumValueOptions((struct EnumValueOptions*) m->options);
@@ -775,7 +775,7 @@ int pb_get_ServiceDescriptorProto(const char *p, const char *e, pb_buf_t *obj, s
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct MethodDescriptorProto *c = (struct MethodDescriptorProto*) pb_calloc(obj, sizeof(struct MethodDescriptorProto));
-			if (!c || pb_get_MethodDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_MethodDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->method.len++;
@@ -797,17 +797,17 @@ int pb_get_ServiceDescriptorProto(const char *p, const char *e, pb_buf_t *obj, s
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct ServiceOptions*) pb_calloc(obj, sizeof(struct ServiceOptions));
-		if (!m->options || pb_get_ServiceOptions(msg.buf, msg.buf + msg.len, obj, (struct ServiceOptions*) m->options)) {
+		if (!m->options || pb_get_ServiceOptions(msg.c_str, msg.c_str + msg.len, obj, (struct ServiceOptions*) m->options)) {
 			return -1;
 		}
 	}
 	return 0;
 }
 void pb_term_ServiceDescriptorProto(struct ServiceDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
 	for (int i = 0; i < m->method.len; i++) {
 		pb_term_MethodDescriptorProto((struct MethodDescriptorProto*) m->method.v[i]);
@@ -832,7 +832,7 @@ int pb_get_MethodDescriptorProto(const char *p, const char *e, pb_buf_t *obj, st
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->options = (struct MethodOptions*) pb_calloc(obj, sizeof(struct MethodOptions));
-		if (!m->options || pb_get_MethodOptions(msg.buf, msg.buf + msg.len, obj, (struct MethodOptions*) m->options)) {
+		if (!m->options || pb_get_MethodOptions(msg.c_str, msg.c_str + msg.len, obj, (struct MethodOptions*) m->options)) {
 			return -1;
 		}
 	}
@@ -845,20 +845,20 @@ int pb_get_MethodDescriptorProto(const char *p, const char *e, pb_buf_t *obj, st
 	return 0;
 }
 void pb_term_MethodDescriptorProto(struct MethodDescriptorProto *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
-	if (m->input_type.buf) {
-		((char*)m->input_type.buf)[m->input_type.len] = '\0';
+	if (m->input_type.c_str) {
+		((char*)m->input_type.c_str)[m->input_type.len] = '\0';
 	} else {
-		m->input_type.buf = "";
+		m->input_type.c_str = "";
 	}
-	if (m->output_type.buf) {
-		((char*)m->output_type.buf)[m->output_type.len] = '\0';
+	if (m->output_type.c_str) {
+		((char*)m->output_type.c_str)[m->output_type.len] = '\0';
 	} else {
-		m->output_type.buf = "";
+		m->output_type.c_str = "";
 	}
 	if (m->options) {
 		pb_term_MethodOptions((struct MethodOptions*) m->options);
@@ -928,7 +928,7 @@ int pb_get_FileOptions(const char *p, const char *e, pb_buf_t *obj, struct FileO
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -949,45 +949,45 @@ int pb_get_FileOptions(const char *p, const char *e, pb_buf_t *obj, struct FileO
 	return 0;
 }
 void pb_term_FileOptions(struct FileOptions *m) {
-	if (m->java_package.buf) {
-		((char*)m->java_package.buf)[m->java_package.len] = '\0';
+	if (m->java_package.c_str) {
+		((char*)m->java_package.c_str)[m->java_package.len] = '\0';
 	} else {
-		m->java_package.buf = "";
+		m->java_package.c_str = "";
 	}
-	if (m->java_outer_classname.buf) {
-		((char*)m->java_outer_classname.buf)[m->java_outer_classname.len] = '\0';
+	if (m->java_outer_classname.c_str) {
+		((char*)m->java_outer_classname.c_str)[m->java_outer_classname.len] = '\0';
 	} else {
-		m->java_outer_classname.buf = "";
+		m->java_outer_classname.c_str = "";
 	}
-	if (m->go_package.buf) {
-		((char*)m->go_package.buf)[m->go_package.len] = '\0';
+	if (m->go_package.c_str) {
+		((char*)m->go_package.c_str)[m->go_package.len] = '\0';
 	} else {
-		m->go_package.buf = "";
+		m->go_package.c_str = "";
 	}
-	if (m->objc_class_prefix.buf) {
-		((char*)m->objc_class_prefix.buf)[m->objc_class_prefix.len] = '\0';
+	if (m->objc_class_prefix.c_str) {
+		((char*)m->objc_class_prefix.c_str)[m->objc_class_prefix.len] = '\0';
 	} else {
-		m->objc_class_prefix.buf = "";
+		m->objc_class_prefix.c_str = "";
 	}
-	if (m->csharp_namespace.buf) {
-		((char*)m->csharp_namespace.buf)[m->csharp_namespace.len] = '\0';
+	if (m->csharp_namespace.c_str) {
+		((char*)m->csharp_namespace.c_str)[m->csharp_namespace.len] = '\0';
 	} else {
-		m->csharp_namespace.buf = "";
+		m->csharp_namespace.c_str = "";
 	}
-	if (m->swift_prefix.buf) {
-		((char*)m->swift_prefix.buf)[m->swift_prefix.len] = '\0';
+	if (m->swift_prefix.c_str) {
+		((char*)m->swift_prefix.c_str)[m->swift_prefix.len] = '\0';
 	} else {
-		m->swift_prefix.buf = "";
+		m->swift_prefix.c_str = "";
 	}
-	if (m->php_class_prefix.buf) {
-		((char*)m->php_class_prefix.buf)[m->php_class_prefix.len] = '\0';
+	if (m->php_class_prefix.c_str) {
+		((char*)m->php_class_prefix.c_str)[m->php_class_prefix.len] = '\0';
 	} else {
-		m->php_class_prefix.buf = "";
+		m->php_class_prefix.c_str = "";
 	}
-	if (m->php_namespace.buf) {
-		((char*)m->php_namespace.buf)[m->php_namespace.len] = '\0';
+	if (m->php_namespace.c_str) {
+		((char*)m->php_namespace.c_str)[m->php_namespace.len] = '\0';
 	} else {
-		m->php_namespace.buf = "";
+		m->php_namespace.c_str = "";
 	}
 	for (int i = 0; i < m->uninterpreted_option.len; i++) {
 		pb_term_UninterpretedOption((struct UninterpretedOption*) m->uninterpreted_option.v[i]);
@@ -1015,7 +1015,7 @@ int pb_get_MessageOptions(const char *p, const char *e, pb_buf_t *obj, struct Me
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1069,7 +1069,7 @@ int pb_get_FieldOptions(const char *p, const char *e, pb_buf_t *obj, struct Fiel
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1104,7 +1104,7 @@ int pb_get_OneofOptions(const char *p, const char *e, pb_buf_t *obj, struct Oneo
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1145,7 +1145,7 @@ int pb_get_EnumOptions(const char *p, const char *e, pb_buf_t *obj, struct EnumO
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1183,7 +1183,7 @@ int pb_get_EnumValueOptions(const char *p, const char *e, pb_buf_t *obj, struct 
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1221,7 +1221,7 @@ int pb_get_ServiceOptions(const char *p, const char *e, pb_buf_t *obj, struct Se
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1262,7 +1262,7 @@ int pb_get_MethodOptions(const char *p, const char *e, pb_buf_t *obj, struct Met
 			pb_string_t msg;
 			p = pb_get_string(p + 2, e, &msg);
 			struct UninterpretedOption *c = (struct UninterpretedOption*) pb_calloc(obj, sizeof(struct UninterpretedOption));
-			if (!c || pb_get_UninterpretedOption(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->uninterpreted_option.len++;
@@ -1296,7 +1296,7 @@ int pb_get_UninterpretedOption(const char *p, const char *e, pb_buf_t *obj, stru
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct UninterpretedOption_NamePart *c = (struct UninterpretedOption_NamePart*) pb_calloc(obj, sizeof(struct UninterpretedOption_NamePart));
-			if (!c || pb_get_UninterpretedOption_NamePart(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_UninterpretedOption_NamePart(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->name.len++;
@@ -1338,15 +1338,15 @@ void pb_term_UninterpretedOption(struct UninterpretedOption *m) {
 	for (int i = 0; i < m->name.len; i++) {
 		pb_term_UninterpretedOption_NamePart((struct UninterpretedOption_NamePart*) m->name.v[i]);
 	}
-	if (m->identifier_value.buf) {
-		((char*)m->identifier_value.buf)[m->identifier_value.len] = '\0';
+	if (m->identifier_value.c_str) {
+		((char*)m->identifier_value.c_str)[m->identifier_value.len] = '\0';
 	} else {
-		m->identifier_value.buf = "";
+		m->identifier_value.c_str = "";
 	}
-	if (m->aggregate_value.buf) {
-		((char*)m->aggregate_value.buf)[m->aggregate_value.len] = '\0';
+	if (m->aggregate_value.c_str) {
+		((char*)m->aggregate_value.c_str)[m->aggregate_value.len] = '\0';
 	} else {
-		m->aggregate_value.buf = "";
+		m->aggregate_value.c_str = "";
 	}
 }
 
@@ -1361,10 +1361,10 @@ int pb_get_UninterpretedOption_NamePart(const char *p, const char *e, pb_buf_t *
 	return 0;
 }
 void pb_term_UninterpretedOption_NamePart(struct UninterpretedOption_NamePart *m) {
-	if (m->name_part.buf) {
-		((char*)m->name_part.buf)[m->name_part.len] = '\0';
+	if (m->name_part.c_str) {
+		((char*)m->name_part.c_str)[m->name_part.len] = '\0';
 	} else {
-		m->name_part.buf = "";
+		m->name_part.c_str = "";
 	}
 }
 
@@ -1376,7 +1376,7 @@ int pb_get_SourceCodeInfo(const char *p, const char *e, pb_buf_t *obj, struct So
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct SourceCodeInfo_Location *c = (struct SourceCodeInfo_Location*) pb_calloc(obj, sizeof(struct SourceCodeInfo_Location));
-			if (!c || pb_get_SourceCodeInfo_Location(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_SourceCodeInfo_Location(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->location.len++;
@@ -1431,21 +1431,21 @@ int pb_get_SourceCodeInfo_Location(const char *p, const char *e, pb_buf_t *obj, 
 	return 0;
 }
 void pb_term_SourceCodeInfo_Location(struct SourceCodeInfo_Location *m) {
-	if (m->leading_comments.buf) {
-		((char*)m->leading_comments.buf)[m->leading_comments.len] = '\0';
+	if (m->leading_comments.c_str) {
+		((char*)m->leading_comments.c_str)[m->leading_comments.len] = '\0';
 	} else {
-		m->leading_comments.buf = "";
+		m->leading_comments.c_str = "";
 	}
-	if (m->trailing_comments.buf) {
-		((char*)m->trailing_comments.buf)[m->trailing_comments.len] = '\0';
+	if (m->trailing_comments.c_str) {
+		((char*)m->trailing_comments.c_str)[m->trailing_comments.len] = '\0';
 	} else {
-		m->trailing_comments.buf = "";
+		m->trailing_comments.c_str = "";
 	}
 	for (int i = 0; i < m->leading_detached_comments.len; i++) {
-		if (m->leading_detached_comments.v[i].buf) {
-			((char*)m->leading_detached_comments.v[i].buf)[m->leading_detached_comments.v[i].len] = '\0';
+		if (m->leading_detached_comments.v[i].c_str) {
+			((char*)m->leading_detached_comments.v[i].c_str)[m->leading_detached_comments.v[i].len] = '\0';
 		} else {
-			((pb_string_t*)m->leading_detached_comments.v)[i].buf = "";
+			((pb_string_t*)m->leading_detached_comments.v)[i].c_str = "";
 		}
 	}
 }
@@ -1458,7 +1458,7 @@ int pb_get_GeneratedCodeInfo(const char *p, const char *e, pb_buf_t *obj, struct
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct GeneratedCodeInfo_Annotation *c = (struct GeneratedCodeInfo_Annotation*) pb_calloc(obj, sizeof(struct GeneratedCodeInfo_Annotation));
-			if (!c || pb_get_GeneratedCodeInfo_Annotation(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_GeneratedCodeInfo_Annotation(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->annotation.len++;
@@ -1501,9 +1501,9 @@ int pb_get_GeneratedCodeInfo_Annotation(const char *p, const char *e, pb_buf_t *
 	return 0;
 }
 void pb_term_GeneratedCodeInfo_Annotation(struct GeneratedCodeInfo_Annotation *m) {
-	if (m->source_file.buf) {
-		((char*)m->source_file.buf)[m->source_file.len] = '\0';
+	if (m->source_file.c_str) {
+		((char*)m->source_file.c_str)[m->source_file.len] = '\0';
 	} else {
-		m->source_file.buf = "";
+		m->source_file.c_str = "";
 	}
 }

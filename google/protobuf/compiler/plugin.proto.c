@@ -17,10 +17,10 @@ int pb_get_Version(const char *p, const char *e, pb_buf_t *obj, struct Version *
 	return 0;
 }
 void pb_term_Version(struct Version *m) {
-	if (m->suffix.buf) {
-		((char*)m->suffix.buf)[m->suffix.len] = '\0';
+	if (m->suffix.c_str) {
+		((char*)m->suffix.c_str)[m->suffix.len] = '\0';
 	} else {
-		m->suffix.buf = "";
+		m->suffix.c_str = "";
 	}
 }
 
@@ -45,7 +45,7 @@ int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, str
 		pb_string_t msg;
 		p = pb_get_string(p + 1, e, &msg);
 		m->compiler_version = (struct Version*) pb_calloc(obj, sizeof(struct Version));
-		if (!m->compiler_version || pb_get_Version(msg.buf, msg.buf + msg.len, obj, (struct Version*) m->compiler_version)) {
+		if (!m->compiler_version || pb_get_Version(msg.c_str, msg.c_str + msg.len, obj, (struct Version*) m->compiler_version)) {
 			return -1;
 		}
 	}
@@ -55,7 +55,7 @@ int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, str
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct FileDescriptorProto *c = (struct FileDescriptorProto*) pb_calloc(obj, sizeof(struct FileDescriptorProto));
-			if (!c || pb_get_FileDescriptorProto(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_FileDescriptorProto(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->proto_file.len++;
@@ -77,16 +77,16 @@ int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, str
 }
 void pb_term_CodeGeneratorRequest(struct CodeGeneratorRequest *m) {
 	for (int i = 0; i < m->file_to_generate.len; i++) {
-		if (m->file_to_generate.v[i].buf) {
-			((char*)m->file_to_generate.v[i].buf)[m->file_to_generate.v[i].len] = '\0';
+		if (m->file_to_generate.v[i].c_str) {
+			((char*)m->file_to_generate.v[i].c_str)[m->file_to_generate.v[i].len] = '\0';
 		} else {
-			((pb_string_t*)m->file_to_generate.v)[i].buf = "";
+			((pb_string_t*)m->file_to_generate.v)[i].c_str = "";
 		}
 	}
-	if (m->parameter.buf) {
-		((char*)m->parameter.buf)[m->parameter.len] = '\0';
+	if (m->parameter.c_str) {
+		((char*)m->parameter.c_str)[m->parameter.len] = '\0';
 	} else {
-		m->parameter.buf = "";
+		m->parameter.c_str = "";
 	}
 	if (m->compiler_version) {
 		pb_term_Version((struct Version*) m->compiler_version);
@@ -107,7 +107,7 @@ int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, st
 			pb_string_t msg;
 			p = pb_get_string(p + 1, e, &msg);
 			struct CodeGeneratorResponse_File *c = (struct CodeGeneratorResponse_File*) pb_calloc(obj, sizeof(struct CodeGeneratorResponse_File));
-			if (!c || pb_get_CodeGeneratorResponse_File(msg.buf, msg.buf + msg.len, obj, c)) {
+			if (!c || pb_get_CodeGeneratorResponse_File(msg.c_str, msg.c_str + msg.len, obj, c)) {
 				return -1;
 			}
 			m->file.len++;
@@ -128,10 +128,10 @@ int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, st
 	return 0;
 }
 void pb_term_CodeGeneratorResponse(struct CodeGeneratorResponse *m) {
-	if (m->error.buf) {
-		((char*)m->error.buf)[m->error.len] = '\0';
+	if (m->error.c_str) {
+		((char*)m->error.c_str)[m->error.len] = '\0';
 	} else {
-		m->error.buf = "";
+		m->error.c_str = "";
 	}
 	for (int i = 0; i < m->file.len; i++) {
 		pb_term_CodeGeneratorResponse_File((struct CodeGeneratorResponse_File*) m->file.v[i]);
@@ -152,19 +152,19 @@ int pb_get_CodeGeneratorResponse_File(const char *p, const char *e, pb_buf_t *ob
 	return 0;
 }
 void pb_term_CodeGeneratorResponse_File(struct CodeGeneratorResponse_File *m) {
-	if (m->name.buf) {
-		((char*)m->name.buf)[m->name.len] = '\0';
+	if (m->name.c_str) {
+		((char*)m->name.c_str)[m->name.len] = '\0';
 	} else {
-		m->name.buf = "";
+		m->name.c_str = "";
 	}
-	if (m->insertion_point.buf) {
-		((char*)m->insertion_point.buf)[m->insertion_point.len] = '\0';
+	if (m->insertion_point.c_str) {
+		((char*)m->insertion_point.c_str)[m->insertion_point.len] = '\0';
 	} else {
-		m->insertion_point.buf = "";
+		m->insertion_point.c_str = "";
 	}
-	if (m->content.buf) {
-		((char*)m->content.buf)[m->content.len] = '\0';
+	if (m->content.c_str) {
+		((char*)m->content.c_str)[m->content.len] = '\0';
 	} else {
-		m->content.buf = "";
+		m->content.c_str = "";
 	}
 }

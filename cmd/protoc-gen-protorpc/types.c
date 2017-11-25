@@ -50,7 +50,7 @@ static void insert_enum(const struct EnumDescriptorProto *en, str_t *proto, str_
     t->max_print_size += 4; // "ENUM_VALUE",\n ... "",\n are the extra four chars
 
     imap_set(&g_enum_types, en, t);
-    smap_set(&g_named_types, t->name.buf, t->name.len, t);
+    smap_set(&g_named_types, t->name.c_str, t->name.len, t);
 }
 
 static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_t *c, bool default_packed, const struct FileDescriptorProto *file) {
@@ -73,7 +73,7 @@ static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_
     t->defined = false;
 	t->default_packed = default_packed;
 
-    if (!strcmp(proto->buf, ".google.protobuf.Timestamp")) {
+    if (!strcmp(proto->c_str, ".google.protobuf.Timestamp")) {
         str_set(&t->c_type, "os_time_t");
         str_set(&t->proto_suffix, "time");
         t->msg = NULL;
@@ -81,7 +81,7 @@ static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_
         t->max_proto_size = 1 + 1 + 10 + 1 + 10; // datasize + 2 tagged int64s
         t->max_proto_size_calculated = 1;
 
-    } else if (!strcmp(proto->buf, ".google.protobuf.Duration")) {
+    } else if (!strcmp(proto->c_str, ".google.protobuf.Duration")) {
         str_set(&t->c_type, "os_duration_t");
         str_set(&t->proto_suffix, "duration");
         t->msg = NULL;
@@ -89,7 +89,7 @@ static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_
         t->max_proto_size = 1 + 1 + 10 + 1 + 10; // datasize + 2 tagged int64s
         t->max_proto_size_calculated = 1;
 
-    } else if (!strcmp(proto->buf, ".google.protobuf.Empty")) {
+    } else if (!strcmp(proto->c_str, ".google.protobuf.Empty")) {
         str_set(&t->c_type, "pb_empty_t");
         str_set(&t->proto_suffix, "empty");
 		t->msg = NULL;
@@ -104,7 +104,7 @@ static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_
     }
 
 	t->json_suffix = t->proto_suffix;
-	smap_set(&g_named_types, t->name.buf, t->name.len, t);
+	smap_set(&g_named_types, t->name.c_str, t->name.len, t);
     
     if (t->msg) {
 		imap_set(&g_struct_types, t->msg, t);
@@ -281,7 +281,7 @@ void get_proto_cast(str_t *out, const struct FieldDescriptorProto* f, int array_
 struct type *get_field_type(const struct FieldDescriptorProto *f) {
     if (f->type == TYPE_MESSAGE || f->type == TYPE_ENUM) {
         struct type *t = NULL;
-        if (smap_get(&g_named_types, f->type_name.buf, f->type_name.len, &t) && t->msg && !t->max_proto_size_calculated) {
+        if (smap_get(&g_named_types, f->type_name.c_str, f->type_name.len, &t) && t->msg && !t->max_proto_size_calculated) {
             calc_max_proto_size(t);
         }
         return t;
@@ -312,13 +312,13 @@ struct type *get_service_type(const struct ServiceDescriptorProto *p) {
 
 struct type *get_input_type(const struct MethodDescriptorProto *m) {
     struct type *t = NULL;
-    smap_get(&g_named_types, m->input_type.buf, m->input_type.len, &t);
+    smap_get(&g_named_types, m->input_type.c_str, m->input_type.len, &t);
     return t;
 }
 
 struct type *get_output_type(const struct MethodDescriptorProto *m) {
 	struct type *t= NULL;
-    smap_get(&g_named_types, m->output_type.buf, m->output_type.len, &t);
+    smap_get(&g_named_types, m->output_type.c_str, m->output_type.len, &t);
     return t;
 }
 

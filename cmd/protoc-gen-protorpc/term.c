@@ -1,7 +1,7 @@
 #include "protoc-gen-protorpc.h"
 
 void do_term(str_t *o, const struct type *t, bool define) {
-	str_addf(o, "void pb_term_%s(%s *m)", t->proto_suffix.buf, t->c_type.buf);
+	str_addf(o, "void pb_term_%s(%s *m)", t->proto_suffix.c_str, t->c_type.c_str);
 	if (!define) {
 		str_add(o, ";" EOL);
 		return;
@@ -26,7 +26,7 @@ void do_term(str_t *o, const struct type *t, bool define) {
 			str_add(o, "\tif(m->");
 			str_addstr(o, oneof);
 			str_add(o, "_type == ");
-			pb_string_t ps = { t->proto_suffix.len, t->proto_suffix.buf };
+			pb_string_t ps = { t->proto_suffix.len, t->proto_suffix.c_str };
 			to_upper(o, ps);
 			str_add(o, "_");
 			to_upper(o, f->name);
@@ -42,35 +42,35 @@ void do_term(str_t *o, const struct type *t, bool define) {
 
 		if (f->label == LABEL_REPEATED) {
 			if (ft->pod_message) {
-				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.buf);
-				str_addf(o, "%s\tpb_term_%s((%s*) &%s.v[i]);" EOL, pfx, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\tpb_term_%s((%s*) &%s.v[i]);" EOL, pfx, ft->proto_suffix.c_str, ft->c_type.c_str, mbr.c_str);
 				str_addf(o, "%s}" EOL, pfx);
 			} else if (ft->msg) {
-				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.buf);
-				str_addf(o, "%s\tpb_term_%s((%s*) %s.v[i]);" EOL, pfx, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\tpb_term_%s((%s*) %s.v[i]);" EOL, pfx, ft->proto_suffix.c_str, ft->c_type.c_str, mbr.c_str);
 				str_addf(o, "%s}" EOL, pfx);
 			} else if (f->type == TYPE_STRING) {
-				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.buf);
-				str_addf(o, "%s\tif (%s.v[i].buf) {" EOL, pfx, mbr.buf);
-				str_addf(o, "%s\t\t((char*)%s.v[i].buf)[%s.v[i].len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
+				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\tif (%s.v[i].c_str) {" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\t\t((char*)%s.v[i].c_str)[%s.v[i].len] = '\\0';" EOL, pfx, mbr.c_str, mbr.c_str);
 				str_addf(o, "%s\t} else {" EOL, pfx);
-				str_addf(o, "%s\t\t((pb_string_t*)%s.v)[i].buf = \"\";" EOL, pfx, mbr.buf);
+				str_addf(o, "%s\t\t((pb_string_t*)%s.v)[i].c_str = \"\";" EOL, pfx, mbr.c_str);
 				str_addf(o, "%s\t}" EOL, pfx);
 				str_addf(o, "%s}" EOL, pfx);
 			} else {
 				remove = true;
 			}
 		} else if (ft->pod_message) {
-			str_addf(o, "%spb_term_%s((%s*) &%s);" EOL, pfx, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+			str_addf(o, "%spb_term_%s((%s*) &%s);" EOL, pfx, ft->proto_suffix.c_str, ft->c_type.c_str, mbr.c_str);
 		} else if (ft->msg) {
-			str_addf(o, "%sif (%s) {" EOL, pfx, mbr.buf);
-			str_addf(o, "%s\tpb_term_%s((%s*) %s);" EOL, pfx, ft->proto_suffix.buf, ft->c_type.buf, mbr.buf);
+			str_addf(o, "%sif (%s) {" EOL, pfx, mbr.c_str);
+			str_addf(o, "%s\tpb_term_%s((%s*) %s);" EOL, pfx, ft->proto_suffix.c_str, ft->c_type.c_str, mbr.c_str);
 			str_addf(o, "%s}" EOL, pfx);
 		} else if (f->type == TYPE_STRING) {
-			str_addf(o, "%sif (%s.buf) {" EOL, pfx, mbr.buf);
-			str_addf(o, "%s\t((char*)%s.buf)[%s.len] = '\\0';" EOL, pfx, mbr.buf, mbr.buf);
+			str_addf(o, "%sif (%s.c_str) {" EOL, pfx, mbr.c_str);
+			str_addf(o, "%s\t((char*)%s.c_str)[%s.len] = '\\0';" EOL, pfx, mbr.c_str, mbr.c_str);
 			str_addf(o, "%s} else {" EOL, pfx);
-			str_addf(o, "%s\t%s.buf = \"\";" EOL, pfx, mbr.buf);
+			str_addf(o, "%s\t%s.c_str = \"\";" EOL, pfx, mbr.c_str);
 			str_addf(o, "%s}" EOL, pfx);
 		} else {
 			remove = true;

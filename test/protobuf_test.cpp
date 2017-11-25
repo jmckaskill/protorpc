@@ -55,7 +55,7 @@ TEST(protobuf, print) {
 	msg.by.len = 5;
 	msg.by.p = (uint8_t*) "abcde";
 	msg.str.len = 5;
-	msg.str.buf = "abcde";
+	msg.str.c_str = "abcde";
 	msg.en = ENUM_C;
 	msg.rb.len = 3;
 	msg.rb.v = rb;

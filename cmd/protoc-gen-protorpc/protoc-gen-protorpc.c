@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
 	char *obuf = malloc(bufsz);
 	pb_buf_t obj = { obuf, obuf + bufsz };
     struct CodeGeneratorRequest req = {0};
-	if (pb_get_CodeGeneratorRequest(in.buf, in.buf + in.len, &obj, &req)) {
+	if (pb_get_CodeGeneratorRequest(in.c_str, in.c_str + in.len, &obj, &req)) {
 		fprintf(stderr, "protoc-gen-protorpc - failed to parse input\n");
 		return 2;
 	}
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
         const struct FileDescriptorProto *f = get_file_proto(&req, req.file_to_generate.v[i]);
 
 		if (f == NULL) {
-			fprintf(stderr, "protoc-gen-protorpc - can't find %s\n", req.file_to_generate.v[i].buf);
+			fprintf(stderr, "protoc-gen-protorpc - can't find %s\n", req.file_to_generate.v[i].c_str);
 			return 2;
 		}
 
@@ -150,23 +150,23 @@ int main(int argc, char *argv[]) {
         str_clear(&filename);
         str_addstr(&filename, f->name);
         str_add(&filename, ".h");
-        FILE *file = fopen(filename.buf, "wb");
+        FILE *file = fopen(filename.c_str, "wb");
 		if (!file) {
-			fprintf(stderr, "failed to open %s\n", filename.buf);
+			fprintf(stderr, "failed to open %s\n", filename.c_str);
 			return 2;
 		}
-        fwrite(hdr.buf, 1, hdr.len, file);
+        fwrite(hdr.c_str, 1, hdr.len, file);
         fclose(file);
 
         str_clear(&filename);
         str_addstr(&filename, f->name);
         str_add(&filename, ".c");
-        file = fopen(filename.buf, "wb");
+        file = fopen(filename.c_str, "wb");
 		if (!file) {
-			fprintf(stderr, "failed to open %s\n", filename.buf);
+			fprintf(stderr, "failed to open %s\n", filename.c_str);
 			return 2;
 		}
-        fwrite(src.buf, 1, src.len, file);
+        fwrite(src.c_str, 1, src.len, file);
         fclose(file);
     }
 

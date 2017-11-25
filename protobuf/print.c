@@ -125,7 +125,7 @@ int pb_print_string(pb_buf_t *a, pb_string_t v) {
 	}
 	char *p = a->next;
 	*(p++) = '\"';
-    const char *s = v.buf;
+    const char *s = v.c_str;
     const char *e = s + v.len;
     while (s < e) {
         char ch = *s++;

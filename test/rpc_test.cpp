@@ -18,7 +18,7 @@ TEST(protorpc, parse_request) {
     EXPECT_EQ(data, end);
     EXPECT_EQ(0, h.have_body);
     EXPECT_EQ(PR_HTTP_GET, h.method);
-    EXPECT_STREQ("/foo", h.name.buf);
+    EXPECT_STREQ("/foo", h.name.c_str);
     EXPECT_EQ(4, h.name.len);
 
     static const char post[] = 
@@ -36,7 +36,7 @@ TEST(protorpc, parse_request) {
     EXPECT_EQ(end - 6, data);
     EXPECT_EQ(1, h.have_body);
     EXPECT_EQ(PR_HTTP_POST, h.method);
-    EXPECT_STREQ("/api/foo", h.name.buf);
+    EXPECT_STREQ("/api/foo", h.name.c_str);
     EXPECT_EQ(8, h.name.len);
 
     EXPECT_EQ(PR_FINISHED, pr_parse_body(&h, &data, &sz));

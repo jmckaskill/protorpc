@@ -23,18 +23,18 @@ typedef struct {
 
 typedef struct {
 	int len;
-	const char *buf; // not null terminated
+	const char *c_str;
 } pb_string_t;
 
 static inline pb_string_t pb_as_string(const char *str) {
 	pb_string_t s;
 	s.len = (int) strlen(str);
-	s.buf = str;
+	s.c_str = str;
 	return s;
 }
 
 static inline int pb_cmp2(pb_string_t a, const char *b, int len) {
-	return a.len == len ? memcmp(a.buf, b, len) : (int) (a.len - len);
+	return a.len == len ? memcmp(a.c_str, b, len) : (int) (a.len - len);
 }
 static inline int pb_cmp(pb_string_t a, const char *b) {
 	return pb_cmp2(a, b, (int) strlen(b));
@@ -179,7 +179,7 @@ static inline char *pb_put_f64(char *p, union pb_f64 v) {
 }
 static inline char *pb_put_string(char *p, pb_string_t v) {
 	p = pb_put_u32(p, v.len);
-	memcpy(p, v.buf, v.len);
+	memcpy(p, v.c_str, v.len);
 	return p + v.len;
 }
 static inline char *pb_put_bytes(char *p, pb_bytes_t v) {

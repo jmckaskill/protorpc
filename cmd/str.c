@@ -8,7 +8,7 @@ char str_initbuf[] = {0};
 
 void str_destroy(str_t *s) {
     if (s->cap) {
-        free(s->buf);
+        free(s->c_str);
     }
 }
 
@@ -17,21 +17,21 @@ void str_grow(str_t *s, int cap) {
         return;
     }
 
-    char *buf = s->cap ? s->buf : NULL;
+    char *buf = s->cap ? s->c_str : NULL;
     int newcap = (s->cap + 16) * 3 / 2;
     if (newcap < cap) {
         newcap = cap;
     }
 
-    s->buf = (char*) realloc(buf, newcap+1);
+    s->c_str = (char*) realloc(buf, newcap+1);
     s->cap = newcap;
 }
 
 void str_add2(str_t *s, const char *a, int len) {
     str_grow(s, s->len + len);
-    memcpy(s->buf + s->len, a, len);
+    memcpy(s->c_str + s->len, a, len);
     s->len += len;
-    s->buf[s->len] = 0;
+    s->c_str[s->len] = 0;
 }
 
 int str_addf(str_t *s, const char *fmt, ...) {
@@ -48,7 +48,7 @@ int str_vaddf(str_t *s, const char *fmt, va_list ap) {
 
         // detect when snprintf runs out of buffer by seeing whether
         // it overwrites the null terminator at the end of the buffer
-        char* buf = s->buf + s->len;
+        char* buf = s->c_str + s->len;
         int bufsz = s->cap - s->len;
         buf[bufsz] = '\0';
         int ret = vsnprintf(buf, bufsz + 1, fmt, aq);
@@ -85,12 +85,12 @@ int str_vaddf(str_t *s, const char *fmt, va_list ap) {
 void str_fread_all(str_t *s, FILE *f) {
 	for (;;) {
         str_grow(s, s->len + 4096);
-        int r = (int) fread(s->buf + s->len, 1, s->cap - s->len, f);
+        int r = (int) fread(s->c_str + s->len, 1, s->cap - s->len, f);
 		if (r == 0) {
 			break;
 		}
         s->len += r;
-        s->buf[s->len] = 0;
+        s->c_str[s->len] = 0;
     }
 }
 
