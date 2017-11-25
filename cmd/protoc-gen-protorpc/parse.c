@@ -20,7 +20,6 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
     struct hash_entry *hashes = (struct hash_entry*) calloc(t->en->value.len, sizeof(struct hash_entry));
     for (int i = 0; i < t->en->value.len; i++) {
         hashes[i].str = t->en->value.v[i]->name;
-        hashes[i].data = t->en->value.v[i];
     }
 
     uint32_t hashsz, hashmul;
@@ -32,7 +31,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 
     for (int i = 0; i < t->en->value.len; i++) {
 		struct hash_entry *h = &hashes[i];
-		const struct EnumValueDescriptorProto *v = (struct EnumValueDescriptorProto*) h->data;
+		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         str_addf(o, "\tcase %u:" EOL, h->off);
         str_addf(o, "\t\tif (!pb_cmp(val, \"%.*s\")) {" EOL, STRF(h->str));
         str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.buf, v->number);
@@ -67,7 +66,6 @@ void do_parse(str_t *o, const struct type *t, bool define) {
 
     for (int i = 0; i < t->msg->field.len; i++) {
         hashes[i].str = t->msg->field.v[i]->name;
-        hashes[i].data = t->msg->field.v[i];
     }
 
     uint32_t hashsz, hashmul;
@@ -84,7 +82,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
 
     for (int i = 0; i < t->msg->field.len; i++) {
         struct hash_entry *h = &hashes[i];
-        const struct FieldDescriptorProto *f = (struct FieldDescriptorProto*) h->data;
+        const struct FieldDescriptorProto *f = t->msg->field.v[i];
         const struct type *ft = get_field_type(f);
 
         static str_t mbr = STR_INIT;

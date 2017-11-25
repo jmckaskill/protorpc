@@ -4,51 +4,91 @@ static bool is_empty(const struct type *t) {
 	return !strcmp(t->name.buf, ".google.protobuf.Empty");
 }
 
-void do_server(str_t *o, const struct type *t, int stage) {
-	static str_t name = STR_INIT;
-
-	switch (stage) {
-	case 0:
+void do_server(str_t *o, const struct type *t, bool define) {
+	if (!define) {
 		// declarations in the header file
 		str_add(o, EOL);
+		str_addf(o, "struct %s {" EOL, t->c_type.buf);
 		for (int i = 0; i < t->svc->method.len; i++) {
 			const struct MethodDescriptorProto *m = t->svc->method.v[i];
 			const struct type *in = get_input_type(m);
 			const struct type *out = get_output_type(m);
 
-			if (m->client_streaming) {
-				fprintf(stderr, "WARNING: client streaming not supported\n");
+			if (m->client_streaming || m->server_streaming) {
+				fprintf(stderr, "WARNING: streaming not supported\n");
 				continue;
 			}
 
-			str_setstr(&name, &t->c_type);
-			str_addch(&name, '_');
-			str_addstr(&name, m->name);
+			str_addf(o, "\tconst char *(*%.*s)(struct %s*, struct pr_http*", STRF(m->name), t->c_type.buf);
+			if (!is_empty(in)) {
+				str_addf(o, ", %s const *in", in->c_type.buf);
+			}
+			if (!is_empty(out)) {
+				str_addf(o, ", %s *out", out->c_type.buf);
+			}
+			str_addf(o, ");" EOL);
+		}
+		str_add(o, "};" EOL);
+		str_add(o, EOL);
+	}
 
-			if (m->server_streaming) {
-				str_addf(o, "struct rpc_publisher *g_rpc_%s;" EOL, name.buf);
-				str_addf(o, "void publish_%s(%s const *msg);" EOL, name.buf, out->c_type.buf);
-			} else {
-				str_addf(o, "int cgi_%s(int sts", name.buf);
-				if (!is_empty(out)) {
-					str_addf(o, ", %s const *msg", out->c_type.buf);
-				}
-				str_add(o, ");" EOL);
+	str_addf(o, "const char *rpc_%s(struct %s* rpc, struct pr_http *h, struct pb_string body, pb_buf_t *resp)", t->c_type.buf, t->c_type.buf);
+	if (!define) {
+		str_add(o, ";" EOL);
+		return;
+	}
+	str_add(o, " {" EOL);
 
-				str_addf(o, "extern int rpc_%s(pb_alloc_t *obj", name.buf);
-				if (!is_empty(out)) {
-					str_addf(o, ", %s *out", out->c_type.buf);
-				}
-				if (!is_empty(in)) {
-					str_addf(o, ", %s const *in", in->c_type.buf);
-				}
-				str_add(o, ");" EOL);
-				str_addf(o, "static inline int pb_rpc_%s(pb_alloc_t *obj, str_t *resp, char *body, int bodysz);" EOL, name.buf);
+	struct hash_entry *h = (struct hash_entry*) calloc(t->svc->method.len, sizeof(struct hash_entry));
+	for (int i = 0; i < t->svc->method.len; i++) {
+		const struct MethodDescriptorProto *m = t->svc->method.v[i];
+		str_t s = STR_INIT;
+		str_addstr(&s, t->name);
+		for (int j = 0; j < s.len; j++) {
+			if (s.buf[j] == '.') {
+				s.buf[j] = '/';
 			}
 		}
-		str_add(o, EOL);
-		str_addf(o, "static inline void register_%s(struct rpc_server *s);" EOL, t->c_type.buf);
-		break;
+		str_add(&s, "/");
+		str_addstr(&s, m->name);
+		h[i].str.len = s.len;
+		h[i].str.buf = str_release(&s);
+		// name is of the form /pkg/service/method
+	}
+
+	uint32_t hashsz, hashmul;
+	calc_hash_values(h, t->svc->method.len, &hashmul, &hashsz);
+
+	str_add(o, "\tstruct pb_string path = {h->name.len, h->name.buf};" EOL);
+	str_addf(o, "\tswitch (pr_hash_path(path, %u) %% %u) {" EOL, hashmul, hashsz);
+
+	for (int i = 0; i < t->svc->method.len; i++) {
+		const struct MethodDescriptorProto *m = t->svc->method.v[i];
+		const struct type *in = get_input_type(m);
+		const struct type *out = get_output_type(m);
+		str_addf(o, "\tcase %u:" EOL, h[i].off);
+		str_addf(o, "\t\tif(pb_cmp(path, \"%.*s\")) {" EOL, STRF(h[i].str));
+		str_add(o, "\t\t\treturn pr_not_found;" EOL);
+		str_add(o, "\t\t} else {" EOL);
+		str_addf(o, "\t\t\t%s in;" EOL, in->c_type.buf);
+		str_addf(o, "\t\t\t%s out;" EOL, out->c_type.buf);
+		str_addf(o, "\t\t\tif (pb_parse_%s((char*)body.buf, &h->request_objects, &in) == pb_errret) {" EOL, in->json_suffix.buf);
+		str_add(o, "\t\t\t\treturn pr_parse_error;" EOL);
+		str_add(o, "\t\t\t}" EOL);
+		str_addf(o, "\t\t\tconst char *ret = rpc->%.*s(rpc, h, NULL, &out);" EOL, STRF(m->name));
+		str_addf(o, "\t\t\tif (pb_print_%s(resp, &out)) {" EOL, out->json_suffix.buf);
+		str_add(o, "\t\t\t\treturn pr_print_error;" EOL);
+		str_add(o, "\t\t\t}" EOL);
+		str_add(o, "\t\t\treturn ret;" EOL);
+		str_add(o, "\t\t}" EOL);
+	}
+
+	str_add(o, "\tdefault:" EOL);
+	str_add(o, "\t\treturn pr_not_found;" EOL);
+	str_add(o, "\t}" EOL);
+	str_add(o, "}" EOL);
+
+#if 0
 
 	case 1:
 		// inline definitions in the header file
@@ -166,7 +206,7 @@ void do_server(str_t *o, const struct type *t, int stage) {
 		}
 		str_add(o, EOL);
 		break;
-	}
+#endif
 }
 
 #if 0

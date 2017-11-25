@@ -1,5 +1,6 @@
 #pragma once
 #include <protobuf.h>
+#include <protorpc.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -290,6 +291,14 @@ int pb_print_TestPod(pb_buf_t *a, struct TestPod const *m);
 int pb_get_TestPod(const char *p, const char *e, struct TestPod *m);
 char *pb_encode_TestPod(char *p, struct TestPod const *m);
 int pb_maxsz_TestPod(struct TestPod const *m);
+
+struct TestService {
+	const char *(*Test)(struct TestService*, struct pr_http*, struct TestMessage const *in, struct TestMessage *out);
+};
+
+const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, struct pb_string body, pb_buf_t *resp);
+
 #ifdef __cplusplus
 }
 #endif
+

@@ -394,6 +394,18 @@ int pr_parse_body(struct pr_http *h, const char **data, int *sz) {
 	}
 }
 
+uint32_t pr_hash_path(struct pb_string p, uint32_t mul) {
+	uint32_t hash = 0;
+	for (int i = 0; i < p.len; i++) {
+		hash = (hash * mul) + (uint32_t)p.buf[i];
+	}
+	return hash;
+}
+
+const char pr_not_found[] = "HTTP/1.1 404 Not Found\r\n";
+const char pr_parse_error[] = "HTTP/1.1 400 Malformed JSON\r\n";
+const char pr_print_error[] = "HTTP/1.1 500 Print Error\r\n";
+
 #if 0
 int pr_parse_multipart(struct pr_multipart *m, char **data, int *sz) {
 	if (!m->have_boundary) {

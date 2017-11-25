@@ -66,7 +66,7 @@ void do_print_enum(str_t *out, const struct type *t, bool define);
 void do_parse(str_t *out, const struct type *t, bool define);
 void do_print(str_t *out, const struct type *t, bool define);
 void do_encode(str_t *out, const struct type *t, bool define);
-void do_server(str_t *out, const struct type *t, int stage);
+void do_server(str_t *out, const struct type *t, bool define);
 void do_client(str_t *out, const struct type *t, bool define);
 void do_nonzero(str_t *o, const struct type *t, bool define);
 
@@ -75,7 +75,6 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *filename);
 struct hash_entry {
 	struct pb_string str;
 	uint32_t off;
-	const void *data;
 };
 
 void calc_hash_values(struct hash_entry *entries, int num, uint32_t *hashmul, uint32_t *hashsz);

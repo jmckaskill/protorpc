@@ -18,6 +18,7 @@ static void declare_external_fields(str_t *o, const struct FileDescriptorProto *
 static void write_header(str_t *o, const struct FileDescriptorProto *f) {
     str_add(o, "#pragma once" EOL);
     str_add(o, "#include <protobuf.h>" EOL);
+    str_add(o, "#include <protorpc.h>" EOL);
 
     for (int i = 0; i < f->dependency.len; i++) {
 		struct pb_string d = f->dependency.v[i];
@@ -43,13 +44,6 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
         define_struct(o, get_struct_type(f->message_type.v[i]));
     }
 
-#if 0
-    for (int i = 0; i < f->service.len; i++) {
-        const struct type *t = get_service_type(f->service.v[i]);
-        do_server(o, t, 0);
-    }
-#endif
-
     for (int i = 0; i < f->enum_type.len; i++) {
         do_enum_funcs(o, get_enum_type(f->enum_type.v[i]), false);
     }
@@ -57,16 +51,16 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f) {
         do_struct_funcs(o, get_struct_type(f->message_type.v[i]), false);
     }
    
-#if 0
     for (int i = 0; i < f->service.len; i++) {
         const struct type *t = get_service_type(f->service.v[i]);
-        do_server(o, t, 1);
+        do_server(o, t, false);
     }
-#endif
 
+    str_add(o, EOL);
     str_add(o, "#ifdef __cplusplus" EOL);
 	str_add(o, "}" EOL);
-	str_add(o, "#endif" EOL);
+    str_add(o, "#endif" EOL);
+    str_add(o, EOL);
 }
 
 static void write_source(str_t *o, const struct FileDescriptorProto *f) {
@@ -84,12 +78,10 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f) {
         do_struct_funcs(o, t, true);
     }
 
-#if 0
 	for (int i = 0; i < f->service.len; i++) {
 		const struct type *t = get_service_type(f->service.v[i]);
-		do_server(o, t, 2);
+		do_server(o, t, true);
 	}
-#endif
 }
 
 static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequest *req, struct pb_string name) {

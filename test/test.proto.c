@@ -3623,3 +3623,25 @@ int pb_maxsz_TestPod(struct TestPod const *m) {
 	((union pb_msg*) m)->maxsz = n;
 	return n;
 }
+const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, struct pb_string body, pb_buf_t *resp) {
+	struct pb_string path = {h->name.len, h->name.buf};
+	switch (pr_hash_path(path, 13) % 5) {
+	case 2:
+		if(pb_cmp(path, "/TestService/Test")) {
+			return pr_not_found;
+		} else {
+			struct TestMessage in;
+			struct TestMessage out;
+			if (pb_parse_TestMessage((char*)body.buf, &h->request_objects, &in) == pb_errret) {
+				return pr_parse_error;
+			}
+			const char *ret = rpc->Test(rpc, h, NULL, &out);
+			if (pb_print_TestMessage(resp, &out)) {
+				return pr_print_error;
+			}
+			return ret;
+		}
+	default:
+		return pr_not_found;
+	}
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <stddef.h>
+#include "protobuf.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +36,7 @@ struct pr_http {
     uint64_t etag;
     const char *body_chunk;
     int chunk_size;
+    pb_buf_t request_objects;
     struct {int len; char buf[64];} login;
     struct {int len; char buf[6];} lang;
 	struct {int len; char buf[256];} boundary;
@@ -48,6 +50,12 @@ struct pr_http {
 
 int pr_parse_request(struct pr_http *h, const char **data, int *sz);
 int pr_parse_body(struct pr_http *h, const char **data, int *sz);
+
+uint32_t pr_hash_path(struct pb_string path, uint32_t hashmul);
+
+extern const char pr_not_found[];
+extern const char pr_parse_error[];
+extern const char pr_print_error[];
 
 #ifdef __cplusplus
 }

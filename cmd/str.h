@@ -43,6 +43,13 @@ static inline void str_clear(str_t *s) {
 	s->len = 0;
 	s->buf[0] = 0;
 }
+static inline char *str_release(str_t *s) {
+	char *p = s->buf;
+	s->cap = 0;
+	s->len = 0;
+	s->buf = NULL;
+	return p;
+}
 
 void str_read_file(str_t *s, const char *fn);
 void str_fread_all(str_t *s, FILE *f);
@@ -60,7 +67,7 @@ __attribute__((format (printf,2,0)))
 int str_vaddf(str_t *s, const char *fmt, va_list ap);
 
 // defined as a macro to also support ca_* char arrays
-#define str_addstr(PS, PADD) str_add2(PS, (PADD).buf, (PADD).len);
+#define str_addstr(P, STR) str_add2(P, (STR).buf, (STR).len);
 
 static inline void str_add(str_t *s, const char *a) {
 	str_add2(s, a, (int) strlen(a));
@@ -72,9 +79,9 @@ static inline void str_set2(str_t *s, const char *a, int len) {
 static inline void str_set(str_t *s, const char *a) {
 	str_set2(s, a, (int) strlen(a));
 }
-static inline void str_setstr(str_t *s, const str_t *a) {
-	str_set2(s, a->buf, a->len);
-}
+
+#define str_setstr(P, STR) str_set2(P, (STR).buf, (STR).len)
+
 static inline void str_addch(str_t *s, char ch) {
 	if (s->len == s->cap) {
 		str_grow(s, s->cap+1);
