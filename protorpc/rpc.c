@@ -26,7 +26,7 @@ static void *memmem(const void *hay, size_t haysz, const void *needle, size_t ne
 
 #define MAX_LINE_LENGTH 256
 
-static int get_line(slice_t *p, slice_t *line) {
+static int get_line(pb_string_t *p, pb_string_t *line) {
 	const char *nl = str_find_char(*p, '\n');
 	if (!nl && p->len > MAX_LINE_LENGTH) {
 		return PR_ERROR;
@@ -43,7 +43,7 @@ static int get_line(slice_t *p, slice_t *line) {
 	return PR_FINISHED;
 }
 
-static int split(slice_t in, slice_t *left, slice_t *right, char ch) {
+static int split(pb_string_t in, pb_string_t *left, pb_string_t *right, char ch) {
 	const char *p = str_find_char(in, ch);
 	if (!p) {
 		return -1;
@@ -57,24 +57,24 @@ static int split(slice_t in, slice_t *left, slice_t *right, char ch) {
 	return 0;
 }
 
-static int parse_request_header(struct pr_http *h, slice_t *data) {
+static int parse_request_header(struct pr_http *h, pb_string_t *data) {
     assert(h->name.len == 0);
     assert(!h->method);
 
-	slice_t line;
+	pb_string_t line;
 	int err = get_line(data, &line);
 	if (err) {
 		h->error_string = "414 URI Too Long";
 		return err;
 	}
     
-	slice_t method;
+	pb_string_t method;
 	if (split(line, &method, &line, ' ')) {
         h->error_string = "400 Malformed Path";
         return PR_ERROR;
     }
 
-	slice_t path, version;
+	pb_string_t path, version;
 	if (split(line, &path, &version, ' ')) {
         h->error_string = "400 Malformed Path";
         return PR_ERROR;
@@ -102,7 +102,7 @@ static int parse_request_header(struct pr_http *h, slice_t *data) {
     const char *scheme = (const char*) memmem(path.c_str, path.len, "://", 3);
     if (scheme) {
 		const char *pathe = path.c_str + path.len;
-		slice_t host = {pathe - (scheme+3), scheme+3};
+		pb_string_t host = {pathe - (scheme+3), scheme+3};
         const char *slash = str_find_char(host, '/');
         if (slash) {
             path.len = pathe - slash;
@@ -141,7 +141,7 @@ static int parse_request_header(struct pr_http *h, slice_t *data) {
     return PR_FINISHED;
 }
 
-static void consume_whitespace(slice_t *p) {
+static void consume_whitespace(pb_string_t *p) {
 	while (p->len && (p->c_str[0] == ' ' || p->c_str[0] == '\t')) {
 		p->c_str++;
 		p->len--;
@@ -149,9 +149,9 @@ static void consume_whitespace(slice_t *p) {
 }
 
 // the newline has already been verified, so we don't need to check against char *e
-static slice_t next_element(slice_t *p, bool *more) {
+static pb_string_t next_element(pb_string_t *p, bool *more) {
 	consume_whitespace(p);
-	slice_t ret = *p;
+	pb_string_t ret = *p;
 
 	while (p->len && (p->c_str[0] != ' ' && p->c_str[0] != '\t' && p->c_str[0] != ';' && p->c_str[0] != ',')) {
 		p->c_str++;
@@ -180,8 +180,8 @@ static slice_t next_element(slice_t *p, bool *more) {
     return ret;
 }
 
-static int parse_http_header(slice_t *p, slice_t *key, slice_t *val) {
-	slice_t line;
+static int parse_http_header(pb_string_t *p, pb_string_t *key, pb_string_t *val) {
+	pb_string_t line;
 	int err = get_line(p, &line);
 	if (err) {
 		return err;
@@ -197,9 +197,9 @@ static int parse_http_header(slice_t *p, slice_t *key, slice_t *val) {
 
 #define HTTP_ETAG_LENGTH 16 // 8 hex characters
 
-static int parse_headers(struct pr_http *h, slice_t *data) {
+static int parse_headers(struct pr_http *h, pb_string_t *data) {
     for (;;) {
-		slice_t key, val;
+		pb_string_t key, val;
 		int err = parse_http_header(data, &key, &val);
 		if (err) {
 			h->error_string = "400 Bad Request";
@@ -218,7 +218,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 
 		} else if (str_itest(key, "transfer-encoding")) {
 			do {
-				slice_t n = next_element(&val, &more);
+				pb_string_t n = next_element(&val, &more);
 				if (n.len) {
 					h->error_string = "400 Malformed Header";
 					return PR_ERROR;
@@ -234,7 +234,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 			} while (more);
 
 		} else if (str_itest(key, "content-type")) {
-			slice_t n = next_element(&val, &more);
+			pb_string_t n = next_element(&val, &more);
 			if (str_itest(n, "multipart/form-data")) {
 				while (more) {
 					n = next_element(&val, &more);
@@ -257,7 +257,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
                 h->error_string = "400 Bad Request";
                 return PR_ERROR;
             }
-            slice_t n = next_element(&val, NULL);
+            pb_string_t n = next_element(&val, NULL);
             if (!n.len) {
 				h->error_string = "400 Malformed Header";
                 return PR_ERROR;
@@ -282,7 +282,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 
         } else if (str_itest(key, "connection")) {
             do {
-                slice_t n = next_element(&val, &more);
+                pb_string_t n = next_element(&val, &more);
                 if (!n.len) {
 					h->error_string = "400 Malformed Header";
                     return PR_ERROR;
@@ -300,12 +300,12 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 
         } else if (str_itest(key, "cookie")) {
             do {
-                slice_t n = next_element(&val, &more);
+                pb_string_t n = next_element(&val, &more);
                 if (!n.len) {
 					h->error_string = "400 Malformed Header";
                     return PR_ERROR;
 				}
-				slice_t cookie, token;
+				pb_string_t cookie, token;
 				if (split(n, &cookie, &token, '=')) {
                     h->error_string = "400 Malformed Cookie";
                     return PR_ERROR;
@@ -317,7 +317,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 
         } else if (str_itest(key, "expect")) {
             do {
-                slice_t n = next_element(&val, &more);
+                pb_string_t n = next_element(&val, &more);
                 if (!n.len) {
 					h->error_string = "400 Malformed Header";
                     return PR_ERROR;
@@ -331,7 +331,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
             } while (more);
 
         } else if (str_itest(key, "if-none-match")) {
-            slice_t n = next_element(&val, NULL);
+            pb_string_t n = next_element(&val, NULL);
             // ignore invalid/different etag
             if (n.len == HTTP_ETAG_LENGTH) {
 				h->etag = 0;
@@ -345,7 +345,7 @@ static int parse_headers(struct pr_http *h, slice_t *data) {
 }
 
 int pr_parse_request(struct pr_http *h, const char **data, int *sz) {
-	slice_t p = {*sz, *data};
+	pb_string_t p = {*sz, *data};
     int err = 0;
 
     if (!h->method) {
@@ -421,7 +421,7 @@ int pr_parse_multipart(struct pr_multipart *m, char **data, int *sz) {
 
 	if (!m->have_header) {
 		for (;;) {
-			slice_t key;
+			pb_string_t key;
 			char *val;
 			int err = parse_http_header(p, e, &key, &val);
 			if (err) {

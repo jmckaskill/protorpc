@@ -1,8 +1,9 @@
 #include "hash.h"
 #include "khash.h"
 #include "../char-array.h"
+#include "../protobuf.h"
 
-static uint32_t string_hash(slice_t key) {
+static uint32_t string_hash(pb_string_t key) {
     if (key.len == 0) {
         return 0;
     }
@@ -16,11 +17,11 @@ static uint32_t string_hash(slice_t key) {
     return h;
 }
 
-static bool string_equal(slice_t a, slice_t b) {
+static bool string_equal(pb_string_t a, pb_string_t b) {
 	return a.len == b.len && !memcmp(a.c_str, b.c_str, a.len);
 }
 
-KHASH_INIT(string, slice_t, 1, string_hash, string_equal)
+KHASH_INIT(string, pb_string_t, 1, string_hash, string_equal)
 KHASH_INIT(i32, int32_t, 1, kh_int_hash_func, kh_int_hash_equal)
 KHASH_INIT(i64, int64_t, 1, kh_int64_hash_func, kh_int64_hash_equal)
 
@@ -58,7 +59,7 @@ bool imap_64_get_base(const map_t* h, int64_t key) {
 }
 
 bool smap_get_base(const map_t* h, const char *key, int len) {
-	slice_t skey;
+	pb_string_t skey;
 	skey.c_str = (char*) key;
 	skey.len = len;
 	((map_t*) h)->idx = kh_get_string((kh_string_t*) h, skey);
@@ -79,7 +80,7 @@ bool imap_64_add_base(map_t* h, int64_t key, size_t valsz) {
 
 bool smap_add_base(map_t* h, const char *key, int len, size_t valsz) {
 	int ret;
-	slice_t skey;
+	pb_string_t skey;
 	skey.c_str = (char*) key;
 	skey.len = len;
 	((map_t*) h)->idx = kh_put_string((kh_string_t*) h, skey, valsz, &ret);

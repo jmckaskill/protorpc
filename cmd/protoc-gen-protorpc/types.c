@@ -1,6 +1,6 @@
 #include "protoc-gen-protorpc.h"
 
-struct {map_t h; slice_t *keys; struct type **values;} g_named_types;
+struct {map_t h; pb_string_t *keys; struct type **values;} g_named_types;
 struct {map_t h; const struct DescriptorProto **keys; struct type **values;} g_struct_types;
 struct {map_t h; const struct EnumDescriptorProto **keys; struct type **values;} g_enum_types;
 struct {map_t h; const struct ServiceDescriptorProto **keys; struct type **values;} g_service_types;

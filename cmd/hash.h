@@ -41,8 +41,8 @@ typedef struct {
 
 // to create a map, create your own structure that has map_t as the first member
 // followed by an array of keys and then an array of values
-// use slice_t from char-array.h
-// struct { map_t h; slice_t *keys; struct my_struct *values;} my_table;
+// use pb_string_t from char-array.h
+// struct { map_t h; pb_string_t *keys; struct my_struct *values;} my_table;
 
 /* ------------------------------------------------------------------------- */
 

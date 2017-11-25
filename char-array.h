@@ -36,12 +36,7 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 #define ca_vaddf(P, FMT, AP) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_vaddf_((P)->c_str, sizeof((P)->c_str), &(P)->len, (FMT), (AP)))
 #define ca_addf(P, ...) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_addf_((P)->c_str, sizeof((P)->c_str), &(P)->len, __VA_ARGS__))
 
-// comparison functions can be used with str_t, slice_t or a char buffer like above
-
-typedef struct {
-	int len;
-	const char *c_str;
-} slice_t;
+// comparison functions can be used with str_t, pb_string_t or a char buffer like above
 
 // can be used with fixed sized arrays as well as str_t
 #define str_ends_with(P, TEST) 		(strlen(TEST) <= (size_t) (P).len && !memcmp((P).c_str + (P).len - strlen(TEST), (TEST), strlen(TEST)))
