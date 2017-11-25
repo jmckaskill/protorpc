@@ -569,7 +569,7 @@ const char *pb_parse_TestMessage(const char *p, pb_buf_t *obj, struct TestMessag
 	}
 }
 int pb_print_TestMessage(pb_buf_t *a, struct TestMessage const *m) {
-	char *p = pb_appendsz(a, 312);
+	char *p = (char*) pb_alloc(a, 312, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->b) {
@@ -642,7 +642,7 @@ int pb_print_TestMessage(pb_buf_t *a, struct TestMessage const *m) {
 		p += 5;
 		p = pb_print_TestEnum(p, m->en);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	if (m->by.len) {
 		if (pb_append(a, "\"by\":", 5)) {return -1;}
 		if (pb_print_bytes(a, m->by)) {return -1;}
@@ -655,146 +655,146 @@ int pb_print_TestMessage(pb_buf_t *a, struct TestMessage const *m) {
 	}
 	if (m->rb.len) {
 		if (pb_append(a, "\"rb\":", 5)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rb.len * 6);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rb.len * 6, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rb.len; i++) {
 			mp = pb_print_bool(mp, m->rb.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->ru32.len) {
 		if (pb_append(a, "\"ru32\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->ru32.len * 12);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->ru32.len * 12, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->ru32.len; i++) {
 			mp = pb_print_u32(mp, m->ru32.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->ru64.len) {
 		if (pb_append(a, "\"ru64\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->ru64.len * 24);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->ru64.len * 24, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->ru64.len; i++) {
 			mp = pb_print_u64(mp, m->ru64.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->ri32.len) {
 		if (pb_append(a, "\"ri32\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->ri32.len * 12);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->ri32.len * 12, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->ri32.len; i++) {
 			mp = pb_print_i32(mp, m->ri32.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->ri64.len) {
 		if (pb_append(a, "\"ri64\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->ri64.len * 24);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->ri64.len * 24, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->ri64.len; i++) {
 			mp = pb_print_i64(mp, m->ri64.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rs32.len) {
 		if (pb_append(a, "\"rs32\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rs32.len * 12);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rs32.len * 12, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rs32.len; i++) {
 			mp = pb_print_i32(mp, m->rs32.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rs64.len) {
 		if (pb_append(a, "\"rs64\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rs64.len * 24);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rs64.len * 24, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rs64.len; i++) {
 			mp = pb_print_i64(mp, m->rs64.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rf32.len) {
 		if (pb_append(a, "\"rf32\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rf32.len * 12);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rf32.len * 12, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rf32.len; i++) {
 			mp = pb_print_u32(mp, m->rf32.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rf64.len) {
 		if (pb_append(a, "\"rf64\":", 7)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rf64.len * 24);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rf64.len * 24, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rf64.len; i++) {
 			mp = pb_print_u64(mp, m->rf64.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rsf32.len) {
 		if (pb_append(a, "\"rsf32\":", 8)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rsf32.len * 12);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rsf32.len * 12, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rsf32.len; i++) {
 			mp = pb_print_i32(mp, m->rsf32.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rsf64.len) {
 		if (pb_append(a, "\"rsf64\":", 8)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rsf64.len * 24);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rsf64.len * 24, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rsf64.len; i++) {
 			mp = pb_print_i64(mp, m->rsf64.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rf.len) {
 		if (pb_append(a, "\"rf\":", 5)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rf.len * 14);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rf.len * 14, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rf.len; i++) {
 			mp = pb_print_float(mp, m->rf.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rd.len) {
 		if (pb_append(a, "\"rd\":", 5)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->rd.len * 22);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->rd.len * 22, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->rd.len; i++) {
 			mp = pb_print_double(mp, m->rd.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->rby.len) {
 		if (pb_append(a, "\"rby\":", 6)) {return -1;}
@@ -816,14 +816,14 @@ int pb_print_TestMessage(pb_buf_t *a, struct TestMessage const *m) {
 	}
 	if (m->ren.len) {
 		if (pb_append(a, "\"ren\":", 6)) {return -1;}
-		char *mp = pb_appendsz(a, 3 /*[],*/ + m->ren.len * 10);
+		char *mp = (char*) pb_alloc(a, 3 /*[],*/ + m->ren.len * 10, 1);
 		if (!mp) {return -1;}
 		*mp++ = '[';
 		for (int i = 0; i < m->ren.len; i++) {
 			mp = pb_print_TestEnum(mp, m->ren.v[i]);
 		}
 		mp = pb_print_array_end_i(mp);
-		a->next = mp;
+		a->next = (uint8_t*) mp;
 	}
 	if (m->msg) {
 		if (pb_append(a, "\"msg\":", 6)) {return -1;}
@@ -2109,7 +2109,7 @@ const char *pb_parse_TestMessage_MbEntry(const char *p, struct TestMessage_MbEnt
 	}
 }
 int pb_print_TestMessage_MbEntry(pb_buf_t *a, struct TestMessage_MbEntry const *m) {
-	char *p = pb_appendsz(a, 33);
+	char *p = (char*) pb_alloc(a, 33, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2122,7 +2122,7 @@ int pb_print_TestMessage_MbEntry(pb_buf_t *a, struct TestMessage_MbEntry const *
 		p += 8;
 		p = pb_print_bool(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_MbEntry(const char *p, const char *e, struct TestMessage_MbEntry *m) {
@@ -2194,7 +2194,7 @@ const char *pb_parse_TestMessage_Mu32Entry(const char *p, struct TestMessage_Mu3
 	}
 }
 int pb_print_TestMessage_Mu32Entry(pb_buf_t *a, struct TestMessage_Mu32Entry const *m) {
-	char *p = pb_appendsz(a, 39);
+	char *p = (char*) pb_alloc(a, 39, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2207,7 +2207,7 @@ int pb_print_TestMessage_Mu32Entry(pb_buf_t *a, struct TestMessage_Mu32Entry con
 		p += 8;
 		p = pb_print_u32(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Mu32Entry(const char *p, const char *e, struct TestMessage_Mu32Entry *m) {
@@ -2279,7 +2279,7 @@ const char *pb_parse_TestMessage_Mu64Entry(const char *p, struct TestMessage_Mu6
 	}
 }
 int pb_print_TestMessage_Mu64Entry(pb_buf_t *a, struct TestMessage_Mu64Entry const *m) {
-	char *p = pb_appendsz(a, 51);
+	char *p = (char*) pb_alloc(a, 51, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2292,7 +2292,7 @@ int pb_print_TestMessage_Mu64Entry(pb_buf_t *a, struct TestMessage_Mu64Entry con
 		p += 8;
 		p = pb_print_u64(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Mu64Entry(const char *p, const char *e, struct TestMessage_Mu64Entry *m) {
@@ -2364,7 +2364,7 @@ const char *pb_parse_TestMessage_Mi32Entry(const char *p, struct TestMessage_Mi3
 	}
 }
 int pb_print_TestMessage_Mi32Entry(pb_buf_t *a, struct TestMessage_Mi32Entry const *m) {
-	char *p = pb_appendsz(a, 39);
+	char *p = (char*) pb_alloc(a, 39, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2377,7 +2377,7 @@ int pb_print_TestMessage_Mi32Entry(pb_buf_t *a, struct TestMessage_Mi32Entry con
 		p += 8;
 		p = pb_print_i32(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Mi32Entry(const char *p, const char *e, struct TestMessage_Mi32Entry *m) {
@@ -2449,7 +2449,7 @@ const char *pb_parse_TestMessage_Mi64Entry(const char *p, struct TestMessage_Mi6
 	}
 }
 int pb_print_TestMessage_Mi64Entry(pb_buf_t *a, struct TestMessage_Mi64Entry const *m) {
-	char *p = pb_appendsz(a, 51);
+	char *p = (char*) pb_alloc(a, 51, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2462,7 +2462,7 @@ int pb_print_TestMessage_Mi64Entry(pb_buf_t *a, struct TestMessage_Mi64Entry con
 		p += 8;
 		p = pb_print_i64(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Mi64Entry(const char *p, const char *e, struct TestMessage_Mi64Entry *m) {
@@ -2534,7 +2534,7 @@ const char *pb_parse_TestMessage_Ms32Entry(const char *p, struct TestMessage_Ms3
 	}
 }
 int pb_print_TestMessage_Ms32Entry(pb_buf_t *a, struct TestMessage_Ms32Entry const *m) {
-	char *p = pb_appendsz(a, 39);
+	char *p = (char*) pb_alloc(a, 39, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2547,7 +2547,7 @@ int pb_print_TestMessage_Ms32Entry(pb_buf_t *a, struct TestMessage_Ms32Entry con
 		p += 8;
 		p = pb_print_i32(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Ms32Entry(const char *p, const char *e, struct TestMessage_Ms32Entry *m) {
@@ -2619,7 +2619,7 @@ const char *pb_parse_TestMessage_Ms64Entry(const char *p, struct TestMessage_Ms6
 	}
 }
 int pb_print_TestMessage_Ms64Entry(pb_buf_t *a, struct TestMessage_Ms64Entry const *m) {
-	char *p = pb_appendsz(a, 51);
+	char *p = (char*) pb_alloc(a, 51, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2632,7 +2632,7 @@ int pb_print_TestMessage_Ms64Entry(pb_buf_t *a, struct TestMessage_Ms64Entry con
 		p += 8;
 		p = pb_print_i64(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Ms64Entry(const char *p, const char *e, struct TestMessage_Ms64Entry *m) {
@@ -2704,7 +2704,7 @@ const char *pb_parse_TestMessage_Mf32Entry(const char *p, struct TestMessage_Mf3
 	}
 }
 int pb_print_TestMessage_Mf32Entry(pb_buf_t *a, struct TestMessage_Mf32Entry const *m) {
-	char *p = pb_appendsz(a, 39);
+	char *p = (char*) pb_alloc(a, 39, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2717,7 +2717,7 @@ int pb_print_TestMessage_Mf32Entry(pb_buf_t *a, struct TestMessage_Mf32Entry con
 		p += 8;
 		p = pb_print_u32(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Mf32Entry(const char *p, const char *e, struct TestMessage_Mf32Entry *m) {
@@ -2789,7 +2789,7 @@ const char *pb_parse_TestMessage_Mf64Entry(const char *p, struct TestMessage_Mf6
 	}
 }
 int pb_print_TestMessage_Mf64Entry(pb_buf_t *a, struct TestMessage_Mf64Entry const *m) {
-	char *p = pb_appendsz(a, 51);
+	char *p = (char*) pb_alloc(a, 51, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2802,7 +2802,7 @@ int pb_print_TestMessage_Mf64Entry(pb_buf_t *a, struct TestMessage_Mf64Entry con
 		p += 8;
 		p = pb_print_u64(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Mf64Entry(const char *p, const char *e, struct TestMessage_Mf64Entry *m) {
@@ -2874,7 +2874,7 @@ const char *pb_parse_TestMessage_Msf32Entry(const char *p, struct TestMessage_Ms
 	}
 }
 int pb_print_TestMessage_Msf32Entry(pb_buf_t *a, struct TestMessage_Msf32Entry const *m) {
-	char *p = pb_appendsz(a, 39);
+	char *p = (char*) pb_alloc(a, 39, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2887,7 +2887,7 @@ int pb_print_TestMessage_Msf32Entry(pb_buf_t *a, struct TestMessage_Msf32Entry c
 		p += 8;
 		p = pb_print_i32(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Msf32Entry(const char *p, const char *e, struct TestMessage_Msf32Entry *m) {
@@ -2959,7 +2959,7 @@ const char *pb_parse_TestMessage_Msf64Entry(const char *p, struct TestMessage_Ms
 	}
 }
 int pb_print_TestMessage_Msf64Entry(pb_buf_t *a, struct TestMessage_Msf64Entry const *m) {
-	char *p = pb_appendsz(a, 51);
+	char *p = (char*) pb_alloc(a, 51, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -2972,7 +2972,7 @@ int pb_print_TestMessage_Msf64Entry(pb_buf_t *a, struct TestMessage_Msf64Entry c
 		p += 8;
 		p = pb_print_i64(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_Msf64Entry(const char *p, const char *e, struct TestMessage_Msf64Entry *m) {
@@ -3044,7 +3044,7 @@ const char *pb_parse_TestMessage_MfEntry(const char *p, struct TestMessage_MfEnt
 	}
 }
 int pb_print_TestMessage_MfEntry(pb_buf_t *a, struct TestMessage_MfEntry const *m) {
-	char *p = pb_appendsz(a, 41);
+	char *p = (char*) pb_alloc(a, 41, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3057,7 +3057,7 @@ int pb_print_TestMessage_MfEntry(pb_buf_t *a, struct TestMessage_MfEntry const *
 		p += 8;
 		p = pb_print_float(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_MfEntry(const char *p, const char *e, struct TestMessage_MfEntry *m) {
@@ -3129,7 +3129,7 @@ const char *pb_parse_TestMessage_MdEntry(const char *p, struct TestMessage_MdEnt
 	}
 }
 int pb_print_TestMessage_MdEntry(pb_buf_t *a, struct TestMessage_MdEntry const *m) {
-	char *p = pb_appendsz(a, 49);
+	char *p = (char*) pb_alloc(a, 49, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3142,7 +3142,7 @@ int pb_print_TestMessage_MdEntry(pb_buf_t *a, struct TestMessage_MdEntry const *
 		p += 8;
 		p = pb_print_double(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_MdEntry(const char *p, const char *e, struct TestMessage_MdEntry *m) {
@@ -3210,7 +3210,7 @@ const char *pb_parse_TestMessage_MbyEntry(const char *p, pb_buf_t *obj, struct T
 	}
 }
 int pb_print_TestMessage_MbyEntry(pb_buf_t *a, struct TestMessage_MbyEntry const *m) {
-	char *p = pb_appendsz(a, 19);
+	char *p = (char*) pb_alloc(a, 19, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3218,7 +3218,7 @@ int pb_print_TestMessage_MbyEntry(pb_buf_t *a, struct TestMessage_MbyEntry const
 		p += 6;
 		p = pb_print_u32(p, m->key);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	if (m->value.len) {
 		if (pb_append(a, "\"value\":", 8)) {return -1;}
 		if (pb_print_bytes(a, m->value)) {return -1;}
@@ -3292,7 +3292,7 @@ const char *pb_parse_TestMessage_MstrEntry(const char *p, pb_buf_t *obj, struct 
 	}
 }
 int pb_print_TestMessage_MstrEntry(pb_buf_t *a, struct TestMessage_MstrEntry const *m) {
-	char *p = pb_appendsz(a, 19);
+	char *p = (char*) pb_alloc(a, 19, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3300,7 +3300,7 @@ int pb_print_TestMessage_MstrEntry(pb_buf_t *a, struct TestMessage_MstrEntry con
 		p += 6;
 		p = pb_print_u32(p, m->key);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	if (m->value.len) {
 		if (pb_append(a, "\"value\":", 8)) {return -1;}
 		if (pb_print_string(a, m->value)) {return -1;}
@@ -3383,7 +3383,7 @@ const char *pb_parse_TestMessage_MenEntry(const char *p, struct TestMessage_MenE
 	}
 }
 int pb_print_TestMessage_MenEntry(pb_buf_t *a, struct TestMessage_MenEntry const *m) {
-	char *p = pb_appendsz(a, 37);
+	char *p = (char*) pb_alloc(a, 37, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3396,7 +3396,7 @@ int pb_print_TestMessage_MenEntry(pb_buf_t *a, struct TestMessage_MenEntry const
 		p += 8;
 		p = pb_print_TestEnum(p, m->value);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestMessage_MenEntry(const char *p, const char *e, struct TestMessage_MenEntry *m) {
@@ -3466,7 +3466,7 @@ const char *pb_parse_TestMessage_MmsgEntry(const char *p, pb_buf_t *obj, struct 
 	}
 }
 int pb_print_TestMessage_MmsgEntry(pb_buf_t *a, struct TestMessage_MmsgEntry const *m) {
-	char *p = pb_appendsz(a, 19);
+	char *p = (char*) pb_alloc(a, 19, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3474,7 +3474,7 @@ int pb_print_TestMessage_MmsgEntry(pb_buf_t *a, struct TestMessage_MmsgEntry con
 		p += 6;
 		p = pb_print_u32(p, m->key);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	if (m->value) {
 		if (pb_append(a, "\"value\":", 8)) {return -1;}
 		if (pb_print_TestMessage(a, m->value)) {return -1;}
@@ -3563,7 +3563,7 @@ const char *pb_parse_TestMessage_MpodEntry(const char *p, struct TestMessage_Mpo
 	}
 }
 int pb_print_TestMessage_MpodEntry(pb_buf_t *a, struct TestMessage_MpodEntry const *m) {
-	char *p = pb_appendsz(a, 19);
+	char *p = (char*) pb_alloc(a, 19, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if (m->key) {
@@ -3571,7 +3571,7 @@ int pb_print_TestMessage_MpodEntry(pb_buf_t *a, struct TestMessage_MpodEntry con
 		p += 6;
 		p = pb_print_u32(p, m->key);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	if (pb_nonzero_TestPod(&m->value)) {
 		if (pb_append(a, "\"value\":", 8)) {return -1;}
 		if (pb_print_TestPod(a, &m->value)) {return -1;}
@@ -3657,7 +3657,7 @@ const char *pb_parse_TestPod(const char *p, struct TestPod *m) {
 	}
 }
 int pb_print_TestPod(pb_buf_t *a, struct TestPod const *m) {
-	char *p = pb_appendsz(a, 33);
+	char *p = (char*) pb_alloc(a, 33, 1);
 	if (!p) {return -1;}
 	*p++ = '{';
 	if(m->foo_type == TESTPOD_U) {
@@ -3670,7 +3670,7 @@ int pb_print_TestPod(pb_buf_t *a, struct TestPod const *m) {
 		p += 4;
 		p = pb_print_i32(p, m->foo.i);
 	}
-	a->next = p;
+	a->next = (uint8_t*) p;
 	return pb_print_map_end(a);
 }
 int pb_get_TestPod(const char *p, const char *e, struct TestPod *m) {

@@ -79,7 +79,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
     }
 
     // print out the fixed members
-	str_addf(o, "\tchar *p = pb_appendsz(a, %u);" EOL, fixedsz+1); // +1 is for the opening brace
+	str_addf(o, "\tchar *p = (char*) pb_alloc(a, %u, 1);" EOL, fixedsz+1); // +1 is for the opening brace
 	str_add(o, "\tif (!p) {return -1;}" EOL);
     str_add(o, "\t*p++ = '{';" EOL);
 
@@ -117,7 +117,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
         }
     }
 
-	str_add(o, "\ta->next = p;" EOL);
+	str_add(o, "\ta->next = (uint8_t*) p;" EOL);
 
     // now everything else
     for (int i = 0; i < t->msg->field.len; i++) {
@@ -157,14 +157,14 @@ void do_print(str_t *o, const struct type *t, bool define) {
 
         if (f->label == LABEL_REPEATED) {
 			if (isfinite(ft->max_print_size)) {
-				str_addf(o, "\t\tchar *mp = pb_appendsz(a, 3 /*[],*/ + %s.len * %d);" EOL, mbr.c_str, (int) ft->max_print_size);
+				str_addf(o, "\t\tchar *mp = (char*) pb_alloc(a, 3 /*[],*/ + %s.len * %d, 1);" EOL, mbr.c_str, (int) ft->max_print_size);
 				str_add(o, "\t\tif (!mp) {return -1;}" EOL);
                 str_add(o, "\t\t*mp++ = '[';" EOL);
                 str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.c_str);
                 str_addf(o, "\t\t\tmp = pb_print_%s(mp, %s.v[i]);" EOL, ft->json_suffix.c_str, mbr.c_str);
                 str_add(o, "\t\t}" EOL);
                 str_add(o, "\t\tmp = pb_print_array_end_i(mp);" EOL);
-				str_add(o, "\t\ta->next = mp;" EOL);
+				str_add(o, "\t\ta->next = (uint8_t*) mp;" EOL);
 			} else {
 				str_add(o, "\t\tif (pb_append(a, \"[\", 1)) {return -1;}" EOL);
                 str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.c_str);

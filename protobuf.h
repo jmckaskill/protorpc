@@ -61,15 +61,15 @@ enum pb_wiretype {
 // Object allocator
 
 struct pb_buf {
-	char *next;
-	char *end;
+	uint8_t *next;
+	uint8_t *end;
 };
 
 typedef struct pb_buf pb_buf_t;
 
-static inline void *pb_alloc(pb_buf_t *b, size_t sz) {
-	char *p = b->next;
-	char *n = p + (((sz)+7) &~7U);
+static inline void *pb_alloc(pb_buf_t *b, size_t sz, size_t align) {
+	uint8_t *p = (uint8_t*) (((uintptr_t)b->next + (align - 1)) &~(align - 1));
+	uint8_t *n = p + sz;
 	if (n > b->end) {
 		return NULL;
 	}
@@ -78,25 +78,15 @@ static inline void *pb_alloc(pb_buf_t *b, size_t sz) {
 }
 
 static inline void *pb_calloc(pb_buf_t *b, size_t sz) {
-	void *p = pb_alloc(b, sz);
+	void *p = pb_alloc(b, sz, 1);
 	if (p) {
 		memset(p, 0, sz);
 	}
 	return p;
 }
 
-static inline char *pb_appendsz(pb_buf_t *b, int sz) {
-	char *p = b->next;
-	char *n = p + sz;
-	if (n > b->end) {
-		return NULL;
-	}
-	b->next = n;
-	return p;
-}
-
 static inline int pb_append(pb_buf_t *b, const char *str, int sz) {
-	char *p = pb_appendsz(b, sz);
+	char *p = (char*)pb_alloc(b, sz, 1);
 	if (p) {
 		memcpy(p, str, sz);
 		return 0;

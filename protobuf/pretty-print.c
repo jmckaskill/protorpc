@@ -2,8 +2,8 @@
 #include "../protobuf.h"
 
 static int add_newline(pb_buf_t *o, int depth) {
-    char *p = o->next;
-    if (p + depth + 1 > o->end) {
+	char *p = (char*)pb_alloc(o, depth + 1, 1);
+    if (!p) {
         return -1;
     }
     *(p++) = '\n';
@@ -11,7 +11,6 @@ static int add_newline(pb_buf_t *o, int depth) {
         *(p++) = '\t';
         depth--;
     }
-    o->next = p;
     return 0;
 }
 
@@ -42,7 +41,7 @@ static const char *copy_string(pb_buf_t *o, const char *in, const char *end) {
 }
 
 int pb_pretty_print(pb_buf_t *o, const char *in, int len) {
-	char *begin = o->next;
+	uint8_t *begin = o->next;
     int depth = 0;
     bool just_opened = false;
 	bool just_comma = false;

@@ -96,12 +96,12 @@ TEST(protobuf, print) {
 	msg.rpod.len = 2;
 	msg.rpod.v = rpod;
 
-	char buf[4096], pbuf[4096];
+	uint8_t buf[4096], pbuf[4096];
 	pb_buf_t pr = { buf, buf + sizeof(buf) };
 	pb_buf_t pp = { pbuf, pbuf + sizeof(pbuf) };
 
 	EXPECT_EQ(0, pb_print_TestMessage(&pr, &msg));
-	EXPECT_EQ(0, pb_pretty_print(&pp, buf, pr.next - buf));
+	EXPECT_EQ(0, pb_pretty_print(&pp, (char*) buf, pr.next - buf));
 	ASSERT_EQ(0, pb_append(&pr, "\0", 1));
 	ASSERT_EQ(0, pb_append(&pp, "\0", 1));
 
@@ -147,7 +147,7 @@ TEST(protobuf, print) {
 			"\"rpod\":[{\"u\":1},{\"i\":-1}]"
 		"}\n";
 		
-	EXPECT_STREQ(test_json, buf);
+	EXPECT_STREQ(test_json, (char*) buf);
 
 	static const char test_pretty[] = 
 		"{\n"
@@ -261,6 +261,6 @@ TEST(protobuf, print) {
 			"\t]\n"
 		"}\n";
 	
-	EXPECT_STREQ(test_pretty, pbuf);
+	EXPECT_STREQ(test_pretty, (char*) pbuf);
 }
 

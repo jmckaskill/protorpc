@@ -123,13 +123,13 @@ int pb_print_string(pb_buf_t *a, pb_string_t v) {
 	if (a->next + 1 /*"*/ + v.len + 2 /*",*/ > a->end) {
 		return -1;
 	}
-	char *p = a->next;
+	uint8_t *p = a->next;
 	*(p++) = '\"';
     const char *s = v.c_str;
     const char *e = s + v.len;
     while (s < e) {
-        char ch = *s++;
-        char escape = escapechar[(uint8_t)ch];
+        uint8_t ch = (uint8_t) (*s++);
+		uint8_t escape = (uint8_t)escapechar[ch];
         if (!escape) {
             *(p++) = ch;
         } else if (escape == 'u') {
@@ -140,8 +140,8 @@ int pb_print_string(pb_buf_t *a, pb_string_t v) {
             *(p++) = 'u';
             *(p++) = '0';
             *(p++) = '0';
-            *(p++) = hexchar[ch >> 4];
-            *(p++) = hexchar[ch & 0xF];
+            *(p++) = (uint8_t) hexchar[ch >> 4];
+            *(p++) = (uint8_t) hexchar[ch & 0xF];
         } else {
 			if (p + (e - s) + 2 /*",*/ + 2 /*\e*/ > a->end) {
 				return -1;
@@ -176,12 +176,12 @@ char *pb_print_base64(char *p, const uint8_t *v, int n) {
 }
 
 int pb_print_bytes(pb_buf_t *a, pb_bytes_t v) {
-	char *p = a->next;
+	uint8_t *p = a->next;
 	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ > a->end) {
 		return -1;
 	}
 	*(p++) = '\"';
-    p = pb_print_base64(p, v.p, v.len);
+    p = (uint8_t*) pb_print_base64((char*) p, v.p, v.len);
     *(p++) = '\"';
     *(p++) = ',';
 	a->next = p;
