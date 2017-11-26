@@ -607,10 +607,10 @@ TEST(protobuf, encode) {
 
 TEST(protobuf, decode) {
 	struct TestMessage m = {};
-	uint8_t obuf[1024];
-	pb_buf_t obj = {obuf, obuf + sizeof(obuf)};
+	uint8_t obuf[4096];
+	pb_buf_t obj = {obuf, &obuf[sizeof(obuf)]};
 
-	char *buf = (char*) malloc(sizeof(test_proto));
+	char *buf = (char*) malloc(sizeof(test_proto) + 1);
 	memcpy(buf, test_proto, sizeof(test_proto));
 
 	EXPECT_EQ(0, pb_get_TestMessage(buf, buf + sizeof(test_proto), &obj, &m));
