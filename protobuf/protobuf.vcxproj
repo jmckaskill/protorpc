@@ -23,11 +23,15 @@
     <ClCompile Include="./parse.c" />
     <ClCompile Include="./pretty-print.c" />
     <ClCompile Include="./print.c" />
+    <ClCompile Include="./protobuf_test.cpp" />
     <ClCompile Include="./put.c" />
+    <ClCompile Include="./test.proto.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="./test.proto.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="./test.proto" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
 	<ProjectGuid>{01EF6A74-7AF7-41F2-BBF8-6FDE04AFFA0B}</ProjectGuid>

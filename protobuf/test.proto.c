@@ -1,4 +1,4 @@
-#include "test/test.proto.h"
+#include "test.proto.h"
 
 char *pb_parse_TestMessage(char *p, pb_buf_t *obj, struct TestMessage *m) {
 	(void) obj;

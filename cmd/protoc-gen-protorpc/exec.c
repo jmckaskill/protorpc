@@ -28,7 +28,7 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
     str_t cmdline = STR_INIT;
 	str_addch(&cmdline, '"');
 	str_add(&cmdline, protoc_exe);
-    str_add(&cmdline, "\" -I. --protorpc_out=. --error_format=msvs \"");
+    str_add(&cmdline, "\" -I. -Iprotorpc --protorpc_out=. --error_format=msvs \"");
     str_add(&cmdline, file);
 	str_addch(&cmdline, '"');
 
@@ -42,7 +42,7 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
     // don't bother cleaning up as this function isn't guaranteed to return
     return (int) code;
 #else
-    execlp(protoc_exe, protoc_exe, "-I.", "--protorpc.exe_out=.", file, NULL);
+    execlp(protoc_exe, protoc_exe, "-I.", "-Iprotorpc", "--protorpc.exe_out=.", file, NULL);
     perror("exec protoc");
     return 1;
 #endif

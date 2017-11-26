@@ -18,21 +18,10 @@
 	  <Platform>Win32</Platform>
 	</ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="./protobuf_test.cpp" />
-    <ClCompile Include="./rpc_test.cpp" />
-    <ClCompile Include="./test.proto.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="./test.proto.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="./test.proto" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
 	<ProjectGuid>{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}</ProjectGuid>
 	<Keyword>MakeFileProj</Keyword>
-	<ProjectName>bin - test.exe</ProjectName>
+	<ProjectName>bin - protorpc_test.exe</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -74,44 +63,44 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\win32-release\test.exe</NMakeOutput>
+	<NMakeOutput>$(SolutionDir)\bin\win32-release\protorpc_test.exe</NMakeOutput>
 	<NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/test.exe</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/test.exe</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/test.exe</NMakeCleanCommandLine>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/protorpc_test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protorpc_test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-release/protorpc_test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protorpc_test.exe</NMakeCleanCommandLine>
 	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
 	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
 	<SourcePath />
 	<ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\win32-debug\test.exe</NMakeOutput>
+	<NMakeOutput>$(SolutionDir)\bin\win32-debug\protorpc_test.exe</NMakeOutput>
 	<NMakePreprocessorDefinitions>WIN32</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/test.exe</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/test.exe</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/test.exe</NMakeCleanCommandLine>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protorpc_test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protorpc_test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protorpc_test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protorpc_test.exe</NMakeCleanCommandLine>
 	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
 	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
 	<SourcePath />
 	<ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\arm-release\test.exe</NMakeOutput>
+	<NMakeOutput>$(SolutionDir)\bin\arm-release\protorpc_test.exe</NMakeOutput>
 	<NMakePreprocessorDefinitions>__linux__;__arm__;NDEBUG</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/test.exe</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/test.exe</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/test.exe</NMakeCleanCommandLine>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/protorpc_test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/protorpc_test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-release/protorpc_test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-release/protorpc_test.exe</NMakeCleanCommandLine>
 	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
 	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
 	<SourcePath />
 	<ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\arm-debug\test.exe</NMakeOutput>
+	<NMakeOutput>$(SolutionDir)\bin\arm-debug\protorpc_test.exe</NMakeOutput>
 	<NMakePreprocessorDefinitions>__linux__;__arm__;DEBUG</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/test.exe</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/test.exe</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/test.exe</NMakeCleanCommandLine>
+	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/protorpc_test.exe</NMakeBuildCommandLine>
+	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/protorpc_test.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja bin/arm-debug/protorpc_test.exe</NMakeReBuildCommandLine>
+	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean bin/arm-debug/protorpc_test.exe</NMakeCleanCommandLine>
 	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
 	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
 	<SourcePath />

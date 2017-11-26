@@ -10,7 +10,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc.lib", "proto
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc.exe", "cmd/protoc-gen-protorpc\protoc-gen-protorpc.vcxproj", "{C676AF48-ED5F-4089-B356-9A26D3521FF2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - test.exe", "test\test.vcxproj", "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc_test.exe", ".\protorpc_test.vcxproj", "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_DEFAULT", "_DEFAULT.vcxproj", "{1E69E38F-001D-4219-9835-20D636CE1927}"
 EndProject

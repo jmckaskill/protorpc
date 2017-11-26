@@ -70,7 +70,8 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f, bool dec
 
 static void write_source(str_t *o, const struct FileDescriptorProto *f, bool decode_only) {
     str_add(o, "#include \"");
-    str_addstr(o, f->name);
+	const char *slash = str_rfind_char(f->name, '/');
+	str_add(o, slash ? (slash + 1) : f->name.c_str);
     str_add(o, ".h\"" EOL);
 
     for (int i = 0; i < f->message_type.len; i++) {

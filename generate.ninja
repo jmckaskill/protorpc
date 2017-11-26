@@ -1,5 +1,5 @@
 bin = bin/$HOST
 
-build $SRC/test/test.proto.h $SRC/test/test.proto.c: run $
- $bin/protoc-gen-protorpc.exe $bin/protoc.exe $SRC/test/test.proto
+build $SRC/protobuf/test.proto.h $SRC/protobuf/test.proto.c: run $
+ $bin/protoc-gen-protorpc.exe $bin/protoc.exe $SRC/protobuf/test.proto
 
