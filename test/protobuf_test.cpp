@@ -390,55 +390,6 @@ static void setup_message(struct TestMessage *m) {
 	m->rpod.v = rpod;
 }
 
-TEST(protobuf, print) {
-	struct TestMessage m = {};
-	setup_message(&m);
-
-	uint8_t buf[4096], pbuf[4096];
-	pb_buf_t pr = { buf, buf + sizeof(buf) };
-	pb_buf_t pp = { pbuf, pbuf + sizeof(pbuf) };
-
-	EXPECT_EQ(0, pb_print_TestMessage(&pr, &m));
-	EXPECT_EQ(0, pb_pretty_print(&pp, (char*) buf, pr.next - buf));
-	ASSERT_EQ(0, pb_append(&pr, "\0", 1));
-	ASSERT_EQ(0, pb_append(&pp, "\0", 1));
-	EXPECT_STREQ(test_json, (char*) buf);
-	EXPECT_STREQ(test_pretty, (char*) pbuf);
-}
-
-TEST(protobuf, print_bytes) {
-	uint8_t buf[16];
-	pb_buf_t b;
-	pb_bytes_t by;
-
-	by.len = 1;
-	by.p = (uint8_t*) "a";
-	b.next = buf;
-	b.end = buf + sizeof(buf);
-	EXPECT_EQ(0, pb_print_bytes(&b, by));
-	*b.next = 0;
-	EXPECT_EQ(buf + 5, b.next);
-	EXPECT_STREQ("\"YQ\",", (char*) buf);
-
-	by.len = 2;
-	by.p = (uint8_t*) "ab";
-	b.next = buf;
-	b.end = buf + sizeof(buf);
-	EXPECT_EQ(0, pb_print_bytes(&b, by));
-	*b.next = 0;
-	EXPECT_EQ(buf + 6, b.next);
-	EXPECT_STREQ("\"YWI\",", (char*) buf);
-
-	by.len = 3;
-	by.p = (uint8_t*) "abc";
-	b.next = buf;
-	b.end = buf + sizeof(buf);
-	EXPECT_EQ(0, pb_print_bytes(&b, by));
-	*b.next = 0;
-	EXPECT_EQ(buf + 7, b.next);
-	EXPECT_STREQ("\"YWJj\",", (char*) buf);
-}
-
 static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(true, m->b);
 	EXPECT_EQ(1, m->u32);
@@ -532,6 +483,55 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(-1, m->rpod.v[1].foo.i);
 }
 
+TEST(protobuf, print) {
+	struct TestMessage m = {};
+	setup_message(&m);
+
+	uint8_t buf[4096], pbuf[4096];
+	pb_buf_t pr = { buf, buf + sizeof(buf) };
+	pb_buf_t pp = { pbuf, pbuf + sizeof(pbuf) };
+
+	EXPECT_EQ(0, pb_print_TestMessage(&pr, &m));
+	EXPECT_EQ(0, pb_pretty_print(&pp, (char*) buf, pr.next - buf));
+	ASSERT_EQ(0, pb_append(&pr, "\0", 1));
+	ASSERT_EQ(0, pb_append(&pp, "\0", 1));
+	EXPECT_STREQ(test_json, (char*) buf);
+	EXPECT_STREQ(test_pretty, (char*) pbuf);
+}
+
+TEST(protobuf, print_bytes) {
+	uint8_t buf[16];
+	pb_buf_t b;
+	pb_bytes_t by;
+
+	by.len = 1;
+	by.p = (uint8_t*) "a";
+	b.next = buf;
+	b.end = buf + sizeof(buf);
+	EXPECT_EQ(0, pb_print_bytes(&b, by));
+	*b.next = 0;
+	EXPECT_EQ(buf + 5, b.next);
+	EXPECT_STREQ("\"YQ\",", (char*) buf);
+
+	by.len = 2;
+	by.p = (uint8_t*) "ab";
+	b.next = buf;
+	b.end = buf + sizeof(buf);
+	EXPECT_EQ(0, pb_print_bytes(&b, by));
+	*b.next = 0;
+	EXPECT_EQ(buf + 6, b.next);
+	EXPECT_STREQ("\"YWI\",", (char*) buf);
+
+	by.len = 3;
+	by.p = (uint8_t*) "abc";
+	b.next = buf;
+	b.end = buf + sizeof(buf);
+	EXPECT_EQ(0, pb_print_bytes(&b, by));
+	*b.next = 0;
+	EXPECT_EQ(buf + 7, b.next);
+	EXPECT_STREQ("\"YWJj\",", (char*) buf);
+}
+
 TEST(protobuf, parse) {
 	uint8_t objbuf[4096];
 	pb_buf_t obj = { objbuf, objbuf + sizeof(objbuf) };
@@ -580,7 +580,7 @@ std::ostream& operator<<(std::ostream& o, pb_bytes_t m) {
 	char fill = o.fill();
 	o << "bytes{";
 	o << std::hex << std::setfill('0') << std::uppercase;	
-	for (size_t i = 0; i < m.len; i++) {
+	for (int i = 0; i < m.len; i++) {
 		if (i && !(i&1)) {o << " ";}
 		o << std::setw(2) << (int) m.p[i];
 	}
@@ -596,7 +596,7 @@ TEST(protobuf, encode) {
 	setup_message(&m);
 
 	char buf[1024];
-	ASSERT_LT(pb_maxsz_TestMessage(&m), sizeof(buf));
+	ASSERT_LT(pb_maxsz_TestMessage(&m), (int) sizeof(buf));
 
 	char *end = pb_encode_TestMessage(buf, &m);
 

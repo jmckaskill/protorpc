@@ -88,7 +88,7 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
 			str_addf(o, "\t\t\tprev = (%s*) prev->pb_hdr.prev;" EOL, ft->c_type.c_str);
 			str_add(o, "\t\t}" EOL);
 		} else if (is_field_packed(t, f)) {
-			str_addf(o, "\t\tp = pb_get_packed_%s(p, e, obj, ", ft->proto_suffix.c_str);
+			str_addf(o, "\t\tp = pb_get_packed_%s(p + %u, e, obj, ", ft->proto_suffix.c_str, tagsz);
 			get_proto_cast(o, f, 1, 0);
 			str_addf(o, "&%s.v, &%s.len);" EOL, mbr.c_str, mbr.c_str);
 		} else {

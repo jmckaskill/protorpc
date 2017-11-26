@@ -1084,43 +1084,43 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 		}
 	}
 	if (pb_skipto_2(&p, e, 426)) {
-		p = pb_get_packed_bool(p, e, obj, (bool**)&m->rb.v, &m->rb.len);
+		p = pb_get_packed_bool(p + 2, e, obj, (bool**)&m->rb.v, &m->rb.len);
 	}
 	if (pb_skipto_2(&p, e, 434)) {
-		p = pb_get_packed_u32(p, e, obj, (uint32_t**)&m->ri32.v, &m->ri32.len);
+		p = pb_get_packed_u32(p + 2, e, obj, (uint32_t**)&m->ri32.v, &m->ri32.len);
 	}
 	if (pb_skipto_2(&p, e, 442)) {
-		p = pb_get_packed_s32(p, e, obj, (int32_t**)&m->rs32.v, &m->rs32.len);
+		p = pb_get_packed_s32(p + 2, e, obj, (int32_t**)&m->rs32.v, &m->rs32.len);
 	}
 	if (pb_skipto_2(&p, e, 450)) {
-		p = pb_get_packed_f32(p, e, obj, (union pb_f32**)&m->rsf32.v, &m->rsf32.len);
+		p = pb_get_packed_f32(p + 2, e, obj, (union pb_f32**)&m->rsf32.v, &m->rsf32.len);
 	}
 	if (pb_skipto_2(&p, e, 458)) {
-		p = pb_get_packed_u32(p, e, obj, (uint32_t**)&m->ru32.v, &m->ru32.len);
+		p = pb_get_packed_u32(p + 2, e, obj, (uint32_t**)&m->ru32.v, &m->ru32.len);
 	}
 	if (pb_skipto_2(&p, e, 466)) {
-		p = pb_get_packed_f32(p, e, obj, (union pb_f32**)&m->rf32.v, &m->rf32.len);
+		p = pb_get_packed_f32(p + 2, e, obj, (union pb_f32**)&m->rf32.v, &m->rf32.len);
 	}
 	if (pb_skipto_2(&p, e, 474)) {
-		p = pb_get_packed_u64(p, e, obj, (uint64_t**)&m->ri64.v, &m->ri64.len);
+		p = pb_get_packed_u64(p + 2, e, obj, (uint64_t**)&m->ri64.v, &m->ri64.len);
 	}
 	if (pb_skipto_2(&p, e, 482)) {
-		p = pb_get_packed_f64(p, e, obj, (union pb_f64**)&m->rsf64.v, &m->rsf64.len);
+		p = pb_get_packed_f64(p + 2, e, obj, (union pb_f64**)&m->rsf64.v, &m->rsf64.len);
 	}
 	if (pb_skipto_2(&p, e, 490)) {
-		p = pb_get_packed_s64(p, e, obj, (int64_t**)&m->rs64.v, &m->rs64.len);
+		p = pb_get_packed_s64(p + 2, e, obj, (int64_t**)&m->rs64.v, &m->rs64.len);
 	}
 	if (pb_skipto_2(&p, e, 3474)) {
-		p = pb_get_packed_u64(p, e, obj, (uint64_t**)&m->ru64.v, &m->ru64.len);
+		p = pb_get_packed_u64(p + 2, e, obj, (uint64_t**)&m->ru64.v, &m->ru64.len);
 	}
 	if (pb_skipto_2(&p, e, 3482)) {
-		p = pb_get_packed_f64(p, e, obj, (union pb_f64**)&m->rf64.v, &m->rf64.len);
+		p = pb_get_packed_f64(p + 2, e, obj, (union pb_f64**)&m->rf64.v, &m->rf64.len);
 	}
 	if (pb_skipto_2(&p, e, 3490)) {
-		p = pb_get_packed_f32(p, e, obj, (union pb_f32**)&m->rf.v, &m->rf.len);
+		p = pb_get_packed_f32(p + 2, e, obj, (union pb_f32**)&m->rf.v, &m->rf.len);
 	}
 	if (pb_skipto_2(&p, e, 3498)) {
-		p = pb_get_packed_f64(p, e, obj, (union pb_f64**)&m->rd.v, &m->rd.len);
+		p = pb_get_packed_f64(p + 2, e, obj, (union pb_f64**)&m->rd.v, &m->rd.len);
 	}
 	if (pb_skipto_2(&p, e, 3506)) {
 		m->rby.v = (pb_bytes_t*) obj->next;
@@ -1147,7 +1147,7 @@ int pb_get_TestMessage(const char *p, const char *e, pb_buf_t *obj, struct TestM
 		obj->next += m->rstr.len * sizeof(pb_string_t);
 	}
 	if (pb_skipto_2(&p, e, 3522)) {
-		p = pb_get_packed_u32(p, e, obj, (uint32_t**)&m->ren.v, &m->ren.len);
+		p = pb_get_packed_u32(p + 2, e, obj, (uint32_t**)&m->ren.v, &m->ren.len);
 	}
 	if (pb_skipto_2(&p, e, 3530)) {
 		struct TestMessage *prev = NULL;
