@@ -2,37 +2,37 @@ obj = obj/$TGT
 lib = lib/$TGT
 bin = bin/$TGT
 
-build $obj/protobuf/get.o: cc protobuf/get.c
-build $obj/protobuf/parse.o: cc protobuf/parse.c
-build $obj/protobuf/pretty-print.o: cc protobuf/pretty-print.c
-build $obj/protobuf/print.o: cc protobuf/print.c
-build $obj/protobuf/put.o: cc protobuf/put.c
+build $obj/protobuf/get.o: cc $SRC/protobuf/get.c
+build $obj/protobuf/parse.o: cc $SRC/protobuf/parse.c
+build $obj/protobuf/pretty-print.o: cc $SRC/protobuf/pretty-print.c
+build $obj/protobuf/print.o: cc $SRC/protobuf/print.c
+build $obj/protobuf/put.o: cc $SRC/protobuf/put.c
 
-build $obj/protorpc/rpc.o: cc protorpc/rpc.c
+build $obj/protorpc/rpc.o: cc $SRC/protorpc/rpc.c
 build $obj/rpc_test.o: cxx test/rpc_test.cpp
 
-build $obj/protoc-gen-protorpc/decl.o: cc cmd/protoc-gen-protorpc/decl.c
-build $obj/protoc-gen-protorpc/exec.o: cc cmd/protoc-gen-protorpc/exec.c
-build $obj/protoc-gen-protorpc/decode.o: cc cmd/protoc-gen-protorpc/decode.c
-build $obj/protoc-gen-protorpc/hash.o: cc cmd/protoc-gen-protorpc/hash.c
-build $obj/protoc-gen-protorpc/parse.o: cc cmd/protoc-gen-protorpc/parse.c
-build $obj/protoc-gen-protorpc/print.o: cc cmd/protoc-gen-protorpc/print.c
-build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc cmd/protoc-gen-protorpc/protoc-gen-protorpc.c
-build $obj/protoc-gen-protorpc/encode.o: cc cmd/protoc-gen-protorpc/encode.c
-build $obj/protoc-gen-protorpc/server.o: cc cmd/protoc-gen-protorpc/server.c
-build $obj/protoc-gen-protorpc/types.o: cc cmd/protoc-gen-protorpc/types.c
-build $obj/protoc-gen-protorpc/term.o: cc cmd/protoc-gen-protorpc/term.c
+build $obj/protoc-gen-protorpc/decl.o: cc $SRC/cmd/protoc-gen-protorpc/decl.c
+build $obj/protoc-gen-protorpc/exec.o: cc $SRC/cmd/protoc-gen-protorpc/exec.c
+build $obj/protoc-gen-protorpc/decode.o: cc $SRC/cmd/protoc-gen-protorpc/decode.c
+build $obj/protoc-gen-protorpc/hash.o: cc $SRC/cmd/protoc-gen-protorpc/hash.c
+build $obj/protoc-gen-protorpc/parse.o: cc $SRC/cmd/protoc-gen-protorpc/parse.c
+build $obj/protoc-gen-protorpc/print.o: cc $SRC/cmd/protoc-gen-protorpc/print.c
+build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc $SRC/cmd/protoc-gen-protorpc/protoc-gen-protorpc.c
+build $obj/protoc-gen-protorpc/encode.o: cc $SRC/cmd/protoc-gen-protorpc/encode.c
+build $obj/protoc-gen-protorpc/server.o: cc $SRC/cmd/protoc-gen-protorpc/server.c
+build $obj/protoc-gen-protorpc/types.o: cc $SRC/cmd/protoc-gen-protorpc/types.c
+build $obj/protoc-gen-protorpc/term.o: cc $SRC/cmd/protoc-gen-protorpc/term.c
 
-build $obj/google/descriptor.proto.o: cc google/protobuf/descriptor.proto.c
-build $obj/google/plugin.proto.o: cc google/protobuf/compiler/plugin.proto.c
+build $obj/google/descriptor.proto.o: cc $SRC/google/protobuf/descriptor.proto.c
+build $obj/google/plugin.proto.o: cc $SRC/google/protobuf/compiler/plugin.proto.c
 
-build $obj/test.proto.o: cc test/test.proto.c
+build $obj/test.proto.o: cc $SRC/test/test.proto.c
 build $obj/protobuf_test.o: cxx test/protobuf_test.cpp || test/test.proto.h
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
 
-build $obj/str.o: cc cmd/str.c
-build $obj/hash.o: cc cmd/hash.c
+build $obj/str.o: cc $SRC/cmd/str.c
+build $obj/hash.o: cc $SRC/cmd/hash.c
 
 build $lib/protobuf.lib: lib $
  $obj/protobuf/get.o $

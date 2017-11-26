@@ -1,5 +1,6 @@
 SRC_NINJA = src.ninja
 INCLUDES = -I . -I gtest/googletest/include -I gtest/googletest
+SRC = .
 
 include toolchain/host-gcc.ninja
 
