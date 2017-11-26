@@ -56,6 +56,14 @@ void do_term(str_t *o, const struct type *t, bool define) {
 				str_addf(o, "%s\t\t((pb_string_t*)%s.v)[i].c_str = \"\";" EOL, pfx, mbr.c_str);
 				str_addf(o, "%s\t}" EOL, pfx);
 				str_addf(o, "%s}" EOL, pfx);
+			} else if (f->type == TYPE_BYTES) {
+				str_addf(o, "%sfor (int i = 0; i < %s.len; i++) {" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\tif (%s.v[i].p) {" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\t\t((char*)%s.v[i].p)[%s.v[i].len] = '\\0';" EOL, pfx, mbr.c_str, mbr.c_str);
+				str_addf(o, "%s\t} else {" EOL, pfx);
+				str_addf(o, "%s\t\t((pb_bytes_t*)%s.v)[i].p = (uint8_t*) \"\";" EOL, pfx, mbr.c_str);
+				str_addf(o, "%s\t}" EOL, pfx);
+				str_addf(o, "%s}" EOL, pfx);
 			} else {
 				remove = true;
 			}
@@ -70,6 +78,12 @@ void do_term(str_t *o, const struct type *t, bool define) {
 			str_addf(o, "%s\t((char*)%s.c_str)[%s.len] = '\\0';" EOL, pfx, mbr.c_str, mbr.c_str);
 			str_addf(o, "%s} else {" EOL, pfx);
 			str_addf(o, "%s\t%s.c_str = \"\";" EOL, pfx, mbr.c_str);
+			str_addf(o, "%s}" EOL, pfx);
+		} else if (f->type == TYPE_BYTES) {
+			str_addf(o, "%sif (%s.p) {" EOL, pfx, mbr.c_str);
+			str_addf(o, "%s\t((char*)%s.p)[%s.len] = '\\0';" EOL, pfx, mbr.c_str, mbr.c_str);
+			str_addf(o, "%s} else {" EOL, pfx);
+			str_addf(o, "%s\t%s.p = (uint8_t*) \"\";" EOL, pfx, mbr.c_str);
 			str_addf(o, "%s}" EOL, pfx);
 		} else {
 			remove = true;
