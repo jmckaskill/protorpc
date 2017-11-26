@@ -18,7 +18,7 @@ union pb_msg {
 
 typedef struct {
 	int len;
-	uint8_t *p;
+	const uint8_t *p;
 } pb_bytes_t;
 
 typedef struct {
@@ -53,9 +53,9 @@ union pb_f64 {
 
 enum pb_wiretype {
 	PB_WIRE_VARINT = 0,
-	PB_WIRE_F32 = 1,
+	PB_WIRE_F64 = 1,
 	PB_WIRE_VARIABLE = 2,
-	PB_WIRE_F64 = 5,
+	PB_WIRE_F32 = 5,
 };
 
 // Object allocator

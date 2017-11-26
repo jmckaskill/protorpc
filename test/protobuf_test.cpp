@@ -1,6 +1,146 @@
 #include <gtest/gtest.h>
 #include "test.proto.h"
 
+// wire types
+#define VAR 0
+#define F64 1
+#define LEN 2
+#define F32 5
+
+// for zig zag types
+// if negative = 2|x| - 1
+// if positive = 2|x|
+
+// tag sizes
+// 0 through 15 - 1 byte
+// 16 through 2047 - 2 bytes
+// 2048 through 262143 - 3 bytes
+// 262144 through 33554431 - 4 bytes
+// 33554432 through max - 5 bytes
+
+#define TAG1(TAG,TYPE)    ((TAG << 3) | TYPE)
+#define TAG2_LO(TAG,TYPE) (0x80 | ((TAG & 15) << 3) | TYPE)
+#define TAG2_HI(TAG)      (TAG >> 4)
+#define TAG3_LO(TAG,TYPE) (0x80 | ((TAG & 15) << 3) | TYPE)
+#define TAG3_MID(TAG)     (0x80 | (TAG >> 4))
+#define TAG3_HI(TAG)      (TAG >> 11)
+
+static const uint8_t test_proto[] = {
+	// b = true
+	TAG1(1, VAR), 1,
+
+	// -23 = 0xFFFFFFE9 = xF,x7F,x7F,x7F,x69
+	TAG1(2, VAR), 0xE9, 0xFF, 0xFF, 0xFF, 0xF,
+
+	// s32 = -1234 = 2469 = 0x9A3 = 0x13,0x23
+	TAG1(3, VAR), 0xA3, 0x13,
+
+	// sf32 = -34757 = 0xFFFF783B
+	TAG1(4, F32), 0x3B, 0x78, 0xFF, 0xFF,
+
+	// u32 = 1
+	TAG1(5, VAR), 1,
+
+	// f32 = -34757 = 0x000087C5
+	TAG1(6, F32), 0xC5, 0x87, 0, 0,
+
+	// i64 = -34 = 0xFFFFFFFFFFFFFFDE = x01,x7F,x7F,x7F,x7F,x7F,x7F,x7F,x7F,x5E
+	TAG1(7, VAR), 0xDE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01,
+
+	// sf64 = -575859 = 0xFFFFFFFFFFF7368D
+	TAG1(8, F64), 0x8D, 0x36, 0xF7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+	// s64 = -23585 = 47169 = xB841 = x02,x70,x41
+	TAG1(9, VAR), 0xC1, 0xF0, 0x02,
+
+	// u64 = 10234 = 0x27FA = 0x4F,0x7A
+	TAG1(10, VAR), 0xFA, 0x4F,
+
+	// f64 = 575859 = 0x000000000008C973
+	TAG1(11, F64), 0x73, 0xC9, 0x08, 0, 0, 0, 0, 0,
+
+	// f = 314 = 0x439d0000
+	TAG1(12, F32), 0, 0, 0x9D, 0x43,
+
+	// d = 3.141 = 0x4009 20C4 9BA5 E354
+	TAG1(13, F64), 0x54, 0xE3, 0xA5, 0x9B, 0xC4, 0x20, 0x09, 0x40,
+
+	// by = "abcde" = x61 x62 x63 x64 x65
+	TAG1(14, LEN), 5, 0x61, 0x62, 0x63, 0x64, 0x65,
+
+	// str = "abcde" = x61 x62 x63 x64 x65
+	TAG1(15, LEN), 5, 0x61, 0x62, 0x63, 0x64, 0x65,
+
+	// en = ENUM_C = 2
+	TAG2_LO(16, VAR), TAG2_HI(16), 2,
+
+	// msg = {b = true}
+	TAG2_LO(17, LEN), TAG2_HI(17), 2, TAG1(1, VAR), 1,
+
+	// pod = {u = 34}
+	TAG2_LO(18, LEN), TAG2_HI(18), 2, TAG1(1, VAR), 34,
+
+	// rb = [false,true,false]
+	TAG2_LO(21, LEN), TAG2_HI(21), 3, 0, 1, 0,
+
+	// ri32 = [-1,0,1] = [0xFFFFFFFF,0,1] = [xF x7F x7F x7F x7F, 0, 1]
+	TAG2_LO(22, LEN), TAG2_HI(22), 7, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 0, 1,
+
+	// rs32 = [-10,0,10] = [19,0,20]
+	TAG2_LO(23, LEN), TAG2_HI(23), 3, 19, 0, 20,
+
+	// rsf32 = [-10,20,0] = [0xFFFFFFF6,20,0]
+	TAG2_LO(24, LEN), TAG2_HI(24), 12, 0xF6, 0xFF, 0xFF, 0xFF, 20, 0, 0, 0, 0, 0, 0, 0,
+
+	// ru32 = [1,2,3]
+	TAG2_LO(25, LEN), TAG2_HI(25), 3, 1, 2, 3,
+
+	// rf32 = [10,20,30]
+	TAG2_LO(26, LEN), TAG2_HI(26), 12, 10, 0, 0, 0, 20, 0, 0, 0, 30, 0, 0, 0,
+	
+	// ri64 = [-2,0,2] = [0xFFFFFFFFFFFFFFFE,0,2] = [x01 x7F x7F x7F x7F x7F x7F x7F x7F x7E, 0, 2]
+	TAG2_LO(27, LEN), TAG2_HI(27), 12, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0, 2,
+
+	// rsf64 = [-100, 0, 100] = [0xFFFFFFFFFFFFFF9C, 0, 100]
+	TAG2_LO(28, LEN), TAG2_HI(28), 24, 0x9C, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0,
+
+	// rs64 = [-20,0,20] = [39,0,40]
+	TAG2_LO(29, LEN), TAG2_HI(29), 3, 39, 0, 40,
+
+	// ru64 = [3,4,5]
+	TAG2_LO(210, LEN), TAG2_HI(210), 3, 3, 4, 5,
+
+	// rf64 = [30,40,50]
+	TAG2_LO(211, LEN), TAG2_HI(211), 24, 30, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0,
+
+	// rf = [3.5] = [0x40600000]
+	TAG2_LO(212, LEN), TAG2_HI(212), 4, 0, 0, 0x60, 0x40,
+
+	// rd = [1.1,2.2,3.3] = [0x3FF1 9999 9999 999A, 0x4001 9999 9999 999A, 0x400A 6666 6666 6666]
+	TAG2_LO(213, LEN), TAG2_HI(213), 24,
+		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0xF1, 0x3F, 
+		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0x01, 0x40,
+		0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0A, 0x40,
+
+	// rby = ["defgh", "abcde"] = [x64 x65 x66 x67 x68, x61 x62 x63 x64 x65]
+	TAG2_LO(214, LEN), TAG2_HI(214), 5, 0x64, 0x65, 0x66, 0x67, 0x68,
+	TAG2_LO(214, LEN), TAG2_HI(214), 5, 0x61, 0x62, 0x63, 0x64, 0x65,
+
+	// rstr = ["ghikj","lmnop"] = [x67 x68 x69 x6b x6a, x6c x6d x6e x6f x70]
+	TAG2_LO(215, LEN), TAG2_HI(215), 5, 0x67, 0x68, 0x69, 0x6B, 0x6A,
+	TAG2_LO(215, LEN), TAG2_HI(215), 5, 0x6C, 0x6D, 0x6E, 0x6F, 0x70,
+
+	// ren = [ENUM_C,ENUM_B,ENUM_A] = [2,1,0]
+	TAG2_LO(216, LEN), TAG2_HI(216), 3, 2, 1, 0,
+
+	// rmsg = [{u64 = 10234}]; 10234 = 0x27FA = 0x4F,0x7A
+	TAG2_LO(217, LEN), TAG2_HI(217), 3, TAG1(10, VAR), 0xFA, 0x4F,
+
+	// rpod = [{u = 1},{i = -1}]
+	TAG2_LO(218, LEN), TAG2_HI(218), 2, TAG1(1, VAR), 1,
+	TAG2_LO(218, LEN), TAG2_HI(218), 2, TAG1(2, VAR), 1,
+};
+
 static const char test_json[] = 
 	"{"
 		"\"b\":true,"
@@ -156,105 +296,109 @@ static const char test_pretty[] =
 		"\t]\n"
 	"}\n";
 
-TEST(protobuf, print) {
-	bool rb[3] = { false, true, false };
-	uint32_t ru32[3] = { 1,2,3 };
-	uint64_t ru64[3] = { 3,4,5 };
-	int32_t ri32[3] = { -1,0,1 };
-	int64_t ri64[3] = { -2,0,2 };
-	int32_t rs32[3] = { -10,0,10 };
-	int64_t rs64[3] = { -20,0,20 };
-	uint32_t rf32[3] = { 10,20,30 };
-	uint64_t rf64[3] = { 30,40,50 };
-	int32_t rsf32[3] = { -10,20,0 };
-	int64_t rsf64[3] = { -100,0,100 };
-	float rf[1] = { 3.5 };
-	double rd[3] = { 1.1,2.2,3.3 };
-	pb_bytes_t rby[2] = { {5,(uint8_t*)"defgh"}, {5, (uint8_t*)"abcde"} };
-	pb_string_t rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
-	enum TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
+static void setup_message(struct TestMessage *m) {
+	static const bool rb[3] = { false, true, false };
+	static const uint32_t ru32[3] = { 1,2,3 };
+	static const uint64_t ru64[3] = { 3,4,5 };
+	static const int32_t ri32[3] = { -1,0,1 };
+	static const int64_t ri64[3] = { -2,0,2 };
+	static const int32_t rs32[3] = { -10,0,10 };
+	static const int64_t rs64[3] = { -20,0,20 };
+	static const uint32_t rf32[3] = { 10,20,30 };
+	static const uint64_t rf64[3] = { 30,40,50 };
+	static const int32_t rsf32[3] = { -10,20,0 };
+	static const int64_t rsf64[3] = { -100,0,100 };
+	static const float rf[1] = { 3.5 };
+	static const double rd[3] = { 1.1,2.2,3.3 };
+	static const pb_bytes_t rby[2] = { {5,(uint8_t*)"defgh"}, {5, (uint8_t*)"abcde"} };
+	static const pb_string_t rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
+	static const enum TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
 
-	struct TestMessage msg2 = {};
+	static struct TestMessage msg2 = {};
 	msg2.b = true;
 
-	struct TestMessage msg3 = {};
+	static struct TestMessage msg3 = {};
 	msg3.u64 = 10234;
 
-	const static TestMessage *rmsg[1] = { &msg3 };
+	static const struct TestMessage *rmsg[1] = { &msg3 };
 
-	struct TestPod pod = {};
+	static struct TestPod pod = {};
 	pod.foo_type = TESTPOD_U;
 	pod.foo.u = 34;
 
-	struct TestPod rpod[2] = {};
+	static struct TestPod rpod[2] = {};
 	rpod[0].foo_type = TESTPOD_U;
 	rpod[0].foo.u = 1;
 	rpod[1].foo_type = TESTPOD_I;
 	rpod[1].foo.i = -1;
 
-	struct TestMessage msg = {};
-	msg.b = true;
-	msg.u32 = 1;
-	msg.u64 = 10234;
-	msg.i32 = -23;
-	msg.i64 = -34;
-	msg.s32 = -1234;
-	msg.s64 = -23585;
-	msg.f32 = 34757;
-	msg.f64 = 575859;
-	msg.sf32 = -34757;
-	msg.sf64 = -575859;
-	msg.f = 314;
-	msg.d = 3.141;
-	msg.by.len = 5;
-	msg.by.p = (uint8_t*) "abcde";
-	msg.str.len = 5;
-	msg.str.c_str = "abcde";
-	msg.en = ENUM_C;
-	msg.rb.len = 3;
-	msg.rb.v = rb;
-	msg.ru32.len = 3;
-	msg.ru32.v = ru32;
-	msg.ru64.len = 3;
-	msg.ru64.v = ru64;
-	msg.ri32.len = 3;
-	msg.ri32.v = ri32;
-	msg.ri64.len = 3;
-	msg.ri64.v = ri64;
-	msg.rs32.len = 3;
-	msg.rs32.v = rs32;
-	msg.rs64.len = 3;
-	msg.rs64.v = rs64;
-	msg.rf32.len = 3;
-	msg.rf32.v = rf32;
-	msg.rf64.len = 3;
-	msg.rf64.v = rf64;
-	msg.rsf32.len = 3;
-	msg.rsf32.v = rsf32;
-	msg.rsf64.len = 3;
-	msg.rsf64.v = rsf64;
-	msg.rf.len = 1;
-	msg.rf.v = rf;
-	msg.rd.len = 3;
-	msg.rd.v = rd;
-	msg.rby.len = 2;
-	msg.rby.v = rby;
-	msg.rstr.len = 2;
-	msg.rstr.v = rstr;
-	msg.ren.len = 3;
-	msg.ren.v = ren;
-	msg.msg = &msg2;
-	msg.pod = pod;
-	msg.rmsg.len = 1;
-	msg.rmsg.v = rmsg;
-	msg.rpod.len = 2;
-	msg.rpod.v = rpod;
+	m->b = true;
+	m->u32 = 1;
+	m->u64 = 10234;
+	m->i32 = -23;
+	m->i64 = -34;
+	m->s32 = -1234;
+	m->s64 = -23585;
+	m->f32 = 34757;
+	m->f64 = 575859;
+	m->sf32 = -34757;
+	m->sf64 = -575859;
+	m->f = 314;
+	m->d = 3.141;
+	m->by.len = 5;
+	m->by.p = (uint8_t*) "abcde";
+	m->str.len = 5;
+	m->str.c_str = "abcde";
+	m->en = ENUM_C;
+	m->rb.len = 3;
+	m->rb.v = rb;
+	m->ru32.len = 3;
+	m->ru32.v = ru32;
+	m->ru64.len = 3;
+	m->ru64.v = ru64;
+	m->ri32.len = 3;
+	m->ri32.v = ri32;
+	m->ri64.len = 3;
+	m->ri64.v = ri64;
+	m->rs32.len = 3;
+	m->rs32.v = rs32;
+	m->rs64.len = 3;
+	m->rs64.v = rs64;
+	m->rf32.len = 3;
+	m->rf32.v = rf32;
+	m->rf64.len = 3;
+	m->rf64.v = rf64;
+	m->rsf32.len = 3;
+	m->rsf32.v = rsf32;
+	m->rsf64.len = 3;
+	m->rsf64.v = rsf64;
+	m->rf.len = 1;
+	m->rf.v = rf;
+	m->rd.len = 3;
+	m->rd.v = rd;
+	m->rby.len = 2;
+	m->rby.v = rby;
+	m->rstr.len = 2;
+	m->rstr.v = rstr;
+	m->ren.len = 3;
+	m->ren.v = ren;
+	m->msg = &msg2;
+	m->pod = pod;
+	m->rmsg.len = 1;
+	m->rmsg.v = rmsg;
+	m->rpod.len = 2;
+	m->rpod.v = rpod;
+}
+
+TEST(protobuf, print) {
+	struct TestMessage m = {};
+	setup_message(&m);
 
 	uint8_t buf[4096], pbuf[4096];
 	pb_buf_t pr = { buf, buf + sizeof(buf) };
 	pb_buf_t pp = { pbuf, pbuf + sizeof(pbuf) };
 
-	EXPECT_EQ(0, pb_print_TestMessage(&pr, &msg));
+	EXPECT_EQ(0, pb_print_TestMessage(&pr, &m));
 	EXPECT_EQ(0, pb_pretty_print(&pp, (char*) buf, pr.next - buf));
 	ASSERT_EQ(0, pb_append(&pr, "\0", 1));
 	ASSERT_EQ(0, pb_append(&pp, "\0", 1));
@@ -421,3 +565,39 @@ TEST(protobuf, parse_bytes) {
 	EXPECT_EQ(2, by.len);
 	EXPECT_STREQ("ab", (char*)by.p);
 }
+
+bool operator==(pb_bytes_t a, pb_bytes_t b) {
+	return a.len == b.len && !memcmp(a.p, b.p, a.len);
+}
+
+std::ostream& operator<<(std::ostream& o, pb_bytes_t m) {
+	std::ios_base::fmtflags flags = o.flags();
+	std::streamsize prec = o.precision();
+	char fill = o.fill();
+	o << "bytes{";
+	o << std::hex << std::setfill('0') << std::uppercase;	
+	for (size_t i = 0; i < m.len; i++) {
+		if (i && !(i&1)) {o << " ";}
+		o << std::setw(2) << (int) m.p[i];
+	}
+	o << "}";
+	o.flags(flags);
+	o.precision(prec);
+	o.fill(fill);
+	return o;
+}
+
+TEST(protobuf, encode) {
+	struct TestMessage m = {};
+	setup_message(&m);
+
+	char buf[1024];
+	ASSERT_LT(pb_maxsz_TestMessage(&m), sizeof(buf));
+
+	char *end = pb_encode_TestMessage(buf, &m);
+
+	pb_bytes_t test = {sizeof(test_proto), test_proto};
+	pb_bytes_t have = {(int) (end - buf), (uint8_t*) buf};
+	EXPECT_EQ(test, have);
+}
+

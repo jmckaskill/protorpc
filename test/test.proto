@@ -70,7 +70,7 @@ message TestMessage {
 message TestPod {
     oneof foo {
         uint32 u = 1;
-        int32 i = 2;
+        sint32 i = 2;
     }
 }
 

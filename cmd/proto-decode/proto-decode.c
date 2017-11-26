@@ -10,9 +10,9 @@
 
 enum pb_wiretype {
     PB_WIRE_VARINT = 0,
-    PB_WIRE_F32 = 1,
+    PB_WIRE_F64 = 1,
     PB_WIRE_VARIABLE = 2,
-    PB_WIRE_F64 = 5,
+    PB_WIRE_F32 = 5,
 };
 
 uint8_t *decode_varint(uint8_t *p, uint8_t *e, uint64_t *pv) {

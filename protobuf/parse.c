@@ -263,7 +263,7 @@ char *pb_parse_bytes(char *p, pb_bytes_t *v) {
     if (*p != '\"') {
         return pb_errret;
     }
-	v->p[v->len] = 0;
+	((uint8_t*)v->p)[v->len] = 0;
     return p+1;
 }
 
