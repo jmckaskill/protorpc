@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     str_fread_all(&in, stdin);
 
 	size_t bufsz = 1 * 1024 * 1024;
-	uint8_t *obuf = (uint8_t*) malloc(bufsz);
+	char *obuf = (char*) malloc(bufsz);
 	pb_buf_t obj = { obuf, obuf + bufsz };
     struct CodeGeneratorRequest req = {0};
 	if (pb_get_CodeGeneratorRequest(in.c_str, in.c_str + in.len, &obj, &req)) {

@@ -487,9 +487,9 @@ TEST(protobuf, print) {
 	struct TestMessage m = {};
 	setup_message(&m);
 
-	uint8_t buf[4096], pbuf[4096];
-	pb_buf_t pr = { buf, buf + sizeof(buf) };
-	pb_buf_t pp = { pbuf, pbuf + sizeof(pbuf) };
+	char buf[4096], pbuf[4096];
+	pb_buf_t pr = PB_INIT_BUF(buf);
+	pb_buf_t pp = PB_INIT_BUF(pbuf);
 
 	EXPECT_EQ(0, pb_print_TestMessage(&pr, &m));
 	EXPECT_EQ(0, pb_pretty_print(&pp, (char*) buf, pr.next - buf));
@@ -500,7 +500,7 @@ TEST(protobuf, print) {
 }
 
 TEST(protobuf, print_bytes) {
-	uint8_t buf[16];
+	char buf[16];
 	pb_buf_t b;
 	pb_bytes_t by;
 
@@ -533,8 +533,8 @@ TEST(protobuf, print_bytes) {
 }
 
 TEST(protobuf, parse) {
-	uint8_t objbuf[4096];
-	pb_buf_t obj = { objbuf, objbuf + sizeof(objbuf) };
+	char objbuf[4096];
+	pb_buf_t obj = PB_INIT_BUF(objbuf);
 	char *json_in = strdup(test_json);
 	size_t in_len = strlen(json_in) - 1; // ignore the trailing newline
 	struct TestMessage m = {};
@@ -607,8 +607,8 @@ TEST(protobuf, encode) {
 
 TEST(protobuf, decode) {
 	struct TestMessage m = {};
-	uint8_t obuf[4096];
-	pb_buf_t obj = {obuf, &obuf[sizeof(obuf)]};
+	char obuf[4096];
+	pb_buf_t obj = PB_INIT_BUF(obuf);
 
 	char *buf = (char*) malloc(sizeof(test_proto) + 1);
 	memcpy(buf, test_proto, sizeof(test_proto));

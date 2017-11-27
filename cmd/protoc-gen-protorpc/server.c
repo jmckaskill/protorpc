@@ -19,7 +19,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 				continue;
 			}
 
-			str_addf(o, "\tconst char *(*%s)(struct %s*, struct pr_http*", m->name.c_str, t->c_type.c_str);
+			str_addf(o, "\tint (*%s)(struct %s*, pb_buf_t *obj", m->name.c_str, t->c_type.c_str);
 			if (!is_empty(in)) {
 				str_addf(o, ", %s const *in", in->c_type.c_str);
 			}
@@ -32,7 +32,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		str_add(o, EOL);
 	}
 
-	str_addf(o, "const char *rpc_%s(struct %s* rpc, struct pr_http *h, pb_string_t body, pb_buf_t *resp)", t->c_type.c_str, t->c_type.c_str);
+	str_addf(o, "int rpc_%s(struct %s* rpc, const char *path, char *body, pb_buf_t *resp, pb_buf_t *obj)", t->c_type.c_str, t->c_type.c_str);
 	if (!define) {
 		str_add(o, ";" EOL);
 		return;
@@ -59,32 +59,46 @@ void do_server(str_t *o, const struct type *t, bool define) {
 	uint32_t hashsz, hashmul;
 	calc_hash_values(h, t->svc->method.len, &hashmul, &hashsz);
 
-	str_add(o, "\tpb_string_t path = {h->name.len, h->name.c_str};" EOL);
-	str_addf(o, "\tswitch (pr_hash_path(path, %u) %% %u) {" EOL, hashmul, hashsz);
+	str_addf(o, "\tswitch (pr_hash(path, %u) %% %u) {" EOL, hashmul, hashsz);
 
 	for (int i = 0; i < t->svc->method.len; i++) {
 		const struct MethodDescriptorProto *m = t->svc->method.v[i];
 		const struct type *in = get_input_type(m);
 		const struct type *out = get_output_type(m);
 		str_addf(o, "\tcase %u:" EOL, h[i].off);
-		str_addf(o, "\t\tif(pb_cmp(path, \"%s\")) {" EOL, h[i].str.c_str);
-		str_add(o, "\t\t\treturn pr_not_found;" EOL);
+		str_addf(o, "\t\tif(strcmp(path, \"%s\")) {" EOL, h[i].str.c_str);
+		str_addf(o, "\t\t\treturn 404;" EOL);
+		str_addf(o, "\t\t} else if (!rpc->%s) {" EOL, m->name.c_str);
+		str_add(o, "\t\t\treturn 501;" EOL);
 		str_add(o, "\t\t} else {" EOL);
-		str_addf(o, "\t\t\t%s in;" EOL, in->c_type.c_str);
-		str_addf(o, "\t\t\t%s out;" EOL, out->c_type.c_str);
-		str_addf(o, "\t\t\tif (pb_parse_%s((char*)body.c_str, &h->request_objects, &in) == pb_errret) {" EOL, in->json_suffix.c_str);
-		str_add(o, "\t\t\t\treturn pr_parse_error;" EOL);
-		str_add(o, "\t\t\t}" EOL);
-		str_addf(o, "\t\t\tconst char *ret = rpc->%s(rpc, h, NULL, &out);" EOL, m->name.c_str);
+		if (!is_empty(in)) {
+			str_addf(o, "\t\t\t%s in;" EOL, in->c_type.c_str);
+			str_add(o, "\t\t\tmemset(&in, 0, sizeof(in));" EOL);
+			str_addf(o, "\t\t\tif (pb_parse_%s(body, obj, &in) == pb_errret) {" EOL, in->json_suffix.c_str);
+			str_add(o, "\t\t\t\treturn 200;" EOL);
+			str_add(o, "\t\t\t}" EOL);
+		}
+		if (!is_empty(out)) {
+			str_addf(o, "\t\t\t%s out;" EOL, out->c_type.c_str);
+			str_add(o, "\t\t\tmemset(&out, 0, sizeof(out));" EOL);
+		}
+		str_addf(o, "\t\t\tint ret = rpc->%s(rpc, obj", m->name.c_str);
+		if (!is_empty(in)) {
+			str_add(o, ", &in");
+		}
+		if (!is_empty(out)) {
+			str_add(o, ", &out");
+		}
+		str_add(o, "); " EOL);
 		str_addf(o, "\t\t\tif (pb_print_%s(resp, &out)) {" EOL, out->json_suffix.c_str);
-		str_add(o, "\t\t\t\treturn pr_print_error;" EOL);
+		str_add(o, "\t\t\t\treturn 500;" EOL);
 		str_add(o, "\t\t\t}" EOL);
 		str_add(o, "\t\t\treturn ret;" EOL);
 		str_add(o, "\t\t}" EOL);
 	}
 
 	str_add(o, "\tdefault:" EOL);
-	str_add(o, "\t\treturn pr_not_found;" EOL);
+	str_add(o, "\t\treturn 404;" EOL);
 	str_add(o, "\t}" EOL);
 	str_add(o, "}" EOL);
 

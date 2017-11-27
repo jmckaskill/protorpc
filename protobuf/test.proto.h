@@ -313,10 +313,10 @@ char *pb_print_TestEnum(char *p, enum TestEnum v);
 char *pb_parse_TestEnum(char *p, enum TestEnum *v);
 
 struct TestService {
-	const char *(*Test)(struct TestService*, struct pr_http*, struct TestMessage const *in, struct TestMessage *out);
+	int (*Test)(struct TestService*, pb_buf_t *obj, struct TestMessage const *in, struct TestMessage *out);
 };
 
-const char *rpc_TestService(struct TestService* rpc, struct pr_http *h, pb_string_t body, pb_buf_t *resp);
+int rpc_TestService(struct TestService* rpc, const char *path, char *body, pb_buf_t *resp, pb_buf_t *obj);
 
 #ifdef __cplusplus
 }

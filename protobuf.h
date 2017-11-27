@@ -6,6 +6,10 @@
 #include <assert.h>
 #include <stdio.h>
 
+#ifndef container_of
+#define container_of(ptr, type, member) ((type*) ((char*) (ptr) - offsetof(type, member)))
+#endif
+
 // Some basic types
 
 #ifdef __cplusplus
@@ -62,15 +66,17 @@ enum pb_wiretype {
 // Object allocator
 
 struct pb_buf {
-	uint8_t *next;
-	uint8_t *end;
+	char *next;
+	char *end;
 };
+
+#define PB_INIT_BUF(CBUF) {(CBUF), (CBUF) + sizeof(CBUF)}
 
 typedef struct pb_buf pb_buf_t;
 
 static inline void *pb_alloc(pb_buf_t *b, size_t sz, size_t align) {
-	uint8_t *p = (uint8_t*) (((uintptr_t)b->next + (align - 1)) &~(align - 1));
-	uint8_t *n = p + sz;
+	char *p = (char*) (((uintptr_t)b->next + (align - 1)) &~(align - 1));
+	char *n = p + sz;
 	if (n > b->end) {
 		return NULL;
 	}

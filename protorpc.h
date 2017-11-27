@@ -51,7 +51,7 @@ struct pr_http {
 int pr_parse_request(struct pr_http *h, const char **data, int *sz);
 int pr_parse_body(struct pr_http *h, const char **data, int *sz);
 
-uint32_t pr_hash_path(pb_string_t path, uint32_t hashmul);
+uint32_t pr_hash(const char *path, uint32_t hashmul);
 
 extern const char pr_not_found[];
 extern const char pr_parse_error[];

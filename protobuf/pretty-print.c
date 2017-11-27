@@ -41,7 +41,7 @@ static const char *copy_string(pb_buf_t *o, const char *in, const char *end) {
 }
 
 int pb_pretty_print(pb_buf_t *o, const char *in, int len) {
-	uint8_t *begin = o->next;
+	char *begin = o->next;
     int depth = 0;
     bool just_opened = false;
 	bool just_comma = false;

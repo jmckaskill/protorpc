@@ -117,7 +117,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
         }
     }
 
-	str_add(o, "\ta->next = (uint8_t*) p;" EOL);
+	str_add(o, "\ta->next = p;" EOL);
 
     // now everything else
     for (int i = 0; i < t->msg->field.len; i++) {
@@ -164,7 +164,7 @@ void do_print(str_t *o, const struct type *t, bool define) {
                 str_addf(o, "\t\t\tmp = pb_print_%s(mp, %s.v[i]);" EOL, ft->json_suffix.c_str, mbr.c_str);
                 str_add(o, "\t\t}" EOL);
                 str_add(o, "\t\tmp = pb_print_array_end_i(mp);" EOL);
-				str_add(o, "\t\ta->next = (uint8_t*) mp;" EOL);
+				str_add(o, "\t\ta->next = mp;" EOL);
 			} else {
 				str_add(o, "\t\tif (pb_append(a, \"[\", 1)) {return -1;}" EOL);
                 str_addf(o, "\t\tfor (int i = 0; i < %s.len; i++) {" EOL, mbr.c_str);

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include "../protorpc.h"
+#include "../protobuf/test.proto.h"
 #include <string.h>
 
 TEST(protorpc, parse_request) {
@@ -46,6 +47,27 @@ TEST(protorpc, parse_request) {
     EXPECT_EQ(6, h.chunk_size);
 }
 
-TEST(protorpc, dispatch) {
+static const char test_request[] = "{\"b\": true}";
 
+struct TestServiceMock {
+	struct TestService hdr;
+	struct TestMessage in;
+};
+
+static int TestCallback(struct TestService *iface, pb_buf_t *obj, struct TestMessage const *in, struct TestMessage *out) {
+	struct TestServiceMock *m = container_of(iface, struct TestServiceMock, hdr);
+	out->u32 = 15;
+	m->in = *in;
+	return 0;
+}
+
+TEST(protorpc, dispatch) {
+	struct TestServiceMock m = {};
+	m.hdr.Test = &TestCallback;
+	char msg[1024];
+	char objbuf[4096];
+	pb_buf_t resp = PB_INIT_BUF(msg);
+	pb_buf_t obj = PB_INIT_BUF(objbuf);
+	strcpy((char*)msg, test_request);
+	EXPECT_EQ(0, rpc_TestService(&m.hdr, "/TestService/Test", msg, &resp, &obj));
 }
