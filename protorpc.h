@@ -34,9 +34,7 @@ struct pr_http {
     unsigned have_multipart_header : 1;
     unsigned have_body : 1;
     uint64_t etag;
-    const char *body_chunk;
-    int chunk_size;
-    pb_buf_t request_objects;
+	int nextch;
     struct {int len; char c_str[64];} login;
     struct {int len; char c_str[6];} lang;
 	struct {int len; char c_str[256];} boundary;
@@ -48,8 +46,11 @@ struct pr_http {
 #define PR_CONTINUE 1
 #define PR_ERROR -1
 
-int pr_parse_request(struct pr_http *h, const char **data, int *sz);
-int pr_parse_body(struct pr_http *h, const char **data, int *sz);
+int pr_parse_request(struct pr_http *h, pb_buf_t *in);
+int pr_parse_body(struct pr_http *h, pb_buf_t *in, pb_buf_t *chunk);
+
+int pr_start_response(struct pr_http *h, pb_buf_t *out);
+int pr_finish_response(struct pr_http *h, char *hdr, pb_buf_t *out, int code);
 
 uint32_t pr_hash(const char *path, uint32_t hashmul);
 

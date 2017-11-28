@@ -4,19 +4,18 @@
 #include <string.h>
 
 TEST(protorpc, parse_request) {
-    struct pr_http h;
+	struct pr_http h = {};
 
     static const char get_request[] =
         "GET /foo HTTP/1.1\r\n"
         "\r\n";
     
-    const char *data = get_request;
-    int sz = strlen(get_request);
-    const char *end = data + sz;
-    memset(&h, 0, sizeof(h));
-    EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &data, &sz));
-    EXPECT_EQ(0, sz);
-    EXPECT_EQ(data, end);
+	char inbuf[1024];
+	pb_buf_t in = PB_INIT_BUF(inbuf);
+	strcpy(inbuf, get_request);
+	in.end = inbuf + strlen(get_request);
+    EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &in));
+	EXPECT_EQ(in.end, in.next);
     EXPECT_EQ(0, h.have_body);
     EXPECT_EQ(PR_HTTP_GET, h.method);
     EXPECT_STREQ("/foo", h.name.c_str);
@@ -28,26 +27,36 @@ TEST(protorpc, parse_request) {
         "\r\n"
         "abcdef";
 
-    data = post;
-    sz = strlen(post);
-    end = data + sz;
+	strcpy(inbuf, post);
+	in.next = inbuf;
+	in.end = inbuf + strlen(post);
     memset(&h, 0, sizeof(h));
-    EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &data, &sz));
-    EXPECT_EQ(6, sz);
-    EXPECT_EQ(end - 6, data);
+    EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &in));
+	EXPECT_EQ(in.end - 6, in.next);
     EXPECT_EQ(1, h.have_body);
     EXPECT_EQ(PR_HTTP_POST, h.method);
     EXPECT_STREQ("/api/foo", h.name.c_str);
     EXPECT_EQ(8, h.name.len);
 
-    EXPECT_EQ(PR_FINISHED, pr_parse_body(&h, &data, &sz));
-    EXPECT_EQ(0, sz);
-    EXPECT_EQ(end, data);
-    EXPECT_EQ(end - 6, h.body_chunk);
-    EXPECT_EQ(6, h.chunk_size);
+	pb_buf_t chunk;
+    EXPECT_EQ(PR_FINISHED, pr_parse_body(&h, &in, &chunk));
+	EXPECT_EQ(in.end, in.next);
+	EXPECT_EQ(in.end - 6, chunk.next);
+	EXPECT_EQ(in.end, chunk.end);
 }
 
-static const char test_request[] = "{\"b\": true}";
+static const char test_request[] = 
+	"POST /TestService/Test HTTP/1.1\r\n"
+	"Content-Length: 11\r\n"
+	"\r\n"
+	"{\"b\": true}";
+
+static const char test_response[] =
+"HTTP/1.1 200 \r\n"
+"Content-Length:    11\r\n"
+"\r\n"
+"{\"u32\":15}\n";
+
 
 struct TestServiceMock {
 	struct TestService hdr;
@@ -64,10 +73,26 @@ static int TestCallback(struct TestService *iface, pb_buf_t *obj, struct TestMes
 TEST(protorpc, dispatch) {
 	struct TestServiceMock m = {};
 	m.hdr.Test = &TestCallback;
-	char msg[1024];
+	char inbuf[1024];
+	char outbuf[1024];
 	char objbuf[4096];
-	pb_buf_t resp = PB_INIT_BUF(msg);
+	pb_buf_t out = PB_INIT_BUF(outbuf);
 	pb_buf_t obj = PB_INIT_BUF(objbuf);
-	strcpy((char*)msg, test_request);
-	EXPECT_EQ(0, rpc_TestService(&m.hdr, "/TestService/Test", msg, &resp, &obj));
+	strcpy(inbuf, test_request);
+	pb_buf_t in = { inbuf, inbuf + strlen(test_request) };
+	struct pr_http h = {};
+	pb_buf_t chunk;
+
+	EXPECT_EQ(PR_FINISHED, pr_parse_request(&h, &in));
+	EXPECT_EQ(PR_FINISHED, pr_parse_body(&h, &in, &chunk));
+	chunk.end[0] = '\0';
+	EXPECT_STREQ("{\"b\": true}", chunk.next);
+
+	EXPECT_EQ(0, pr_start_response(&h, &out));
+	EXPECT_EQ(0, rpc_TestService(&m.hdr, "/TestService/Test", chunk.next, &out, &obj));
+	EXPECT_EQ(0, pr_finish_response(&h, outbuf, &out, 0));
+	out.next[0] = '\0';
+	EXPECT_STREQ(test_response, outbuf);
+	EXPECT_EQ(sizeof(test_response) - 1, out.next - outbuf);
+	EXPECT_EQ(m.in.b, true);
 }

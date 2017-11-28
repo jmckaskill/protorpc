@@ -26,20 +26,19 @@ static void *memmem(const void *hay, size_t haysz, const void *needle, size_t ne
 
 #define MAX_LINE_LENGTH 256
 
-static int get_line(pb_string_t *p, pb_string_t *line) {
-	const char *nl = str_find_char(*p, '\n');
-	if (!nl && p->len > MAX_LINE_LENGTH) {
+static int get_line(pb_buf_t *p, pb_string_t *line) {
+	char *nl = (char*) memchr(p->next, '\n', p->end - p->next);
+	if (!nl && (p->end - p->next) > MAX_LINE_LENGTH) {
 		return PR_ERROR;
 	} else if (!nl) {
 		return PR_CONTINUE;
-	} else if (nl == p->c_str || nl[-1] != '\r') {
+	} else if (nl == p->next || nl[-1] != '\r') {
 		return PR_ERROR;
 	}
 
-	line->c_str = p->c_str;
-	line->len = nl - 1 - p->c_str; // don't include the \r
-	p->len -= nl+1 - p->c_str;
-	p->c_str = nl + 1;
+	line->c_str = p->next;
+	line->len = nl - 1 - p->next; // don't include the \r
+	p->next = nl + 1;
 	return PR_FINISHED;
 }
 
@@ -57,7 +56,7 @@ static int split(pb_string_t in, pb_string_t *left, pb_string_t *right, char ch)
 	return 0;
 }
 
-static int parse_request_header(struct pr_http *h, pb_string_t *data) {
+static int parse_request_header(struct pr_http *h, pb_buf_t *data) {
     assert(h->name.len == 0);
     assert(!h->method);
 
@@ -180,7 +179,7 @@ static pb_string_t next_element(pb_string_t *p, bool *more) {
     return ret;
 }
 
-static int parse_http_header(pb_string_t *p, pb_string_t *key, pb_string_t *val) {
+static int parse_http_header(pb_buf_t *p, pb_string_t *key, pb_string_t *val) {
 	pb_string_t line;
 	int err = get_line(p, &line);
 	if (err) {
@@ -197,7 +196,7 @@ static int parse_http_header(pb_string_t *p, pb_string_t *key, pb_string_t *val)
 
 #define HTTP_ETAG_LENGTH 16 // 8 hex characters
 
-static int parse_headers(struct pr_http *h, pb_string_t *data) {
+static int parse_headers(struct pr_http *h, pb_buf_t *data) {
     for (;;) {
 		pb_string_t key, val;
 		int err = parse_http_header(data, &key, &val);
@@ -344,50 +343,45 @@ static int parse_headers(struct pr_http *h, pb_string_t *data) {
     }
 }
 
-int pr_parse_request(struct pr_http *h, const char **data, int *sz) {
-	pb_string_t p = {*sz, *data};
+int pr_parse_request(struct pr_http *h, pb_buf_t *in) {
     int err = 0;
-
     if (!h->method) {
-        err = parse_request_header(h, &p);
+        err = parse_request_header(h, in);
     }
     if (!err) {
-        err = parse_headers(h, &p);
+        err = parse_headers(h, in);
     }
 	assert(err != PR_ERROR || h->error_string);
-
-	*data = p.c_str;
-	*sz = p.len;
     return err;
 }
 
-int pr_parse_body(struct pr_http *h, const char **data, int *sz) {
+int pr_parse_body(struct pr_http *h, pb_buf_t *in, pb_buf_t *chunk) {
+	size_t have = in->end - in->next;
 	switch (h->length_type) {
 	case PR_HTTP_LENGTH_CHUNKED:
 		return PR_ERROR;
 	case PR_HTTP_LENGTH_FIXED:
-		h->body_chunk = *data;
-		h->chunk_size = *sz;
-		if (!*sz) {
+		if (!have) {
 			return PR_ERROR;
-		} else if (*sz >= h->left_in_chunk) {
-			*data += h->left_in_chunk;
-			*sz -= (int) h->left_in_chunk;
+		} else if (have >= h->left_in_chunk) {
+			chunk->next = in->next;
+			chunk->end = in->next + h->left_in_chunk;
+			in->next = chunk->end;
 			h->left_in_chunk = 0;
 			return PR_FINISHED;
 		}
-		*data += *sz;
-		*sz = 0;
-		h->left_in_chunk -= *sz;
+		chunk->next = in->next;
+		chunk->end = in->end;
+		in->next = in->end;
+		h->left_in_chunk -= have;
 		return PR_CONTINUE;
 	case PR_HTTP_LENGTH_CLOSE:
-		if (!*sz) {
+		if (!have) {
 			return PR_FINISHED;
 		}
-		*data += *sz;
-		*sz = 0;
-		h->body_chunk = *data;
-		h->chunk_size = *sz;
+		chunk->next = in->next;
+		chunk->end = in->end;
+		in->next = in->end;
 		return PR_CONTINUE;
 	default:
 		return PR_ERROR;
@@ -402,9 +396,38 @@ uint32_t pr_hash(const char *p, uint32_t mul) {
 	return hash;
 }
 
-const char pr_not_found[] = "HTTP/1.1 404 Not Found\r\n";
-const char pr_parse_error[] = "HTTP/1.1 400 Malformed JSON\r\n";
-const char pr_print_error[] = "HTTP/1.1 500 Print Error\r\n";
+static const char response_template[] =
+	"HTTP/1.1 123 \r\n"
+	"Content-Length:      \r\n"
+	"\r\n";
+
+int pr_start_response(struct pr_http *h, pb_buf_t *out) {
+	return pb_append(out, response_template, sizeof(response_template) - 1);
+}
+
+int pr_finish_response(struct pr_http *h, char *buf, pb_buf_t *out, int code) {
+	size_t len = (out->next - buf) - (sizeof(response_template) - 1);
+	if (len > 999999 || code > 999 || code < 0) {
+		return -1;
+	}
+	if (!code) {
+		code = 200;
+	}
+
+	size_t off = strlen("HTTP/1.1 ");
+	buf[off]     = (char)(code / 100) + '0';
+	buf[off + 1] = (char)((code % 100) / 10) + '0';
+	buf[off + 2] = (char)(code % 10) + '0';
+
+	// start at last digit _\r\n\r\n\0
+	char *p = buf + sizeof(response_template) - 6;
+	do {
+		*p-- = (len % 10) + '0';
+		len /= 10;
+	} while (len);
+
+	return 0;
+}
 
 #if 0
 int pr_parse_multipart(struct pr_multipart *m, char **data, int *sz) {
