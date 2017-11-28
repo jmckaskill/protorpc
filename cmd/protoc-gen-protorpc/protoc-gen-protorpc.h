@@ -72,11 +72,3 @@ void do_client(str_t *out, const struct type *t, bool define);
 void do_nonzero(str_t *o, const struct type *t, bool define);
 
 int exec_protoc(char *my_exe, char *protoc_exe, char *filename);
-
-struct hash_entry {
-	pb_string_t str;
-	uint32_t off;
-};
-
-void calc_hash_values(struct hash_entry *entries, int num, uint32_t *hashmul, uint32_t *hashsz);
-

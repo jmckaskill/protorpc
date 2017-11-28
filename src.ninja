@@ -19,7 +19,6 @@ build $obj/protorpc/rpc_test.o: cxx $SRC/protorpc/rpc_test.cpp
 build $obj/protoc-gen-protorpc/decl.o: cc $SRC/cmd/protoc-gen-protorpc/decl.c
 build $obj/protoc-gen-protorpc/exec.o: cc $SRC/cmd/protoc-gen-protorpc/exec.c
 build $obj/protoc-gen-protorpc/decode.o: cc $SRC/cmd/protoc-gen-protorpc/decode.c
-build $obj/protoc-gen-protorpc/hash.o: cc $SRC/cmd/protoc-gen-protorpc/hash.c
 build $obj/protoc-gen-protorpc/parse.o: cc $SRC/cmd/protoc-gen-protorpc/parse.c
 build $obj/protoc-gen-protorpc/print.o: cc $SRC/cmd/protoc-gen-protorpc/print.c
 build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc $SRC/cmd/protoc-gen-protorpc/protoc-gen-protorpc.c
@@ -28,11 +27,17 @@ build $obj/protoc-gen-protorpc/server.o: cc $SRC/cmd/protoc-gen-protorpc/server.
 build $obj/protoc-gen-protorpc/types.o: cc $SRC/cmd/protoc-gen-protorpc/types.c
 build $obj/protoc-gen-protorpc/term.o: cc $SRC/cmd/protoc-gen-protorpc/term.c
 
+build $obj/rpc-file-compiler.o: cc $SRC/cmd/rpc-file-compiler/rpc-file-compiler.c
+
+build $obj/rpc-test-data.o: cc $SRC/cmd/rpc-file-compiler/rpc-test-data.c
+build $obj/rpc-file-compiler_test.o: cxx $SRC/cmd/rpc-file-compiler/rpc-file-compiler_test.cpp
+
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
 
 build $obj/str.o: cc $SRC/cmd/str.c
 build $obj/hash.o: cc $SRC/cmd/hash.c
+build $obj/perfect-hash.o: cc $SRC/cmd/perfect-hash.c
 
 build $lib/protobuf.lib: lib $
  $obj/protobuf/get.o $
@@ -48,7 +53,6 @@ build $bin/protoc-gen-protorpc.exe: clink $
  $obj/google/descriptor.proto.o $
  $obj/protoc-gen-protorpc/exec.o $
  $obj/protoc-gen-protorpc/decode.o $
- $obj/protoc-gen-protorpc/hash.o $
  $obj/protoc-gen-protorpc/parse.o $
  $obj/google/plugin.proto.o $
  $obj/protoc-gen-protorpc/print.o $
@@ -59,14 +63,26 @@ build $bin/protoc-gen-protorpc.exe: clink $
  $obj/protoc-gen-protorpc/term.o $
  $obj/str.o $
  $obj/hash.o $
+ $obj/perfect-hash.o $
+
+build $bin/rpc-file-compiler.exe: clink $
+ $obj/perfect-hash.o $
+ $obj/str.o $
+ $obj/rpc-file-compiler.o $
+ $lib/bearssl.lib $
+ $lib/zlib.lib $
 
 build $bin/protorpc_test.exe: cxxlink $
  $lib/protobuf.lib $
  $obj/protobuf/test.proto.o $
  $obj/protobuf/protobuf_test.o $
  $obj/protorpc/rpc_test.o $
+ $obj/rpc-file-compiler_test.o $
+ $obj/rpc-test-data.o $
  $obj/gtest_main.o $
  $obj/gtest-all.o $
+ $lib/zlib.lib $
+
 
 
 

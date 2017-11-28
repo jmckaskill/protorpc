@@ -1,4 +1,5 @@
 #include "protoc-gen-protorpc.h"
+#include "../perfect-hash.h"
 #include <assert.h>
 
 struct parser {
@@ -19,7 +20,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 
     struct hash_entry *hashes = (struct hash_entry*) calloc(t->en->value.len, sizeof(struct hash_entry));
     for (int i = 0; i < t->en->value.len; i++) {
-        hashes[i].str = t->en->value.v[i]->name;
+		hashes[i].str = t->en->value.v[i]->name.c_str;
     }
 
     uint32_t hashsz, hashmul;
@@ -33,7 +34,7 @@ void do_parse_enum(str_t *o, const struct type *t, bool define) {
 		struct hash_entry *h = &hashes[i];
 		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
         str_addf(o, "\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\tif (!pb_cmp(val, \"%s\")) {" EOL, h->str.c_str);
+        str_addf(o, "\t\tif (!pb_cmp(val, \"%s\")) {" EOL, h->str);
         str_addf(o, "\t\t\t*v = (%s) %d;" EOL, t->c_type.c_str, v->number);
         str_add(o, "\t\t}" EOL);
         str_add(o, "\t\tbreak;" EOL);
@@ -65,7 +66,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
     struct hash_entry *hashes = (struct hash_entry*) calloc(t->msg->field.len, sizeof(struct hash_entry));
 
     for (int i = 0; i < t->msg->field.len; i++) {
-        hashes[i].str = t->msg->field.v[i]->name;
+        hashes[i].str = t->msg->field.v[i]->name.c_str;
     }
 
     uint32_t hashsz, hashmul;
@@ -90,7 +91,7 @@ void do_parse(str_t *o, const struct type *t, bool define) {
         str_addstr(&mbr, f->name);
 
         str_addf(o, "\t\tcase %u:" EOL, h->off);
-        str_addf(o, "\t\t\tif (pb_cmp(key, \"%s\")) {" EOL, h->str.c_str);
+        str_addf(o, "\t\t\tif (pb_cmp(key, \"%s\")) {" EOL, h->str);
         str_add(o, "\t\t\t\tgoto unknown;" EOL);
         str_add(o, "\t\t\t}"  EOL);
 

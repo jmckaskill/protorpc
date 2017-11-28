@@ -55,8 +55,6 @@ int pr_finish_response(struct pr_http *h, char *hdr, pb_buf_t *out, int code);
 uint32_t pr_hash(const char *path, uint32_t hashmul);
 
 extern const char pr_not_found[];
-extern const char pr_parse_error[];
-extern const char pr_print_error[];
 
 #ifdef __cplusplus
 }

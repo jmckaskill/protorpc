@@ -1,4 +1,5 @@
 #include "protoc-gen-protorpc.h"
+#include "../perfect-hash.h"
 
 static bool is_empty(const struct type *t) {
 	return !strcmp(t->name.c_str, ".google.protobuf.Empty");
@@ -51,8 +52,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		}
 		str_add(&s, "/");
 		str_addstr(&s, m->name);
-		h[i].str.len = s.len;
-		h[i].str.c_str = str_release(&s);
+		h[i].str = str_release(&s);
 		// name is of the form /pkg/service/method
 	}
 
@@ -66,7 +66,7 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		const struct type *in = get_input_type(m);
 		const struct type *out = get_output_type(m);
 		str_addf(o, "\tcase %u:" EOL, h[i].off);
-		str_addf(o, "\t\tif(strcmp(path, \"%s\")) {" EOL, h[i].str.c_str);
+		str_addf(o, "\t\tif(strcmp(path, \"%s\")) {" EOL, h[i].str);
 		str_addf(o, "\t\t\treturn 404;" EOL);
 		str_addf(o, "\t\t} else if (!rpc->%s) {" EOL, m->name.c_str);
 		str_add(o, "\t\t\treturn 501;" EOL);
@@ -95,6 +95,8 @@ void do_server(str_t *o, const struct type *t, bool define) {
 		str_add(o, "\t\t\t}" EOL);
 		str_add(o, "\t\t\treturn ret;" EOL);
 		str_add(o, "\t\t}" EOL);
+
+		free((char*) h[i].str);
 	}
 
 	str_add(o, "\tdefault:" EOL);

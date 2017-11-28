@@ -3,3 +3,8 @@ bin = bin/$HOST
 build $SRC/protobuf/test.proto.h $SRC/protobuf/test.proto.c: run $
  $bin/protoc-gen-protorpc.exe $bin/protoc.exe $SRC/protobuf/test.proto
 
+build $SRC/cmd/rpc-file-compiler/rpc-test-data.c: run $bin/rpc-file-compiler.exe $
+ $SRC/cmd/rpc-file-compiler/rpc-test-data/test.html $
+ $SRC/cmd/rpc-file-compiler/rpc-test-data/test.js $
+
+

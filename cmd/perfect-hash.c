@@ -1,9 +1,12 @@
-#include "protoc-gen-protorpc.h"
+#include "perfect-hash.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-static uint32_t compute_hash(pb_string_t s, uint32_t mul) {
+static uint32_t compute_hash(const char *s, uint32_t mul) {
 	uint32_t hash = 0;
-	for (int i = 0; i < s.len; i++) {
-		hash = (hash * mul) + (uint8_t)s.c_str[i];
+	while (*s) {
+		hash = (hash * mul) + (uint8_t)*s;
+		s++;
 	}
 	return hash;
 }
@@ -18,7 +21,8 @@ try_next:
 	*hashmul = *hashmul * 3 + 1;
 	(*hashsz)++;
 	if (!tries_left--) {
-		assert(0);
+		fprintf(stderr, "failed to compute perfect hash\n");
+		exit(3);
 	}
 
 	for (int i = 0; i < num; i++) {
