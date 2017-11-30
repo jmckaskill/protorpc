@@ -1,12 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -17,10 +17,8 @@
     <ClCompile Include="print.c" />
     <ClCompile Include="protobuf_test.cpp" />
     <ClCompile Include="put.c" />
-    <ClCompile Include="test.proto.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test.proto.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test.proto" />
@@ -31,14 +29,14 @@
     <ProjectName>lib - protobuf</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='&{Release win32-release WIN32;NDEBUG}|Win32'" Label="Configuration">
-    <ConfigurationType>Makefile</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='&{Debug win32-debug WIN32;DEBUG}|Win32'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -46,30 +44,30 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeOutput>$(SolutionDir)\lib\win32-release\protobuf.lib</NMakeOutput>
-    <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-release\protobuf.lib</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-release\protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-release\protobuf.lib</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-release\protobuf.lib</NMakeCleanCommandLine>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeOutput>$(SolutionDir)\lib\win32-debug\protobuf.lib</NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;DEBUG</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protobuf.lib</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protobuf.lib</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protobuf.lib</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeOutput>$(SolutionDir)\lib\win32-debug\protobuf.lib</NMakeOutput>
-    <NMakePreprocessorDefinitions>WIN32;DEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-debug\protobuf.lib</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-debug\protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-debug\protobuf.lib</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-debug\protobuf.lib</NMakeCleanCommandLine>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeOutput>$(SolutionDir)\lib\win32-release\protobuf.lib</NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-release/protobuf.lib</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-release/protobuf.lib</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protobuf.lib</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />

@@ -30,6 +30,12 @@
             "Target": "bin/{TGT}/protoc-gen-protorpc.exe"
         },
         {
+            "Name": "bin - rpc-file-compiler",
+            "File": "cmd/rpc-file-compiler/rpc-file-compiler.vcxproj",
+            "UUID": "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}",
+            "Target": "bin/{TGT}/rpc-file-compiler.exe"
+        },
+        {
             "Name": "bin - protorpc_test",
             "File": "protorpc_test.vcxproj",
             "UUID": "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}",
