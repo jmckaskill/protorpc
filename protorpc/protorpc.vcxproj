@@ -1,56 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-	<ProjectConfiguration Include="Release|Win32">
-	  <Configuration>Release</Configuration>
-	  <Platform>Win32</Platform>
-	</ProjectConfiguration>
-	<ProjectConfiguration Include="Debug|Win32">
-	  <Configuration>Debug</Configuration>
-	  <Platform>Win32</Platform>
-	</ProjectConfiguration>
-	<ProjectConfiguration Include="ARM-Debug|Win32">
-	  <Configuration>ARM-Debug</Configuration>
-	  <Platform>Win32</Platform>
-	</ProjectConfiguration>
-	<ProjectConfiguration Include="ARM-Release|Win32">
-	  <Configuration>ARM-Release</Configuration>
-	  <Platform>Win32</Platform>
-	</ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="./rpc.c" />
-    <ClCompile Include="./rpc_test.cpp" />
+    <ClCompile Include="rpc.c" />
+    <ClCompile Include="rpc_test.cpp" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-	<ProjectGuid>{5EB12FC8-F54C-4257-829B-41916333921A}</ProjectGuid>
-	<Keyword>MakeFileProj</Keyword>
-	<ProjectName>lib - protorpc.lib</ProjectName>
+    <ProjectGuid>{5EB12FC8-F54C-4257-829B-41916333921A}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>lib - protorpc</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-	<ConfigurationType>Makefile</ConfigurationType>
-	<UseDebugLibraries>false</UseDebugLibraries>
-	<PlatformToolset>v140</PlatformToolset>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='&{Release win32-release WIN32;NDEBUG}|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-	<ConfigurationType>Makefile</ConfigurationType>
-	<UseDebugLibraries>true</UseDebugLibraries>
-	<PlatformToolset>v140</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'" Label="Configuration">
-	<ConfigurationType>Makefile</ConfigurationType>
-	<UseDebugLibraries>false</UseDebugLibraries>
-	<PlatformToolset>v140</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'" Label="Configuration">
-	<ConfigurationType>Makefile</ConfigurationType>
-	<UseDebugLibraries>false</UseDebugLibraries>
-	<PlatformToolset>v140</PlatformToolset>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='&{Debug win32-debug WIN32;DEBUG}|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -58,61 +40,33 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'">
-	<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\win32-release\protorpc.lib</NMakeOutput>
-	<NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/win32-release/protorpc.lib</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/win32-release/protorpc.lib</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protorpc.lib</NMakeCleanCommandLine>
-	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
-	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-	<SourcePath />
-	<ExcludePath />
+    <NMakeOutput>$(SolutionDir)\lib\win32-release\protorpc.lib</NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-release\protorpc.lib</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-release\protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-release\protorpc.lib</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-release\protorpc.lib</NMakeCleanCommandLine>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
+    <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+    <SourcePath />
+    <ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\win32-debug\protorpc.lib</NMakeOutput>
-	<NMakePreprocessorDefinitions>WIN32</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protorpc.lib</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protorpc.lib</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protorpc.lib</NMakeCleanCommandLine>
-	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/</NMakeIncludeSearchPath>
-	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-	<SourcePath />
-	<ExcludePath />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Release|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\arm-release\protorpc.lib</NMakeOutput>
-	<NMakePreprocessorDefinitions>__linux__;__arm__;NDEBUG</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/arm-release/protorpc.lib</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/arm-release/protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/arm-release/protorpc.lib</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/arm-release/protorpc.lib</NMakeCleanCommandLine>
-	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
-	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-	<SourcePath />
-	<ExcludePath />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ARM-Debug|Win32'">
-	<NMakeOutput>$(SolutionDir)\bin\arm-debug\protorpc.lib</NMakeOutput>
-	<NMakePreprocessorDefinitions>__linux__;__arm__;DEBUG</NMakePreprocessorDefinitions>
-	<NMakeBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/arm-debug/protorpc.lib</NMakeBuildCommandLine>
-	<NMakeReBuildCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/arm-debug/protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja lib/arm-debug/protorpc.lib</NMakeReBuildCommandLine>
-	<NMakeCleanCommandLine>"c:\Program Files\git\usr\bin\sh.exe" --login $(SolutionDir)\toolchain\install.sh $(SolutionDir)\toolchain &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja -C $(SolutionDir) -f msvc.ninja -t clean lib/arm-debug/protorpc.lib</NMakeCleanCommandLine>
-	<NMakeIncludeSearchPath>$(SolutionDir);$(ProjectDir);$(SolutionDir)/gtest/googletest/include;$(SolutionDir)/gtest/googletest/;$(SolutionDir)\toolchain\lib\arm\include;$(SolutionDir)\toolchain\host\lib\clang\4.0.1\include</NMakeIncludeSearchPath>
-	<IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
-	<SourcePath />
-	<ExcludePath />
+    <NMakeOutput>$(SolutionDir)\lib\win32-debug\protorpc.lib</NMakeOutput>
+    <NMakePreprocessorDefinitions>WIN32;DEBUG</NMakePreprocessorDefinitions>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-debug\protorpc.lib</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-debug\protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib\win32-debug\protorpc.lib</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib\win32-debug\protorpc.lib</NMakeCleanCommandLine>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
+    <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
+    <SourcePath />
+    <ExcludePath />
   </PropertyGroup>
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>

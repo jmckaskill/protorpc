@@ -1,0 +1,40 @@
+{
+    "Solution": "protorpc.sln",
+    "DefaultUUID": "{1E69E38F-001D-4219-9835-20D636CE1927}",
+    "GenerateUUID":  "{29C53322-7C20-431A-93B3-42D84826FE11}",
+    "Includes": [
+        "gtest/googletest/include",
+        "gtest/googletest"
+    ],
+    "Targets": [
+        {"VS": "Debug", "Ninja": "win32-debug", "Defines": "WIN32;DEBUG"},
+        {"VS": "Release", "Ninja": "win32-release", "Defines": "WIN32;NDEBUG"}
+    ],
+    "Projects": [
+        {
+            "Name": "lib - protobuf",
+            "File": "protobuf/protobuf.vcxproj",
+            "UUID": "{01EF6A74-7AF7-41F2-BBF8-6FDE04AFFA0B}",
+            "Target": "lib/{TGT}/protobuf.lib"
+        },
+        {
+            "Name": "lib - protorpc",
+            "File": "protorpc/protorpc.vcxproj",
+            "UUID": "{5EB12FC8-F54C-4257-829B-41916333921A}",
+            "Target": "lib/{TGT}/protorpc.lib"
+        },
+        {
+            "Name": "bin - protoc-gen-protorpc",
+            "File": "cmd/protoc-gen-protorpc/protoc-gen-protorpc.vcxproj",
+            "UUID": "{C676AF48-ED5F-4089-B356-9A26D3521FF2}",
+            "Target": "bin/{TGT}/protoc-gen-protorpc.exe"
+        },
+        {
+            "Name": "bin - protorpc_test",
+            "File": "protorpc_test.vcxproj",
+            "UUID": "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}",
+            "Target": "bin/{TGT}/protorpc_test.exe",
+            "Empty": true
+        }
+    ]
+}
