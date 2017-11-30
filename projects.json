@@ -4,7 +4,8 @@
     "GenerateUUID":  "{29C53322-7C20-431A-93B3-42D84826FE11}",
     "Includes": [
         "gtest/googletest/include",
-        "gtest/googletest"
+        "gtest/googletest",
+        ""
     ],
     "Targets": [
         {"VS": "Debug", "Ninja": "win32-debug", "Defines": "WIN32;DEBUG"},

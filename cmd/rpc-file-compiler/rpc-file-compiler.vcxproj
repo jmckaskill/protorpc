@@ -13,8 +13,11 @@
   <ItemGroup>
     <ClCompile Include="rpc-file-compiler.c" />
     <ClCompile Include="rpc-file-compiler_test.cpp" />
+    <ClCompile Include="rpc-test-data.c" />
+    <ClCompile Include="sha1.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sha1.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="rpc-test-data\\test.html" />
@@ -54,7 +57,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/rpc-file-compiler.exe</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/rpc-file-compiler.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/rpc-file-compiler.exe</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/rpc-file-compiler.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
@@ -65,7 +68,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/rpc-file-compiler.exe</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/rpc-file-compiler.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/rpc-file-compiler.exe</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/rpc-file-compiler.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />

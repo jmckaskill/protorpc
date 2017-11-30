@@ -27,7 +27,20 @@ build $obj/protoc-gen-protorpc/server.o: cc $SRC/cmd/protoc-gen-protorpc/server.
 build $obj/protoc-gen-protorpc/types.o: cc $SRC/cmd/protoc-gen-protorpc/types.c
 build $obj/protoc-gen-protorpc/term.o: cc $SRC/cmd/protoc-gen-protorpc/term.c
 
-build $obj/rpc-file-compiler.o: cc $SRC/cmd/rpc-file-compiler/rpc-file-compiler.c
+build $obj/zlib/adler32.o: cc $SRC/zlib/adler32.c
+build $obj/zlib/compress.o: cc $SRC/zlib/compress.c
+build $obj/zlib/crc32.o: cc $SRC/zlib/crc32.c
+build $obj/zlib/deflate.o: cc $SRC/zlib/deflate.c
+build $obj/zlib/infback.o: cc $SRC/zlib/infback.c
+build $obj/zlib/inffast.o: cc $SRC/zlib/inffast.c
+build $obj/zlib/inflate.o: cc $SRC/zlib/inflate.c
+build $obj/zlib/inftrees.o: cc $SRC/zlib/inftrees.c
+build $obj/zlib/trees.o: cc $SRC/zlib/trees.c
+build $obj/zlib/uncompr.o: cc $SRC/zlib/uncompr.c
+build $obj/zlib/zutil.o: cc $SRC/zlib/zutil.c
+
+build $obj/rpc-file-compiler/rpc-file-compiler.o: cc $SRC/cmd/rpc-file-compiler/rpc-file-compiler.c
+build $obj/rpc-file-compiler/sha1.o: cc $SRC/cmd/rpc-file-compiler/sha1.c
 
 build $obj/rpc-test-data.o: cc $SRC/cmd/rpc-file-compiler/rpc-test-data.c
 build $obj/rpc-file-compiler_test.o: cxx $SRC/cmd/rpc-file-compiler/rpc-file-compiler_test.cpp
@@ -38,6 +51,19 @@ build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
 build $obj/str.o: cc $SRC/cmd/str.c
 build $obj/hash.o: cc $SRC/cmd/hash.c
 build $obj/perfect-hash.o: cc $SRC/cmd/perfect-hash.c
+
+build $lib/zlib.lib: lib $
+ $obj/zlib/adler32.o $
+ $obj/zlib/compress.o $
+ $obj/zlib/crc32.o $
+ $obj/zlib/deflate.o $
+ $obj/zlib/infback.o $
+ $obj/zlib/inffast.o $
+ $obj/zlib/inflate.o $
+ $obj/zlib/inftrees.o $
+ $obj/zlib/trees.o $
+ $obj/zlib/uncompr.o $
+ $obj/zlib/zutil.o $
 
 build $lib/protobuf.lib: lib $
  $obj/protobuf/get.o $
@@ -68,8 +94,8 @@ build $bin/protoc-gen-protorpc.exe: clink $
 build $bin/rpc-file-compiler.exe: clink $
  $obj/perfect-hash.o $
  $obj/str.o $
- $obj/rpc-file-compiler.o $
- $lib/bearssl.lib $
+ $obj/rpc-file-compiler/rpc-file-compiler.o $
+ $obj/rpc-file-compiler/sha1.o $
  $lib/zlib.lib $
 
 build $bin/protorpc_test.exe: cxxlink $

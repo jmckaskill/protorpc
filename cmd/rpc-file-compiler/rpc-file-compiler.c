@@ -4,18 +4,7 @@
 #include <zlib/zlib.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4244)
-#pragma warning(disable:4267)
-#endif
-
-#include <bearssl.h>
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+#include "sha1.h"
 
 static const char *g_argv0;
 
@@ -113,10 +102,10 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
     while (do_deflate(vout, stream, Z_FINISH) != Z_STREAM_END) {
     }
 
-    br_sha1_context sha;
-    br_sha1_init(&sha);
-    br_sha1_update(&sha, comp.c_str, comp.len);
-    br_sha1_out(&sha, hash);
+	SHA1_CTX ctx;
+	SHA1Init(&ctx);
+	SHA1Update(&ctx, (uint8_t*) comp.c_str, comp.len);
+	SHA1Final(hash, &ctx);
 }
 
 #define GZIP_ENCODING 16
@@ -227,7 +216,7 @@ int main(int argc, char *argv[]) {
         str_clear(&vout);
         deflateReset(&stream);
 
-        uint8_t hash[br_sha1_SIZE];
+        uint8_t hash[20];
         deflate_file(&vout, hash, &stream, in, type);
 		fclose(in);
 

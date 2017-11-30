@@ -17,8 +17,10 @@
     <ClCompile Include="print.c" />
     <ClCompile Include="protobuf_test.cpp" />
     <ClCompile Include="put.c" />
+    <ClCompile Include="test.proto.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="test.proto.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test.proto" />
@@ -57,7 +59,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protobuf.lib</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protobuf.lib</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protobuf.lib</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
@@ -68,7 +70,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-release/protobuf.lib</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-release/protobuf.lib</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protobuf.lib</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
