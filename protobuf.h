@@ -65,14 +65,17 @@ enum pb_wiretype {
 
 // Object allocator
 
-struct pb_buf {
+typedef struct {
 	char *next;
 	char *end;
-};
+} pb_buf_t;
 
 #define PB_INIT_BUF(CBUF) {(CBUF), (CBUF) + sizeof(CBUF)}
 
-typedef struct pb_buf pb_buf_t;
+static inline void pb_init_buf(pb_buf_t *b, char *buf, size_t sz) {
+	b->next = buf;
+	b->end = buf + sz;
+}
 
 static inline void *pb_alloc(pb_buf_t *b, size_t sz, size_t align) {
 	char *p = (char*) (((uintptr_t)b->next + (align - 1)) &~(align - 1));

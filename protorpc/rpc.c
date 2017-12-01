@@ -361,7 +361,7 @@ int pr_parse_body(struct pr_http *h, pb_buf_t *in, pb_buf_t *chunk) {
 	case PR_HTTP_LENGTH_CHUNKED:
 		return PR_ERROR;
 	case PR_HTTP_LENGTH_FIXED:
-		if (!have) {
+		if (!have && h->left_in_chunk) {
 			return PR_ERROR;
 		} else if (have >= h->left_in_chunk) {
 			chunk->next = in->next;
@@ -426,7 +426,7 @@ int pr_finish_response(struct pr_http *h, char *buf, pb_buf_t *out, int code) {
 		len /= 10;
 	} while (len);
 
-	return 0;
+	return h->length_type == PR_HTTP_LENGTH_CLOSE ? 1 : 0;
 }
 
 #if 0

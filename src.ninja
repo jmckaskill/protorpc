@@ -65,7 +65,7 @@ build $lib/zlib.lib: lib $
  $obj/zlib/uncompr.o $
  $obj/zlib/zutil.o $
 
-build $lib/protobuf.lib: lib $
+build $lib/protorpc.lib: lib $
  $obj/protobuf/get.o $
  $obj/protobuf/parse.o $
  $obj/protobuf/pretty-print.o $
@@ -74,7 +74,7 @@ build $lib/protobuf.lib: lib $
  $obj/protorpc/rpc.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
- $lib/protobuf.lib $
+ $lib/protorpc.lib $
  $obj/protoc-gen-protorpc/decl.o $
  $obj/google/descriptor.proto.o $
  $obj/protoc-gen-protorpc/exec.o $
@@ -99,7 +99,7 @@ build $bin/rpc-file-compiler.exe: clink $
  $lib/zlib.lib $
 
 build $bin/protorpc_test.exe: cxxlink $
- $lib/protobuf.lib $
+ $lib/protorpc.lib $
  $obj/protobuf/test.proto.o $
  $obj/protobuf/protobuf_test.o $
  $obj/protorpc/rpc_test.o $
