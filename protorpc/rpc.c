@@ -26,19 +26,21 @@ static void *memmem(const void *hay, size_t haysz, const void *needle, size_t ne
 
 #define MAX_LINE_LENGTH 256
 
-static int get_line(pb_buf_t *p, pb_string_t *line) {
-	char *nl = (char*) memchr(p->next, '\n', p->end - p->next);
-	if (!nl && (p->end - p->next) > MAX_LINE_LENGTH) {
-		return PR_ERROR;
+static int get_line(pb_string_t *p, pb_string_t *line) {
+	const char *nl = str_find_char(*p, '\n');
+	if (!nl && p->len > MAX_LINE_LENGTH) {
+		return PR_ERR_TOO_LARGE;
 	} else if (!nl) {
 		return PR_CONTINUE;
-	} else if (nl == p->next || nl[-1] != '\r') {
-		return PR_ERROR;
+	} else if (nl == p->c_str || nl[-1] != '\r') {
+		return PR_ERR_BAD_REQUEST;
 	}
 
-	line->c_str = p->next;
-	line->len = nl - 1 - p->next; // don't include the \r
-	p->next = nl + 1;
+	line->c_str = p->c_str;
+	line->len = nl - 1 - p->c_str; // don't include the \r
+	const char *e = p->c_str + p->len;
+	p->c_str = nl + 1;
+	p->len = e - p->c_str;
 	return PR_FINISHED;
 }
 
@@ -56,27 +58,24 @@ static int split(pb_string_t in, pb_string_t *left, pb_string_t *right, char ch)
 	return 0;
 }
 
-static int parse_request_header(struct pr_http *h, pb_buf_t *data) {
+static int parse_request_header(struct pr_http *h, pb_string_t *data) {
     assert(h->name.len == 0);
     assert(!h->method);
 
 	pb_string_t line;
 	int err = get_line(data, &line);
 	if (err) {
-		h->error_string = "414 URI Too Long";
 		return err;
 	}
     
 	pb_string_t method;
 	if (split(line, &method, &line, ' ')) {
-        h->error_string = "400 Malformed Path";
-        return PR_ERROR;
+        return PR_ERR_BAD_REQUEST;
     }
 
 	pb_string_t path, version;
 	if (split(line, &path, &version, ' ')) {
-        h->error_string = "400 Malformed Path";
-        return PR_ERROR;
+		return PR_ERR_BAD_REQUEST;
     }
 
     if (str_itest(method, "GET")) {
@@ -84,17 +83,15 @@ static int parse_request_header(struct pr_http *h, pb_buf_t *data) {
     } else if (str_itest(method, "POST")) {
 		h->method = PR_HTTP_POST;
     } else {
-        h->error_string = "501 Method Not Implemented";
-        return PR_ERROR;
+		return PR_ERR_METHOD_NOT_IMPLEMENTED;
     }
 
     if (str_itest(version, "HTTP/1.1")) {
-		h->version_1_0 = 0;
+		// do nothing
     } else if (str_itest(version, "HTTP/1.0")) {
-		h->version_1_0 = 1;
+		h->flags |= PR_FLAG_VERSION_1_0;
     } else {
-        h->error_string = "505 Version Not Supported";
-        return PR_ERROR;
+		return PR_ERR_VERSION_NOT_SUPPORTED;
     }
 
 	// check for an absolute form address e.g. GET http://www.example.com:80/foo HTTP/1.1
@@ -126,15 +123,13 @@ static int parse_request_header(struct pr_http *h, pb_buf_t *data) {
 	 || str_find_char(path, '\\')
 	 || path.len == 0
 	 || path.c_str[0] != '/') {
-        h->error_string = "400 Malformed Path";
-        return PR_ERROR;
+		return PR_ERR_NOT_FOUND;
     }
 
     // take a local copy of the path string
 
     if (ca_addstr(&h->name, path)) {
-        h->error_string = "414 URI Too Long";
-        return PR_ERROR;
+		return PR_ERR_URI_TOO_LONG;
     }
 
     return PR_FINISHED;
@@ -179,9 +174,9 @@ static pb_string_t next_element(pb_string_t *p, bool *more) {
     return ret;
 }
 
-static int parse_http_header(pb_buf_t *p, pb_string_t *key, pb_string_t *val) {
+static int parse_http_header(pb_string_t *data, pb_string_t *key, pb_string_t *val) {
 	pb_string_t line;
-	int err = get_line(p, &line);
+	int err = get_line(data, &line);
 	if (err) {
 		return err;
 	}
@@ -191,17 +186,16 @@ static int parse_http_header(pb_buf_t *p, pb_string_t *key, pb_string_t *val) {
 		return PR_FINISHED;
 	}
 
-	return split(line, key, val, ':') ? PR_ERROR : PR_FINISHED;
+	return split(line, key, val, ':') ? PR_ERR_BAD_REQUEST : PR_FINISHED;
 }
 
 #define HTTP_ETAG_LENGTH 16 // 8 hex characters
 
-static int parse_headers(struct pr_http *h, pb_buf_t *data) {
+static int parse_headers(struct pr_http *h, pb_string_t *data) {
     for (;;) {
 		pb_string_t key, val;
 		int err = parse_http_header(data, &key, &val);
 		if (err) {
-			h->error_string = "400 Bad Request";
 			return err;
 		}
 
@@ -211,24 +205,21 @@ static int parse_headers(struct pr_http *h, pb_buf_t *data) {
 			if (h->length_type == PR_HTTP_LENGTH_UNSET) {
 				h->length_type = PR_HTTP_LENGTH_FIXED;
 				h->content_length = 0;
-				h->have_body = 0;
 			}
+			h->flags |= PR_FLAG_HAVE_HEADER;
             return PR_FINISHED;
 
 		} else if (str_itest(key, "transfer-encoding")) {
 			do {
 				pb_string_t n = next_element(&val, &more);
 				if (n.len) {
-					h->error_string = "400 Malformed Header";
-					return PR_ERROR;
+					return PR_ERR_BAD_REQUEST;
 				}
 				if (str_itest(n, "chunked")) {
 					if (h->length_type != PR_HTTP_LENGTH_UNSET) {
-						h->error_string = "400 Bad Request";
-						return PR_ERROR;
+						return PR_ERR_BAD_REQUEST;
 					}
 					h->length_type = PR_HTTP_LENGTH_CHUNKED;
-					h->have_body = 1;
 				}
 			} while (more);
 
@@ -244,32 +235,27 @@ static int parse_headers(struct pr_http *h, pb_buf_t *data) {
 				}
 
 				if (!h->boundary.len) {
-					h->error_string = "400 Bad Request";
-					return PR_ERROR;
+					return PR_ERR_BAD_REQUEST;
 				}
 
-				h->multipart_form = 1;
+				h->flags |= PR_FLAG_HAVE_MULTIPART;
 			}
 
         } else if (str_itest(key, "content-length")) {
             if (h->length_type != PR_HTTP_LENGTH_UNSET) {
-                h->error_string = "400 Bad Request";
-                return PR_ERROR;
+				return PR_ERR_BAD_REQUEST;
             }
             pb_string_t n = next_element(&val, NULL);
             if (!n.len) {
-				h->error_string = "400 Malformed Header";
-                return PR_ERROR;
+				return PR_ERR_BAD_REQUEST;
             }
             while (n.len) {
                 if (n.c_str[0] < '0' || n.c_str[0] > '9') {
-                    h->error_string = "400 Malformed Content-Length";
-                    return PR_ERROR;
+					return PR_ERR_BAD_REQUEST;
                 }
                 // check for overflow
                 if (h->content_length > (INT64_MAX >> 4)) {
-                    h->error_string = "413 Request Too Large";
-                    return PR_ERROR;
+					return PR_ERR_TOO_LARGE;
                 }
 				h->content_length = (h->content_length * 10) + (n.c_str[0] - '0');
 				n.c_str++;
@@ -277,23 +263,19 @@ static int parse_headers(struct pr_http *h, pb_buf_t *data) {
             }
 			h->length_type = PR_HTTP_LENGTH_FIXED;
 			h->left_in_chunk = h->content_length;
-			h->have_body = h->content_length?1:0;
 
         } else if (str_itest(key, "connection")) {
             do {
                 pb_string_t n = next_element(&val, &more);
                 if (!n.len) {
-					h->error_string = "400 Malformed Header";
-                    return PR_ERROR;
+					return PR_ERR_BAD_REQUEST;
                 }
 
                 if (str_itest(n, "close")) {
                     if (h->length_type != PR_HTTP_LENGTH_UNSET) {
-                        h->error_string = "400 Bad Request";
-                        return PR_ERROR;
+						return PR_ERR_BAD_REQUEST;
                     }
 					h->length_type = PR_HTTP_LENGTH_CLOSE;
-					h->have_body = 1;
                 }
             } while (more);
 
@@ -301,13 +283,11 @@ static int parse_headers(struct pr_http *h, pb_buf_t *data) {
             do {
                 pb_string_t n = next_element(&val, &more);
                 if (!n.len) {
-					h->error_string = "400 Malformed Header";
-                    return PR_ERROR;
+					return PR_ERR_BAD_REQUEST;
 				}
 				pb_string_t cookie, token;
 				if (split(n, &cookie, &token, '=')) {
-                    h->error_string = "400 Malformed Cookie";
-                    return PR_ERROR;
+					return PR_ERR_BAD_REQUEST;
 				}
 				if (str_test(cookie, "login")) {
                     ca_setstr(&h->login, token);
@@ -318,15 +298,13 @@ static int parse_headers(struct pr_http *h, pb_buf_t *data) {
             do {
                 pb_string_t n = next_element(&val, &more);
                 if (!n.len) {
-					h->error_string = "400 Malformed Header";
-                    return PR_ERROR;
-                }
+					return PR_ERR_BAD_REQUEST;
+				}
                 if (str_itest(n, "100-continue")) {
-                    h->expect_continue = 1;
-                } else {
-                    h->error_string = "417 Bad Expectation";
-                    return PR_ERROR;
-                }
+					h->flags |= PR_FLAG_EXPECT_CONTINUE;
+				} else {
+					return PR_ERR_BAD_EXPECTATION;
+				}
             } while (more);
 
         } else if (str_itest(key, "if-none-match")) {
@@ -337,13 +315,53 @@ static int parse_headers(struct pr_http *h, pb_buf_t *data) {
                 for (int i = 0; i < HTTP_ETAG_LENGTH; i++) {
                     h->etag = (h->etag << 4) | (uint64_t) (n.c_str[i] - 'A');
                 }
-                h->have_etag = 1;
+				h->flags |= PR_FLAG_HAVE_ETAG;
             }
         }
     }
 }
 
-int pr_parse_request(struct pr_http *h, pb_buf_t *in) {
+static int parse_body(struct pr_http *h, pb_string_t *in, pb_buf_t *out) {
+	switch (h->length_type) {
+	case PR_HTTP_LENGTH_CHUNKED:
+		return PR_ERR_LENGTH_REQUIRED;
+	case PR_HTTP_LENGTH_FIXED:
+		if (!in->len && h->left_in_chunk) {
+			return PR_ERR_CLOSE;
+		}
+		if (h->left_in_chunk >= (out->end - out->next)) {
+			return PR_ERR_CLOSE;
+		}
+		if (in->len >= h->left_in_chunk) {
+			memcpy(out->next, in->c_str, (int) h->left_in_chunk);
+			in->c_str += h->left_in_chunk;
+			in->len -= (int) h->left_in_chunk;
+			out->next += h->left_in_chunk;
+			h->left_in_chunk = 0;
+			return PR_FINISHED;
+		}
+		h->left_in_chunk -= in->len;
+		memcpy(out->next, in->c_str, in->len);
+		out->next += in->len;
+		in->c_str += in->len;
+		in->len = 0;
+		return PR_CONTINUE;
+	case PR_HTTP_LENGTH_CLOSE:
+		if (!in->len) {
+			return PR_FINISHED;
+		}
+		memcpy(out->next, in->c_str, in->len);
+		out->next += in->len;
+		in->c_str += in->len;
+		in->len = 0;
+		return PR_CONTINUE;
+	default:
+		return PR_ERR_CLOSE;
+	}
+}
+
+
+int pr_parse_request(struct pr_http *h, pb_string_t *in, pb_buf_t *out) {
     int err = 0;
     if (!h->method) {
         err = parse_request_header(h, in);
@@ -351,41 +369,10 @@ int pr_parse_request(struct pr_http *h, pb_buf_t *in) {
     if (!err) {
         err = parse_headers(h, in);
     }
-	assert(err != PR_ERROR || h->error_string);
-    return err;
-}
-
-int pr_parse_body(struct pr_http *h, pb_buf_t *in, pb_buf_t *chunk) {
-	size_t have = in->end - in->next;
-	switch (h->length_type) {
-	case PR_HTTP_LENGTH_CHUNKED:
-		return PR_ERROR;
-	case PR_HTTP_LENGTH_FIXED:
-		if (!have && h->left_in_chunk) {
-			return PR_ERROR;
-		} else if (have >= h->left_in_chunk) {
-			chunk->next = in->next;
-			chunk->end = in->next + h->left_in_chunk;
-			in->next = chunk->end;
-			h->left_in_chunk = 0;
-			return PR_FINISHED;
-		}
-		chunk->next = in->next;
-		chunk->end = in->end;
-		in->next = in->end;
-		h->left_in_chunk -= have;
-		return PR_CONTINUE;
-	case PR_HTTP_LENGTH_CLOSE:
-		if (!have) {
-			return PR_FINISHED;
-		}
-		chunk->next = in->next;
-		chunk->end = in->end;
-		in->next = in->end;
-		return PR_CONTINUE;
-	default:
-		return PR_ERROR;
+	if (!err) {
+		err = parse_body(h, in, out);
 	}
+    return err;
 }
 
 uint32_t pr_hash(const char *p, uint32_t mul) {
