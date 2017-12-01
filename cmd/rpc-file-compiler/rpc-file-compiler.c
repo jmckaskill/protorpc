@@ -194,10 +194,13 @@ int main(int argc, char *argv[]) {
             exit(2);
         }
 
+		char *fndir = strrchr(fn, '/');
+
         enum FileType type = TEXT;
         const char *meta = NULL;
+		int is_index = fndir ? !strcmp(fndir, "/index.html") : !strcmp(fn, "index.html");
 
-        if (!strcmp(ext, ".html")) {
+		if (!strcmp(ext, ".html")) {
             meta = "text/html";
         } else if (!strcmp(ext, ".js")) {
             meta = "application/javascript";
@@ -230,11 +233,18 @@ int main(int argc, char *argv[]) {
 		str_destroy(&tempfn);
 		
 		str_init(&paths[i]);
-        str_addch(&paths[i], '/');
-        str_add2(&paths[i], fn, ext - fn);
-		str_addch(&paths[i], '.');
-        str_addf(&paths[i], "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
-        str_add(&paths[i], ext);
+		if (is_index) {
+			str_addch(&paths[i], '/');
+			if (fndir) {
+				str_add2(&paths[i], fn, fndir - fn);
+			}
+		} else {
+			str_addch(&paths[i], '/');
+			str_add2(&paths[i], fn, ext - fn);
+			str_addch(&paths[i], '.');
+			str_addf(&paths[i], "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
+			str_add(&paths[i], ext);
+		}
 
 		char hdr[256];
 		int hlen = sprintf(hdr,
@@ -242,10 +252,10 @@ int main(int argc, char *argv[]) {
 			"Content-Length:%u\r\n"
 			"Content-Type:%s\r\n"
 			"Content-Encoding:gzip\r\n"
-			"Cache-Control:max-age=31536000\r\n"
-			"\r\n",
+			"%s\r\n",
 			vout.len,
-			meta);
+			meta,
+			is_index ? "" : "Cache-Control:max-age=31536000\r\n");
 
         fprintf(cf, "static const uint8_t g_");
         print_csymbol(cf, fn);
