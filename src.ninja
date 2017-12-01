@@ -109,6 +109,6 @@ build $bin/protorpc_test.exe: cxxlink $
  $obj/gtest-all.o $
  $lib/zlib.lib $
 
-build $TGT: phony $bin/protorpc_test.exe
+build $SRC/$TGT: phony $bin/protorpc_test.exe
 
 
