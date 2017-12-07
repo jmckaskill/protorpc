@@ -225,7 +225,7 @@ static void calc_max_proto_size(struct type *t) {
     t->max_proto_size_calculated = true;
     if (isfinite(sz)) {
         t->max_proto_size = sz + pb_u32_size((uint32_t) sz);
-		if (sz <= 0x7F) {
+		if (sz <= 20) {
 			t->pod_message = true;
 		}
 	}
