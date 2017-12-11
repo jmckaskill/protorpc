@@ -30,9 +30,12 @@ void define_enum(str_t *o, const struct type *t) {
     str_add(o, "};" EOL);
 }
 
-void declare_struct(str_t *o, const struct type *t) {
-    str_addstr(o, t->c_type);
-    str_add(o, ";" EOL);
+void declare_struct(str_t *o, struct type *t) {
+	if (!t->declared && !t->defined) {
+		str_addstr(o, t->c_type);
+		str_add(o, ";" EOL);
+		t->declared = true;
+	}
 }
 
 static void append_field_type(str_t *o, const struct FieldDescriptorProto *f) {
@@ -114,7 +117,6 @@ void define_struct(str_t *o, struct type *t) {
 	if (t->defined) {
 		return;
 	}
-	t->defined = true;
 
     for (int i = 0; i < t->msg->nested_type.len; i++) {
         define_struct(o, get_struct_type(t->msg->nested_type.v[i]));
@@ -130,8 +132,12 @@ void define_struct(str_t *o, struct type *t) {
 			i = declare_oneof(o, t, i);
 		}
 		struct type *ft = get_field_type(f);
-		if (ft->pod_message) {
-			define_struct(o, ft);
+		if (ft->file == t->file) {
+			if (ft->pod_message) {
+				define_struct(o, ft);
+			} else if (ft->msg) {
+				declare_struct(o, ft);
+			}
 		}
 	}
 
@@ -156,14 +162,15 @@ void define_struct(str_t *o, struct type *t) {
     }
 
     // hacks to support bootstrapping descriptor.proto as 0 are useful values for these fields
-    if (!strcmp(t->name.c_str, ".google.protobuf.FieldDescriptorProto")) {
+    if (str_test(t->name, ".google.protobuf.FieldDescriptorProto")) {
         str_add(o, "\tbool oneof_index_set;" EOL);
 
-    } else if (!strcmp(t->name.c_str, ".google.protobuf.FieldOptions")) {
+    } else if (str_test(t->name, ".google.protobuf.FieldOptions")) {
         str_add(o, "\tbool packed_set;" EOL);
 	}
 
     str_add(o, "};" EOL);
+	t->defined = true;
 }
 
 void do_enum_funcs(str_t *o, const struct type *t, bool define) {

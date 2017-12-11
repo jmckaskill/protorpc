@@ -5,16 +5,6 @@
 #include <fcntl.h>
 #endif
 
-static void declare_external_fields(str_t *o, const struct FileDescriptorProto *f, const struct DescriptorProto *msg) {
-    for (int i = 0; i < msg->field.len; i++) {
-        struct type *ft = get_field_type(msg->field.v[i]);
-        if (ft->msg && ft->file && ft->file != f && ft->declared != f) {
-            ft->declared = f;
-            declare_struct(o, ft);
-        }
-    }
-}
-
 static void write_header(str_t *o, const struct FileDescriptorProto *f, bool decode_only) {
     str_add(o, "#pragma once" EOL);
     str_add(o, "#include <protobuf.h>" EOL);
@@ -101,8 +91,7 @@ static const struct FileDescriptorProto *get_file_proto(struct CodeGeneratorRequ
     return NULL;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc >= 3) {
+int main(int argc, char *argv[]) {    if (argc >= 3) {
         // we've been called directly
         // call protoc with the arguments which will then call the backend back
         return exec_protoc(argv[0], argv[1], argv[2]);

@@ -112,7 +112,7 @@ static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_
         for (int i = 0; i < t->msg->nested_type.len; i++) {
             str_setlen(proto, protosz);
             str_setlen(c, csz);
-            insert_message(t->msg->nested_type.v[i], proto, c, default_packed, NULL);
+            insert_message(t->msg->nested_type.v[i], proto, c, default_packed, file);
         }
         
         for (int i = 0; i < t->msg->enum_type.len; i++) {
@@ -225,7 +225,7 @@ static void calc_max_proto_size(struct type *t) {
     t->max_proto_size_calculated = true;
     if (isfinite(sz)) {
         t->max_proto_size = sz + pb_u32_size((uint32_t) sz);
-		if (sz <= 20) {
+		if (sz <= 32) {
 			t->pod_message = true;
 		}
 	}

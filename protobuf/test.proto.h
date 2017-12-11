@@ -75,6 +75,7 @@ struct TestMessage_MenEntry {
 	uint32_t	key;
 	enum TestEnum	value;
 };
+struct TestMessage;
 struct TestMessage_MmsgEntry {
 	union pb_msg pb_hdr;
 	uint32_t	key;

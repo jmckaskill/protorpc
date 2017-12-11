@@ -24,8 +24,8 @@ struct type {
     const struct EnumDescriptorProto *en;
 	const struct ServiceDescriptorProto *svc;
     bool max_proto_size_calculated;
-    const struct FileDescriptorProto *declared;
     bool defined;
+	bool declared;
     const struct FieldDescriptorProto *map_key, *map_value;
     const struct FileDescriptorProto *file;
     unsigned default_packed : 1;
@@ -53,7 +53,7 @@ void to_upper(str_t *out, const char *s);
 bool is_field_packed(const struct type *t, const struct FieldDescriptorProto *ft);
 
 void define_enum(str_t *out, const struct type *t);
-void declare_struct(str_t *out, const struct type *t);
+void declare_struct(str_t *out, struct type *t);
 void define_struct(str_t *out, struct type *t);
 
 void do_enum_funcs(str_t *out, const struct type *t, bool define);

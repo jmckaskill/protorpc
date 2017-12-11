@@ -25,6 +25,11 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 //	char buf[...];
 // };
 
+typedef struct {
+	int len;
+	const char *c_str;
+} slice_t;
+
 // returns zero on success, non-zero on failure
 #define ca_setlen(P, SZ) 		(assert(sizeof((P)->c_str) != sizeof(char*)), (P)->len = (SZ), (P)->c_str[(P)->len] = '\0')
 #define ca_set2(P, SRC, SRCSZ) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (SRCSZ)))
@@ -35,6 +40,9 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 #define ca_addstr(P, ADD) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (ADD).c_str, (ADD).len))
 #define ca_vaddf(P, FMT, AP) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_vaddf_((P)->c_str, sizeof((P)->c_str), &(P)->len, (FMT), (AP)))
 #define ca_addf(P, ...) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_addf_((P)->c_str, sizeof((P)->c_str), &(P)->len, __VA_ARGS__))
+#define ca_vsetf(P, FMT, AP) 	(ca_setlen(P, 0), ca_vaddf_((P)->c_str, sizeof((P)->c_str), &(P)->len, (FMT), (AP)))
+#define ca_setf(P, ...) 		(ca_setlen(P, 0), ca_addf_((P)->c_str, sizeof((P)->c_str), &(P)->len, __VA_ARGS__))
+
 
 // comparison functions can be used with str_t, pb_string_t or a char buffer like above
 
@@ -51,6 +59,10 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 
 #define str_find_char(P, CH)    ((const char*) memchr((P).c_str, (CH), (P).len))
 #define str_rfind_char(P, CH) 	((const char*) memrchr((P).c_str, (CH), (P).len))
+
+#define slice_all(P, STR) ((P)->len = (STR).len, (P)->c_str = (STR).c_str)
+#define slice_left(P, STR, PTR) ((P)->len = (PTR) - (STR).c_str, (P)->c_str = (STR).c_str)
+#define slice_right(P, STR, PTR) ((P)->len = (STR).c_str + (STR).len - (PTR), (P)->c_str = (PTR))
 
 // the following are the implementation functions
 
@@ -85,6 +97,7 @@ static inline int ca_vaddf_(char *buf, int bufsz, int *plen, const char *fmt, va
 	int left = bufsz - *plen - 1;
 	int ret = vsnprintf(buf + *plen, left, fmt, ap);
 	if (ret < 0 || ret >= left) {
+		buf[*plen] = '\0';
 		return -1;
 	}
 	*plen += ret;
