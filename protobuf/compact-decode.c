@@ -5,10 +5,20 @@
 #define WIRE_FIXED_64 1
 #define WIRE_VARIABLE 2
 #define WIRE_FIXED_32 5
+#define MAX_DEPTH 8
+#define OBJ_ALIGN 8
 
 struct in {
 	const uint8_t *next;
 	const uint8_t *end;
+};
+
+struct decode_stack {
+	const struct proto_field *next_field;
+	const struct proto_field *field_end;
+	char *msg;
+	const uint8_t *data_end;
+	int next_index;
 };
 
 static inline char *align(char *p, size_t align) {
@@ -200,20 +210,9 @@ static int skip(struct in *in, unsigned tag) {
     return 0;
 }
 
-struct stack_entry {
-	const struct proto_field *next_field;
-	const struct proto_field *field_end;
-	char *msg;
-	const uint8_t *data_end;
-	int next_index;
-};
-
-#define MAX_DEPTH 8
-#define OBJ_ALIGN 8
-
 void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *data, int sz) {
 	int depth = 0;
-	struct stack_entry stack[MAX_DEPTH];
+	struct decode_stack stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	char *objstart = obj->next;
@@ -536,7 +535,7 @@ err:
 void pb_terminate(void *obj, const struct proto_message *type, char *data, int sz) {
 	char *msg = (char*)obj;
 	int depth = 0;
-	struct stack_entry stack[MAX_DEPTH];
+	struct decode_stack stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	int list_index = 0;

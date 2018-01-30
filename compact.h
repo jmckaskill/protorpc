@@ -47,10 +47,10 @@ struct pb_pod_list {
 };
 
 typedef struct {int len; bool const *v;} pb_bool_list;
-typedef struct {int len; uint32_t const *v;} pb_uint_list;
-typedef struct {int len; int32_t const *v;} pb_int_list;
-typedef struct {int len; uint64_t const *v;} pb_u64_list;
-typedef struct {int len; int64_t const *v;} pb_i64_list;
+typedef struct {int len; uint32_t const *v; int _encoded;} pb_uint_list;
+typedef struct {int len; int32_t const *v; int _encoded;} pb_int_list;
+typedef struct {int len; uint64_t const *v; int _encoded;} pb_u64_list;
+typedef struct {int len; int64_t const *v; int _encoded;} pb_i64_list;
 typedef struct {int len; float const *v;} pb_float_list;
 typedef struct {int len; double const *v;} pb_double_list;
 typedef struct {int len; pb_string_t const *v;} pb_string_list;
@@ -115,6 +115,7 @@ extern "C" {
 
 void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *data, int sz);
 void pb_terminate(void *obj, const struct proto_message *type, char *data, int sz);
+int pb_encoded_size(void *obj, const struct proto_message *type);
 
 #ifdef __cplusplus
 }
