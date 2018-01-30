@@ -113,8 +113,7 @@ struct proto_message {
 extern "C" {
 #endif
 
-void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *data, int sz);
-void pb_terminate(void *obj, const struct proto_message *type, char *data, int sz);
+void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const struct proto_message *type);
 
 #ifdef __cplusplus

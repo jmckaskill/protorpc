@@ -9,16 +9,15 @@
 #define OBJ_ALIGN 8
 
 struct in {
-	const uint8_t *next;
-	const uint8_t *end;
+	uint8_t *next;
+	uint8_t *end;
 };
 
 struct decode_stack {
 	const struct proto_field *next_field;
 	const struct proto_field *field_end;
 	char *msg;
-	const uint8_t *data_end;
-	int next_index;
+	uint8_t *data_end;
 };
 
 static inline char *align(char *p, size_t align) {
@@ -69,12 +68,14 @@ static int get_varint_64(struct in *in, uint64_t *pv) {
 }
 
 static bool still_in_list(struct in *in, unsigned tag) {
-	const uint8_t *begin = in->next;
+	uint8_t *begin = in->next;
 	unsigned have;
 	if (get_varint(in, &have) || have != tag) {
 		in->next = begin;
 		return false;
 	}
+	// null terminate the previous entry in case it was a string
+	*begin = '\0';
 	return true;
 }
 
@@ -135,7 +136,7 @@ static int get_varint_list(struct in *in, pb_buf_t *obj, pb_uint_list *plist) {
 	}
 	unsigned *pv = (unsigned*) align(obj->next, sizeof(unsigned));
 	struct in data;
-	data.next = bytes.p;
+	data.next = (uint8_t*) bytes.p;
 	data.end = data.next + bytes.len;
 	int num = 0;
 
@@ -161,7 +162,7 @@ static int get_varint_list_64(struct in *in, pb_buf_t *obj, pb_u64_list *plist) 
 	}
 	uint64_t *pv = (uint64_t*) align(obj->next, sizeof(uint64_t));
 	struct in data;
-	data.next = bytes.p;
+	data.next = (uint8_t*) bytes.p;
 	data.end = data.next + bytes.len;
 	int num = 0;
 
@@ -210,15 +211,20 @@ static int skip(struct in *in, unsigned tag) {
     return 0;
 }
 
-void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *data, int sz) {
+void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int sz) {
 	int depth = 0;
 	struct decode_stack stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	char *objstart = obj->next;
 	struct in in;
-	in.next = (const uint8_t*) data;
+	in.next = (uint8_t*) data;
 	in.end = in.next + sz;
+
+	// null terminate the last entry
+	// do this always to avoid the user having to test the corner case of a string
+	// being the last entry
+	data[sz] = '\0';
 
 	char *msg = buf_calloc(obj, type->datasz, OBJ_ALIGN);
 	if (!msg) {
@@ -233,10 +239,13 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *dat
 					// ran out of incoming data
 					goto end_of_fields;
 				}
+				uint8_t *tagstart = in.next;
 				unsigned have;
 				if (get_varint(&in, &have)) {
 					goto err;
 				}
+				// set the start of every tag to null. this null terminates the previous string entry
+				*tagstart = '\0';
 				while (have > f->tag) {
 					if (++f == end) {
 						// ran out of fields
@@ -345,8 +354,8 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *dat
 					msg = child;
 				}
 
-				in.next = bytes.p;
-				in.end = bytes.p + bytes.len;
+				in.next = (uint8_t*) bytes.p;
+				in.end = in.next + bytes.len;
 				f = ct->fields;
 				end = f + ct->num_fields;
 				continue;
@@ -474,8 +483,8 @@ next_message_in_list:
 					msg = (char*)child;
 				}
 
-				in.next = bytes.p;
-				in.end = bytes.p + bytes.len;
+				in.next = (uint8_t*) bytes.p;
+				in.end = in.next + bytes.len;
 				f = ct->fields;
 				end = f + ct->num_fields;
 				continue;
@@ -529,124 +538,4 @@ end_of_fields:
 err:
 	obj->next = objstart;
 	return NULL;
-}
-
-
-void pb_terminate(void *obj, const struct proto_message *type, char *data, int sz) {
-	char *msg = (char*)obj;
-	int depth = 0;
-	struct decode_stack stack[MAX_DEPTH];
-	const struct proto_field *f = type->fields;
-	const struct proto_field *end = f + type->num_fields;
-	int list_index = 0;
-
-	// If the incoming message ends in a string, then terminating that string
-	// will result in a zero being written one byte after the message data.
-	// Rather then require that everyone test that corner case, we will always
-	// write a trailing terminator to make sure the user can handle it.
-
-	data[sz] = '\0';
-
-	for (;;) {
-		while (f < end) {
-			if (f->oneof >= 0) {
-				// oneof type is set to the field number
-				// bottom three bits of the tag is the wire type
-				unsigned *oneof = (unsigned*)(msg + f->oneof);
-				if (*oneof != (f->tag >> 3)) {
-					continue;
-				}
-			}
-			switch (f->type) {
-			case PROTO_BYTES:
-			case PROTO_STRING: {
-				pb_string_t *str = (pb_string_t *)(msg + f->offset);
-				char *p = (char*)str->c_str;
-				if (p) {
-					p[str->len] = '\0';
-				} else {
-					str->c_str = "";
-				}
-				break;
-			}
-			case PROTO_LIST_STRING:
-			case PROTO_LIST_BYTES: {
-				pb_string_list *list = (pb_string_list *)(msg + f->offset);
-				for (int i = 0; i < list->len; i++) {
-					pb_string_t *str = (pb_string_t*) &list->v[i];
-					char *p = (char*)str->c_str;
-					if (p) {
-						p[str->len] = '\0';
-					} else {
-						str->c_str = "";
-					}
-				}
-				break;
-			}
-			case PROTO_MESSAGE:{
-				char *child = *(char**)(msg + f->offset);
-				if (!child) {
-					break;
-				}
-
-				stack[depth].field_end = end;
-				stack[depth].next_field = f + 1;
-				stack[depth].msg = msg;
-
-				if (++depth == MAX_DEPTH) {
-					return;
-				}
-
-				const struct proto_message *ct = f->message;
-				f = ct->fields;
-				end = f + ct->num_fields;
-				msg = child;
-				continue;
-			}
-			case PROTO_LIST_MESSAGE:
-				list_index = 0;
-				goto next_list_message;
-			next_list_message: {
-				struct pb_message_list *list = (struct pb_message_list*) (msg + f->offset);
-				if (list_index >= list->len) {
-					break;
-				}
-
-				stack[depth].field_end = end;
-				stack[depth].next_field = f;
-				stack[depth].msg = msg;
-				stack[depth].next_index = list_index + 1;
-
-				if (++depth == MAX_DEPTH) {
-					return;
-				}
-
-				const struct proto_message *ct = f->message;
-				f = ct->fields;
-				end = f + ct->num_fields;
-				msg = (char*) list->u.v[list_index];
-				continue;
-			}
-			default:
-				break;
-			}
-
-			f++;
-		}
-
-		if (!depth) {
-			return;
-		}
-
-		depth--;
-
-		f = stack[depth].next_field;
-		end = stack[depth].field_end;
-		msg = stack[depth].msg;
-
-		if (f->type == PROTO_LIST_MESSAGE) {
-			list_index = stack[depth].next_index;
-			goto next_list_message;
-		}
-	}
 }

@@ -623,7 +623,6 @@ TEST(protobuf, decode) {
 	check_message(&m);
 #else
 	struct TestMessage *m = (struct TestMessage*) pb_decode(&obj, &pb_type_TestMessage, buf, sizeof(test_proto));
-	pb_terminate(m, &pb_type_TestMessage, buf, sizeof(test_proto));
 	check_message(m);
 #endif
 
