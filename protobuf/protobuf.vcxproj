@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="compact-decode.c" />
+    <ClCompile Include="compact-encode.c" />
     <ClCompile Include="get.c" />
     <ClCompile Include="parse.c" />
     <ClCompile Include="pretty-print.c" />
@@ -21,7 +22,6 @@
     <ClCompile Include="test.proto.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="compact.h" />
     <ClInclude Include="test.proto.h" />
   </ItemGroup>
   <ItemGroup>

@@ -19,6 +19,7 @@ extern "C" {
 union pb_msg {
 	void *prev;
 	int maxsz;
+	int encoded_size;
 };
 
 typedef struct {

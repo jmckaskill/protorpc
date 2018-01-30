@@ -47,7 +47,7 @@ static void append_field_type(str_t *o, const struct FieldDescriptorProto *f) {
         if (ft->msg && !ft->pod_message) {
             str_add(o, "*");
         }
-        str_add(o, "v;}");
+		str_add(o, "v; int _encoded;}");
     } else if (ft->msg && !ft->pod_message) {
         str_addstr(o, ft->c_type);
         str_add(o, " const*");

@@ -115,6 +115,7 @@ extern "C" {
 
 void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const struct proto_message *type);
+int pb_encode(void *obj, const struct proto_message *type, char *data);
 
 #ifdef __cplusplus
 }

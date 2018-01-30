@@ -13,7 +13,6 @@
   <ItemGroup>
     <ClCompile Include="rpc-file-compiler.c" />
     <ClCompile Include="rpc-file-compiler_test.cpp" />
-    <ClCompile Include="rpc-test-data.c" />
     <ClCompile Include="sha1.c" />
   </ItemGroup>
   <ItemGroup>
