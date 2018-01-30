@@ -533,13 +533,20 @@ err:
 }
 
 
-void pb_terminate(void *obj, const struct proto_message *type) {
+void pb_terminate(void *obj, const struct proto_message *type, char *data, int sz) {
 	char *msg = (char*)obj;
 	int depth = 0;
 	struct stack_entry stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	int list_index = 0;
+
+	// If the incoming message ends in a string, then terminating that string
+	// will result in a zero being written one byte after the message data.
+	// Rather then require that everyone test that corner case, we will always
+	// write a trailing terminator to make sure the user can handle it.
+
+	data[sz] = '\0';
 
 	for (;;) {
 		while (f < end) {

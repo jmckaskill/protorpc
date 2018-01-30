@@ -114,7 +114,7 @@ extern "C" {
 #endif
 
 void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *data, int sz);
-void pb_terminate(void *obj, const struct proto_message *type);
+void pb_terminate(void *obj, const struct proto_message *type, char *data, int sz);
 
 #ifdef __cplusplus
 }
