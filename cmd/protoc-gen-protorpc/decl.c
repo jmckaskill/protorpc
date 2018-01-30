@@ -57,7 +57,7 @@ static void append_field_type(str_t *o, const struct FieldDescriptorProto *f) {
 }
 
 size_t declare_oneof(str_t *o, const struct type *t, int i) {
-	int32_t oneof = t->msg->field.v[i]->oneof_index;
+	uint32_t oneof = t->msg->field.v[i]->oneof_index.val;
 	pb_string_t name = t->msg->oneof_decl.v[oneof]->name;
 
     str_add(o, "enum ");
@@ -66,7 +66,7 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
     str_addstr(o, name);
     str_add(o, "_type {" EOL);
 
-	while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index_set && t->msg->field.v[i]->oneof_index == oneof) {
+	while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index.set && t->msg->field.v[i]->oneof_index.val == oneof) {
         const struct FieldDescriptorProto* f = t->msg->field.v[i];
         str_add(o, "\t");
         to_upper(o, t->proto_suffix.c_str);
@@ -83,7 +83,7 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
 }
 
 size_t define_oneof(str_t *o, const struct type *t, int i) {
-    int32_t oneof = t->msg->field.v[i]->oneof_index;
+    uint32_t oneof = t->msg->field.v[i]->oneof_index.val;
     pb_string_t name = t->msg->oneof_decl.v[oneof]->name;
 
     str_add(o, "\tenum ");
@@ -96,7 +96,7 @@ size_t define_oneof(str_t *o, const struct type *t, int i) {
 
     str_add(o, "\tunion {" EOL);
 
-    while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index_set && t->msg->field.v[i]->oneof_index == oneof) {
+    while (i < t->msg->field.len && t->msg->field.v[i]->oneof_index.set && t->msg->field.v[i]->oneof_index.val == oneof) {
         const struct FieldDescriptorProto* f = t->msg->field.v[i];
         str_add(o, "\t\t");
         append_field_type(o, f);
@@ -128,7 +128,7 @@ void define_struct(str_t *o, struct type *t) {
 
 	for (int i = 0; i < t->msg->field.len; i++) {
 		const struct FieldDescriptorProto *f = t->msg->field.v[i];
-		if (f->oneof_index_set) {
+		if (f->oneof_index.set) {
 			i = declare_oneof(o, t, i);
 		}
 		struct type *ft = get_field_type(f);
@@ -150,7 +150,7 @@ void define_struct(str_t *o, struct type *t) {
     
     for (int i = 0; i < t->msg->field.len; i++) {
         const struct FieldDescriptorProto *f = t->msg->field.v[i];
-        if (f->oneof_index_set) {
+        if (f->oneof_index.set) {
             i = define_oneof(o, t, i);
         } else {
             str_add(o, "\t");
@@ -163,7 +163,7 @@ void define_struct(str_t *o, struct type *t) {
 
     // hacks to support bootstrapping descriptor.proto as 0 are useful values for these fields
     if (str_test(t->name, ".google.protobuf.FieldDescriptorProto")) {
-        str_add(o, "\tbool oneof_index_set;" EOL);
+        str_add(o, "\tbool oneof_index.set;" EOL);
 
     } else if (str_test(t->name, ".google.protobuf.FieldOptions")) {
         str_add(o, "\tbool packed_set;" EOL);
@@ -198,13 +198,14 @@ void do_struct_funcs(str_t *o, const struct type *t, bool define, bool decode_on
         qsort((struct FieldDescriptorProto**) t->msg->field.v, t->msg->field.len, sizeof(t->msg->field.v[0]), &cmp_field_number);
     }
 
-    do_decode(o, t, define);
-	do_term(o, t, define);
+    //do_decode(o, t, define);
+	//do_term(o, t, define);
+
 	do_typeinfo(o, t, define);
 
 	if (!decode_only) {
-		do_encode(o, t, define);
-		do_maxsz(o, t, define);
+		//do_encode(o, t, define);
+		//do_maxsz(o, t, define);
 
 		for (int i = 0; i < t->msg->enum_type.len; i++) {
 			do_enum_funcs(o, get_enum_type(t->msg->enum_type.v[i]), define);

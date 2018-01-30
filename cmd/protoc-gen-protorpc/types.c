@@ -98,11 +98,6 @@ static void insert_message(const struct DescriptorProto *msg, str_t *proto, str_
 		t->max_proto_size_calculated = 1;
 	}
 
-    if (msg && msg->options && msg->options->map_entry && msg->field.len == 2) {
-        t->map_key = msg->field.v[0];
-        t->map_value = msg->field.v[1];
-    }
-
 	t->json_suffix = t->proto_suffix;
 	smap_set(&g_named_types, t->name.c_str, t->name.len, t);
     
@@ -333,8 +328,10 @@ bool is_field_packed(const struct type *t, const struct FieldDescriptorProto *ft
 	if (ft->type == TYPE_MESSAGE || ft->type == TYPE_BYTES || ft->type == TYPE_STRING) {
 		return false;
 	}
+#if 0
 	if (ft->options && ft->options->packed_set) {
 		return ft->options->packed;
 	}
+#endif
 	return t->default_packed;
 }

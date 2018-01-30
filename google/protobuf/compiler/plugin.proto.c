@@ -1,4 +1,4 @@
-#include "google/protobuf/compiler/plugin.proto.h"
+#include "plugin.proto.h"
 
 int pb_get_Version(const char *p, const char *e, pb_buf_t *obj, struct Version *m) {
 	(void) obj;
@@ -23,6 +23,17 @@ void pb_term_Version(struct Version *m) {
 		m->suffix.c_str = "";
 	}
 }
+static const struct proto_field fields_Version[] = {
+	{PROTO_I32, offsetof(struct Version, major), 8, NULL, -1},
+	{PROTO_I32, offsetof(struct Version, minor), 16, NULL, -1},
+	{PROTO_I32, offsetof(struct Version, patch), 24, NULL, -1},
+	{PROTO_STRING, offsetof(struct Version, suffix), 34, NULL, -1}
+};
+const struct proto_message pb_type_Version = {
+	sizeof(struct Version),
+	sizeof(fields_Version) / sizeof(struct proto_field),
+	fields_Version
+};
 
 int pb_get_CodeGeneratorRequest(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorRequest *m) {
 	(void) obj;
@@ -95,6 +106,17 @@ void pb_term_CodeGeneratorRequest(struct CodeGeneratorRequest *m) {
 		pb_term_FileDescriptorProto((struct FileDescriptorProto*) m->proto_file.v[i]);
 	}
 }
+static const struct proto_field fields_CodeGeneratorRequest[] = {
+	{PROTO_LIST_STRING, offsetof(struct CodeGeneratorRequest, file_to_generate), 10, NULL, -1},
+	{PROTO_STRING, offsetof(struct CodeGeneratorRequest, parameter), 18, NULL, -1},
+	{PROTO_MESSAGE, offsetof(struct CodeGeneratorRequest, compiler_version), 26, &pb_type_Version, -1},
+	{PROTO_LIST_MESSAGE, offsetof(struct CodeGeneratorRequest, proto_file), 122, &pb_type_FileDescriptorProto, -1}
+};
+const struct proto_message pb_type_CodeGeneratorRequest = {
+	sizeof(struct CodeGeneratorRequest),
+	sizeof(fields_CodeGeneratorRequest) / sizeof(struct proto_field),
+	fields_CodeGeneratorRequest
+};
 
 int pb_get_CodeGeneratorResponse(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse *m) {
 	(void) obj;
@@ -137,6 +159,15 @@ void pb_term_CodeGeneratorResponse(struct CodeGeneratorResponse *m) {
 		pb_term_CodeGeneratorResponse_File((struct CodeGeneratorResponse_File*) m->file.v[i]);
 	}
 }
+static const struct proto_field fields_CodeGeneratorResponse[] = {
+	{PROTO_STRING, offsetof(struct CodeGeneratorResponse, error), 10, NULL, -1},
+	{PROTO_LIST_MESSAGE, offsetof(struct CodeGeneratorResponse, file), 122, &pb_type_CodeGeneratorResponse_File, -1}
+};
+const struct proto_message pb_type_CodeGeneratorResponse = {
+	sizeof(struct CodeGeneratorResponse),
+	sizeof(fields_CodeGeneratorResponse) / sizeof(struct proto_field),
+	fields_CodeGeneratorResponse
+};
 
 int pb_get_CodeGeneratorResponse_File(const char *p, const char *e, pb_buf_t *obj, struct CodeGeneratorResponse_File *m) {
 	(void) obj;
@@ -168,3 +199,13 @@ void pb_term_CodeGeneratorResponse_File(struct CodeGeneratorResponse_File *m) {
 		m->content.c_str = "";
 	}
 }
+static const struct proto_field fields_CodeGeneratorResponse_File[] = {
+	{PROTO_STRING, offsetof(struct CodeGeneratorResponse_File, name), 10, NULL, -1},
+	{PROTO_STRING, offsetof(struct CodeGeneratorResponse_File, insertion_point), 18, NULL, -1},
+	{PROTO_STRING, offsetof(struct CodeGeneratorResponse_File, content), 122, NULL, -1}
+};
+const struct proto_message pb_type_CodeGeneratorResponse_File = {
+	sizeof(struct CodeGeneratorResponse_File),
+	sizeof(fields_CodeGeneratorResponse_File) / sizeof(struct proto_field),
+	fields_CodeGeneratorResponse_File
+};

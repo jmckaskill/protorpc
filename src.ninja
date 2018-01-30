@@ -14,6 +14,7 @@ build $obj/protobuf/encode.o: cc $SRC/protobuf/compact-encode.c
 
 build $obj/google/descriptor.proto.o: cc $SRC/google/protobuf/descriptor.proto.c
 build $obj/google/plugin.proto.o: cc $SRC/google/protobuf/compiler/plugin.proto.c
+build $obj/google/plugin.o: cc $SRC/google/protobuf/compiler/plugin.c
 
 build $obj/protorpc/rpc.o: cc $SRC/protorpc/rpc.c
 build $obj/protorpc/rpc_test.o: cxx $SRC/protorpc/rpc_test.cpp
@@ -81,11 +82,10 @@ build $lib/protorpc.lib: lib $
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protorpc.lib $
  $obj/protoc-gen-protorpc/decl.o $
- $obj/google/descriptor.proto.o $
  $obj/protoc-gen-protorpc/exec.o $
  $obj/protoc-gen-protorpc/decode.o $
  $obj/protoc-gen-protorpc/parse.o $
- $obj/google/plugin.proto.o $
+ $obj/google/plugin.o $
  $obj/protoc-gen-protorpc/print.o $
  $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
  $obj/protoc-gen-protorpc/encode.o $

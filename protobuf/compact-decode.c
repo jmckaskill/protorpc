@@ -281,6 +281,14 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 				}
 				*(bool*)(msg + f->offset) = (u != 0);
 				break;
+			case PROTO_OPTIONAL_U32: {
+				pb_opt_uint *opt = (pb_opt_uint*)(msg + f->offset);
+				opt->set = true;
+				if (get_varint(&in, &opt->val)) {
+					goto err;
+				}
+				break;
+			}
 			case PROTO_U32:
 			case PROTO_I32:
 			case PROTO_ENUM:

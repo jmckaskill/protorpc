@@ -46,6 +46,8 @@ struct pb_pod_list {
 	char *data;
 };
 
+typedef struct {bool set; unsigned val;} pb_opt_uint;
+
 typedef struct {int len; bool const *v;} pb_bool_list;
 typedef struct {int len; uint32_t const *v; int _encoded;} pb_uint_list;
 typedef struct {int len; int32_t const *v; int _encoded;} pb_int_list;
@@ -59,6 +61,7 @@ typedef struct {int len; pb_bytes_t const *v;} pb_bytes_list;
 enum proto_field_type {
 	PROTO_BOOL,
 	PROTO_U32,
+	PROTO_OPTIONAL_U32,
 	PROTO_I32,
 	PROTO_S32,
 	PROTO_F32,

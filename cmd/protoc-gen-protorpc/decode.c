@@ -25,15 +25,15 @@ static void decode_field(str_t *o, const struct type *t, const struct FieldDescr
     str_addf(o, "\tif (pb_skipto_%u(&p, e, %u)) {" EOL, tagsz, tag);
     
     // hacks to support bootstapping descriptor.proto as 0 are useful values for these fields
-    if (!strcmp(t->name.c_str, ".google.protobuf.FieldDescriptorProto") && !pb_cmp(f->name, "oneof_index")) {
-        str_add(o, "\t\tm->oneof_index_set = true;" EOL);
+    if (!strcmp(t->name.c_str, ".google.protobuf.FieldDescriptorProto") && !pb_cmp(f->name, "oneof_index.val")) {
+        str_add(o, "\t\tm->oneof_index.set = true;" EOL);
     } else if (!strcmp(t->name.c_str, ".google.protobuf.FieldOptions") && !pb_cmp(f->name, "packed")) {
 		str_add(o, "\t\tm->packed_set = true;" EOL);
 	}
 
 
-    if (f->oneof_index_set) {
-		pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+    if (f->oneof_index.set) {
+		pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
 		str_add(o, "\t\tm->");
 		str_addstr(o, oneof);
 		str_add(o, "_type = ");

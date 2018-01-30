@@ -107,16 +107,21 @@ int main(int argc, char *argv[]) {    if (argc >= 3) {
 	size_t bufsz = 1 * 1024 * 1024;
 	char *obuf = (char*) malloc(bufsz);
 	pb_buf_t obj = { obuf, obuf + bufsz };
-    struct CodeGeneratorRequest req = {0};
-	if (pb_get_CodeGeneratorRequest(in.c_str, in.c_str + in.len, &obj, &req)) {
+#if 0
+    struct CodeGeneratorRequest sreq = {0};
+	struct CodeGeneratorRequest *req = &sreq;
+	if (pb_get_CodeGeneratorRequest(in.c_str, in.c_str + in.len, &obj, req)) {
 		fprintf(stderr, "protoc-gen-protorpc - failed to parse input\n");
 		return 2;
 	}
 
-	pb_term_CodeGeneratorRequest(&req);
+	pb_term_CodeGeneratorRequest(req);
+#else
+	struct CodeGeneratorRequest *req = (struct CodeGeneratorRequest*) pb_decode(&obj, &type_CodeGeneratorRequest, in.c_str, in.len);
+#endif
 
-    for (int i = 0; i < req.proto_file.len; i++) {
-        insert_file_types(req.proto_file.v[i]);
+    for (int i = 0; i < req->proto_file.len; i++) {
+        insert_file_types(req->proto_file.v[i]);
     }
 
     str_t hdr = STR_INIT;
@@ -124,11 +129,11 @@ int main(int argc, char *argv[]) {    if (argc >= 3) {
     str_t filename = STR_INIT;
 	bool decode_only = (getenv("DECODE_ONLY") != NULL);
 
-    for (int i = 0; i < req.file_to_generate.len; i++) {
-        const struct FileDescriptorProto *f = get_file_proto(&req, req.file_to_generate.v[i]);
+    for (int i = 0; i < req->file_to_generate.len; i++) {
+        const struct FileDescriptorProto *f = get_file_proto(req, req->file_to_generate.v[i]);
 
 		if (f == NULL) {
-			fprintf(stderr, "protoc-gen-protorpc - can't find %s\n", req.file_to_generate.v[i].c_str);
+			fprintf(stderr, "protoc-gen-protorpc - can't find %s\n", req->file_to_generate.v[i].c_str);
 			return 2;
 		}
 

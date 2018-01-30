@@ -1,6 +1,7 @@
 #pragma once
 
-#include "google/protobuf/compiler/plugin.proto.h"
+//#include "google/protobuf/compiler/plugin.proto.h"
+#include "google/protobuf/compiler/plugin.h"
 #include "../../protobuf.h"
 #include "../../char-array.h"
 #include "../str.h"
@@ -26,7 +27,6 @@ struct type {
     bool max_proto_size_calculated;
     bool defined;
 	bool declared;
-    const struct FieldDescriptorProto *map_key, *map_value;
     const struct FileDescriptorProto *file;
     unsigned default_packed : 1;
 	unsigned pod_message : 1;

@@ -22,15 +22,15 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 		str_add(o, "_type");
 	}
 
-	int32_t oneof_index = -1;
+	int oneof_index = -1;
 
 	for (int i = 0; i < t->msg->field.len; i++) {
 		const struct FieldDescriptorProto *f = t->msg->field.v[i];
 		// only want to check the first member of a oneof
-		if (f->oneof_index_set && oneof_index == f->oneof_index) {
+		if (f->oneof_index.set && oneof_index == (int) f->oneof_index.val) {
 			continue;
-		} else if (f->oneof_index_set) {
-			oneof_index = f->oneof_index;
+		} else if (f->oneof_index.set) {
+			oneof_index = f->oneof_index.val;
 		} else {
 			oneof_index = -1;
 		}
@@ -38,8 +38,8 @@ void do_nonzero(str_t *o, const struct type *t, bool define) {
 		str_set(&mbr, "m->");
 		str_addstr(&mbr, f->name);
 
-		if (f->oneof_index_set) {
-			pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+		if (f->oneof_index.set) {
+			pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
 			str_set(&mbr, "m->");
             str_addstr(&mbr, oneof);
             str_addch(&mbr, '.');
@@ -92,8 +92,8 @@ void do_print(str_t *o, const struct type *t, bool define) {
             str_set(&mbr, "m->");
             str_addstr(&mbr, f->name);
 
-            if (f->oneof_index_set) {
-                pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+            if (f->oneof_index.set) {
+                pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
                 str_add(o, "\tif(m->");
                 str_addstr(o, oneof);
                 str_add(o, "_type == ");
@@ -130,8 +130,8 @@ void do_print(str_t *o, const struct type *t, bool define) {
         str_set(&mbr, "m->");
         str_addstr(&mbr, f->name);
 
-        if (f->oneof_index_set) {
-            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+        if (f->oneof_index.set) {
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");

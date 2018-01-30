@@ -91,7 +91,6 @@ static const char *field_type(const struct FieldDescriptorProto *f, const struct
 }
 
 void do_typeinfo(str_t *o, const struct type *t, bool define) {
-
 	if (!define) {
 		str_addf(o, "extern const struct proto_message pb_type_%s;" EOL, t->proto_suffix.c_str);
 		return;
@@ -103,8 +102,8 @@ void do_typeinfo(str_t *o, const struct type *t, bool define) {
 		uint32_t tag = get_tag(f);
 		const char *type_enum = field_type(f, ft);
 		const char *field_name = f->name.c_str;
-		if (f->oneof_index_set) {
-			field_name = t->msg->oneof_decl.v[f->oneof_index]->name.c_str;
+		if (f->oneof_index.set) {
+			field_name = t->msg->oneof_decl.v[f->oneof_index.val]->name.c_str;
 		}
 		if (i) {
 			str_addf(o, "," EOL);
@@ -115,7 +114,7 @@ void do_typeinfo(str_t *o, const struct type *t, bool define) {
 		} else {
 			str_addf(o, "NULL,");
 		}
-		if (f->oneof_index_set) {
+		if (f->oneof_index.set) {
 			str_addf(o, " offsetof(%s, %s_type)}", t->c_type.c_str, field_name);
 		} else {
 			str_add(o, " -1}");

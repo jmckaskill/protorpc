@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\google\protobuf\compiler\plugin.c" />
     <ClCompile Include="decl.c" />
     <ClCompile Include="decode.c" />
     <ClCompile Include="encode.c" />
@@ -24,6 +25,7 @@
     <ClCompile Include="types.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\google\protobuf\compiler\plugin.h" />
     <ClInclude Include="protoc-gen-protorpc.h" />
   </ItemGroup>
   <ItemGroup>

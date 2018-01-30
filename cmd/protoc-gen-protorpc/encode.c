@@ -19,8 +19,8 @@ void do_maxsz(str_t *o, const struct type *t, bool define) {
         str_set(&mbr, "m->");
         str_addstr(&mbr, f->name);
 
-        if (f->oneof_index_set) {
-            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+        if (f->oneof_index.set) {
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");
@@ -92,8 +92,8 @@ void do_encode(str_t *o, const struct type *t, bool define) {
         str_set(&mbr, "m->");
         str_addstr(&mbr, f->name);
 
-        if (f->oneof_index_set) {
-            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+        if (f->oneof_index.set) {
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
             str_add(o, "\tif(m->");
             str_addstr(o, oneof);
             str_add(o, "_type == ");

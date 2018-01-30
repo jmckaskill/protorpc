@@ -95,8 +95,8 @@ void do_parse(str_t *o, const struct type *t, bool define) {
         str_add(o, "\t\t\t\tgoto unknown;" EOL);
         str_add(o, "\t\t\t}"  EOL);
 
-        if (f->oneof_index_set) {
-            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index]->name;
+        if (f->oneof_index.set) {
+            pb_string_t oneof = t->msg->oneof_decl.v[f->oneof_index.val]->name;
             str_add(o, "\t\t\tm->");
             str_addstr(o, oneof);
             str_add(o, "_type = ");
