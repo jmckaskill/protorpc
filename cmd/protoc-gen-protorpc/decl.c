@@ -72,7 +72,7 @@ size_t declare_oneof(str_t *o, const struct type *t, int i) {
         to_upper(o, t->proto_suffix.c_str);
         str_add(o, "_");
         to_upper(o, f->name.c_str);
-        str_add(o, ",");
+        str_addf(o, " = %u,", f->number);
         str_add(o, EOL);
         i++;
 	}
@@ -200,6 +200,7 @@ void do_struct_funcs(str_t *o, const struct type *t, bool define, bool decode_on
 
     do_decode(o, t, define);
 	do_term(o, t, define);
+	do_typeinfo(o, t, define);
 
 	if (!decode_only) {
 		do_encode(o, t, define);

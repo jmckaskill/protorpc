@@ -200,8 +200,12 @@ static enum pb_wiretype get_wire_type(const struct FieldDescriptorProto *f) {
 }
 
 uint32_t get_tag(const struct FieldDescriptorProto *f) {
-    enum pb_wiretype wire = get_wire_type(f);
-    uint32_t val = (uint32_t)wire | (f->number << 3);
+	enum pb_wiretype wire = get_wire_type(f);
+	return (uint32_t)wire | (f->number << 3);
+}
+
+uint32_t get_encoded_tag(const struct FieldDescriptorProto *f) {
+	uint32_t val = get_tag(f);
     char ret[4] = {0};
     pb_put_u32(ret, val);
     return *(uint32_t*) &ret[0];

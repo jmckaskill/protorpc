@@ -87,7 +87,7 @@ void do_encode(str_t *o, const struct type *t, bool define) {
         const struct FieldDescriptorProto *f = t->msg->field.v[i];
         const struct type *ft = get_field_type(f);
         uint32_t tagsz = get_tag_size(f);
-        uint32_t tag = get_tag(f);
+        uint32_t tag = get_encoded_tag(f);
 
         str_set(&mbr, "m->");
         str_addstr(&mbr, f->name);

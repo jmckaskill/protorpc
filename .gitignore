@@ -12,3 +12,4 @@
 /Release
 /Debug
 /cmd/rpc-file-compiler/rpc-test-data.c
+.vscode

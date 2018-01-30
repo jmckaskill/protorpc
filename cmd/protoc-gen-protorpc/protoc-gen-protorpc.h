@@ -48,6 +48,7 @@ struct type *get_input_type(const struct MethodDescriptorProto *m);
 struct type *get_output_type(const struct MethodDescriptorProto *m);
 uint32_t get_tag_size(const struct FieldDescriptorProto *f);
 uint32_t get_tag(const struct FieldDescriptorProto *f);
+uint32_t get_encoded_tag(const struct FieldDescriptorProto *f);
 void get_proto_cast(str_t *out, const struct FieldDescriptorProto* f, int array_type, int value_type);
 void to_upper(str_t *out, const char *s);
 bool is_field_packed(const struct type *t, const struct FieldDescriptorProto *ft);
@@ -70,5 +71,6 @@ void do_encode(str_t *out, const struct type *t, bool define);
 void do_server(str_t *out, const struct type *t, bool define);
 void do_client(str_t *out, const struct type *t, bool define);
 void do_nonzero(str_t *o, const struct type *t, bool define);
+void do_typeinfo(str_t *o, const struct type *t, bool define);
 
 int exec_protoc(char *my_exe, char *protoc_exe, char *filename);

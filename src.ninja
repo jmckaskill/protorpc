@@ -9,6 +9,7 @@ build $obj/protobuf/print.o: cc $SRC/protobuf/print.c
 build $obj/protobuf/put.o: cc $SRC/protobuf/put.c
 build $obj/protobuf/test.proto.o: cc $SRC/protobuf/test.proto.c
 build $obj/protobuf/protobuf_test.o: cxx $SRC/protobuf/protobuf_test.cpp || $SRC/protobuf/test.proto.h
+build $obj/protobuf/decode.o: cc $SRC/protobuf/compact-decode.c
 
 build $obj/google/descriptor.proto.o: cc $SRC/google/protobuf/descriptor.proto.c
 build $obj/google/plugin.proto.o: cc $SRC/google/protobuf/compiler/plugin.proto.c
@@ -26,6 +27,7 @@ build $obj/protoc-gen-protorpc/encode.o: cc $SRC/cmd/protoc-gen-protorpc/encode.
 build $obj/protoc-gen-protorpc/server.o: cc $SRC/cmd/protoc-gen-protorpc/server.c
 build $obj/protoc-gen-protorpc/types.o: cc $SRC/cmd/protoc-gen-protorpc/types.c
 build $obj/protoc-gen-protorpc/term.o: cc $SRC/cmd/protoc-gen-protorpc/term.c
+build $obj/protoc-gen-protorpc/typeinfo.o: cc $SRC/cmd/protoc-gen-protorpc/typeinfo.c
 
 build $obj/zlib/adler32.o: cc $SRC/zlib/adler32.c
 build $obj/zlib/compress.o: cc $SRC/zlib/compress.c
@@ -72,6 +74,7 @@ build $lib/protorpc.lib: lib $
  $obj/protobuf/print.o $
  $obj/protobuf/put.o $
  $obj/protorpc/rpc.o $
+ $obj/protobuf/decode.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protorpc.lib $
@@ -87,6 +90,7 @@ build $bin/protoc-gen-protorpc.exe: clink $
  $obj/protoc-gen-protorpc/server.o $
  $obj/protoc-gen-protorpc/types.o $
  $obj/protoc-gen-protorpc/term.o $
+ $obj/protoc-gen-protorpc/typeinfo.o $
  $obj/str.o $
  $obj/hash.o $
  $obj/perfect-hash.o $

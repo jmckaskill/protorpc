@@ -1,11 +1,14 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <protobuf.h>
 
-struct pb_buf_t {
+#if 0
+typedef struct {
 	uint8_t *next;
 	uint8_t *end;
-};
+} pb_buf_t;
 
 // Messages are of the form
 // struct my_message {
@@ -20,12 +23,13 @@ union pb_msg {
 typedef struct {
 	int len;
 	const uint8_t *p;
-} pb_bytes;
+} pb_bytes_t;
 
 typedef struct {
 	int len;
 	const char *c_str;
-} pb_string;
+} pb_string_t;
+#endif
 
 // lists are of the form
 // struct {int len; <type> const *v;} field;
@@ -49,8 +53,8 @@ typedef struct {int len; uint64_t const *v;} pb_u64_list;
 typedef struct {int len; int64_t const *v;} pb_i64_list;
 typedef struct {int len; float const *v;} pb_float_list;
 typedef struct {int len; double const *v;} pb_double_list;
-typedef struct {int len; pb_string const *v;} pb_string_list;
-typedef struct {int len; pb_bytes const *v;} pb_bytes_list;
+typedef struct {int len; pb_string_t const *v;} pb_string_list;
+typedef struct {int len; pb_bytes_t const *v;} pb_bytes_list;
 
 enum proto_field_type {
 	PROTO_BOOL,
@@ -58,10 +62,12 @@ enum proto_field_type {
 	PROTO_I32,
 	PROTO_S32,
 	PROTO_F32,
+	PROTO_SF32,
 	PROTO_U64,
 	PROTO_I64,
 	PROTO_S64,
 	PROTO_F64,
+	PROTO_SF64,
 	PROTO_FLOAT,
 	PROTO_DOUBLE,
 	PROTO_STRING,
@@ -74,10 +80,12 @@ enum proto_field_type {
 	PROTO_LIST_I32,
 	PROTO_LIST_S32,
 	PROTO_LIST_F32,
+	PROTO_LIST_SF32,
 	PROTO_LIST_U64,
 	PROTO_LIST_I64,
 	PROTO_LIST_S64,
 	PROTO_LIST_F64,
+	PROTO_LIST_SF64,
 	PROTO_LIST_FLOAT,
 	PROTO_LIST_DOUBLE,
 	PROTO_LIST_STRING,
@@ -92,6 +100,7 @@ struct proto_field {
 	size_t offset;
 	unsigned tag;
 	const struct proto_message *message;
+	int oneof;
 };
 
 struct proto_message {
@@ -100,6 +109,13 @@ struct proto_message {
 	const struct proto_field *fields;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void *pb_decode(pb_buf_t *obj, const struct proto_message *type, const char *data, int sz);
+void pb_terminate(void *obj, const struct proto_message *type);
 
-
+#ifdef __cplusplus
+}
+#endif

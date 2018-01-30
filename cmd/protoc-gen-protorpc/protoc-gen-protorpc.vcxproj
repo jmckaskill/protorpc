@@ -20,6 +20,7 @@
     <ClCompile Include="protoc-gen-protorpc.c" />
     <ClCompile Include="server.c" />
     <ClCompile Include="term.c" />
+    <ClCompile Include="typeinfo.c" />
     <ClCompile Include="types.c" />
   </ItemGroup>
   <ItemGroup>

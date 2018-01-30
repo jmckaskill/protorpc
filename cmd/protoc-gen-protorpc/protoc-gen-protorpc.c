@@ -8,6 +8,7 @@
 static void write_header(str_t *o, const struct FileDescriptorProto *f, bool decode_only) {
     str_add(o, "#pragma once" EOL);
     str_add(o, "#include <protobuf.h>" EOL);
+	str_add(o, "#include <compact.h>" EOL);
 	if (!decode_only) {
 		str_add(o, "#include <protorpc.h>" EOL);
 	}

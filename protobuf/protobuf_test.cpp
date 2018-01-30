@@ -77,8 +77,8 @@ static const uint8_t test_proto[] = {
 	// msg = {b = true}
 	TAG2_LO(17, LEN), TAG2_HI(17), 2, TAG1(1, VAR), 1,
 
-	// pod = {u = 34}
-	TAG2_LO(18, LEN), TAG2_HI(18), 2, TAG1(1, VAR), 34,
+	// pod = {i = -12}, -12 zigzag = 23
+	TAG2_LO(18, LEN), TAG2_HI(18), 2, TAG1(2, VAR), 23,
 
 	// rb = [false,true,false]
 	TAG2_LO(21, LEN), TAG2_HI(21), 3, 0, 1, 0,
@@ -133,7 +133,8 @@ static const uint8_t test_proto[] = {
 	// ren = [ENUM_C,ENUM_B,ENUM_A] = [2,1,0]
 	TAG2_LO(216, LEN), TAG2_HI(216), 3, 2, 1, 0,
 
-	// rmsg = [{u64 = 10234}]; 10234 = 0x27FA = 0x4F,0x7A
+	// rmsg = [{b = true},{u64 = 10234}]; 10234 = 0x27FA = 0x4F,0x7A
+	TAG2_LO(217, LEN), TAG2_HI(217), 2, TAG1(1, VAR), 1,
 	TAG2_LO(217, LEN), TAG2_HI(217), 3, TAG1(10, VAR), 0xFA, 0x4F,
 
 	// rpod = [{u = 1},{i = -1}]
@@ -178,8 +179,8 @@ static const char test_json[] =
 		"\"msg\":{"
 			"\"b\":true"
 		"},"
-		"\"pod\":{\"u\":34},"
-		"\"rmsg\":[{\"u64\":\"10234\"}],"
+		"\"pod\":{\"i\":-12},"
+		"\"rmsg\":[{\"b\":true},{\"u64\":\"10234\"}],"
 		"\"rpod\":[{\"u\":1},{\"i\":-1}]"
 	"}\n";
 
@@ -282,9 +283,11 @@ static const char test_pretty[] =
 			"\t\t\"b\": true\n"
 		"\t},\n"
 		"\t\"pod\": {\n"
-			"\t\t\"u\": 34\n"
+			"\t\t\"i\": -12\n"
 		"\t},\n"
 		"\t\"rmsg\": [{\n"
+				"\t\t\t\"b\": true\n"
+			"\t\t},{\n"
 				"\t\t\t\"u64\": \"10234\"\n"
 			"\t\t}\n"
 		"\t],\n"
@@ -320,11 +323,11 @@ static void setup_message(struct TestMessage *m) {
 	static struct TestMessage msg3 = {};
 	msg3.u64 = 10234;
 
-	static const struct TestMessage *rmsg[1] = { &msg3 };
+	static const struct TestMessage *rmsg[2] = { &msg2, &msg3 };
 
 	static struct TestPod pod = {};
-	pod.foo_type = TESTPOD_U;
-	pod.foo.u = 34;
+	pod.foo_type = TESTPOD_I;
+	pod.foo.i = -12;
 
 	static struct TestPod rpod[2] = {};
 	rpod[0].foo_type = TESTPOD_U;
@@ -384,7 +387,7 @@ static void setup_message(struct TestMessage *m) {
 	m->ren.v = ren;
 	m->msg = &msg2;
 	m->pod = pod;
-	m->rmsg.len = 1;
+	m->rmsg.len = 2;
 	m->rmsg.v = rmsg;
 	m->rpod.len = 2;
 	m->rpod.v = rpod;
@@ -472,10 +475,11 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(ENUM_A, m->ren.v[2]);
 	ASSERT_TRUE(m->msg != NULL);
 	EXPECT_EQ(true, m->msg->b);
-	EXPECT_EQ(TESTPOD_U, m->pod.foo_type);
-	EXPECT_EQ(34, m->pod.foo.u);
-	EXPECT_EQ(1, m->rmsg.len);
-	EXPECT_EQ(10234, m->rmsg.v[0]->u64);
+	EXPECT_EQ(TESTPOD_I, m->pod.foo_type);
+	EXPECT_EQ(-12, m->pod.foo.i);
+	EXPECT_EQ(2, m->rmsg.len);
+	EXPECT_EQ(true, m->rmsg.v[0]->b);
+	EXPECT_EQ(10234, m->rmsg.v[1]->u64);
 	EXPECT_EQ(2, m->rpod.len);
 	EXPECT_EQ(TESTPOD_U, m->rpod.v[0].foo_type);
 	EXPECT_EQ(1, m->rpod.v[0].foo.u);
@@ -606,16 +610,22 @@ TEST(protobuf, encode) {
 }
 
 TEST(protobuf, decode) {
-	struct TestMessage m = {};
 	char obuf[4096];
 	pb_buf_t obj = PB_INIT_BUF(obuf);
 
 	char *buf = (char*) malloc(sizeof(test_proto) + 1);
 	memcpy(buf, test_proto, sizeof(test_proto));
 
+#if 0
+	struct TestMessage m = {};
 	EXPECT_EQ(0, pb_get_TestMessage(buf, buf + sizeof(test_proto), &obj, &m));
 	pb_term_TestMessage(&m);
 	check_message(&m);
+#else
+	struct TestMessage *m = (struct TestMessage*) pb_decode(&obj, &pb_type_TestMessage, buf, sizeof(test_proto));
+	pb_terminate(m, &pb_type_TestMessage);
+	check_message(m);
+#endif
 
 	free(buf);
 }

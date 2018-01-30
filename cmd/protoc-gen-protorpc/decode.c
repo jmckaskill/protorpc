@@ -3,7 +3,7 @@
 static void decode_field(str_t *o, const struct type *t, const struct FieldDescriptorProto* f, uint32_t* tagsection) {
     const struct type *ft = get_field_type(f);
     uint32_t tagsz = get_tag_size(f);
-    uint32_t tag = get_tag(f);
+    uint32_t tag = get_encoded_tag(f);
 
     static str_t mbr = STR_INIT;
     str_set(&mbr, "m->");

@@ -1594,6 +1594,67 @@ void pb_term_TestMessage(struct TestMessage *m) {
 		pb_term_TestMessage_MpodEntry((struct TestMessage_MpodEntry*) &m->mpod.v[i]);
 	}
 }
+static const struct proto_field fields_TestMessage[] = {
+	{PROTO_BOOL, offsetof(struct TestMessage, b), 8, NULL, -1},
+	{PROTO_I32, offsetof(struct TestMessage, i32), 16, NULL, -1},
+	{PROTO_S32, offsetof(struct TestMessage, s32), 24, NULL, -1},
+	{PROTO_SF32, offsetof(struct TestMessage, sf32), 37, NULL, -1},
+	{PROTO_U32, offsetof(struct TestMessage, u32), 40, NULL, -1},
+	{PROTO_F32, offsetof(struct TestMessage, f32), 53, NULL, -1},
+	{PROTO_I64, offsetof(struct TestMessage, i64), 56, NULL, -1},
+	{PROTO_SF64, offsetof(struct TestMessage, sf64), 65, NULL, -1},
+	{PROTO_S64, offsetof(struct TestMessage, s64), 72, NULL, -1},
+	{PROTO_U64, offsetof(struct TestMessage, u64), 80, NULL, -1},
+	{PROTO_F64, offsetof(struct TestMessage, f64), 89, NULL, -1},
+	{PROTO_FLOAT, offsetof(struct TestMessage, f), 101, NULL, -1},
+	{PROTO_DOUBLE, offsetof(struct TestMessage, d), 105, NULL, -1},
+	{PROTO_BYTES, offsetof(struct TestMessage, by), 114, NULL, -1},
+	{PROTO_STRING, offsetof(struct TestMessage, str), 122, NULL, -1},
+	{PROTO_ENUM, offsetof(struct TestMessage, en), 128, NULL, -1},
+	{PROTO_MESSAGE, offsetof(struct TestMessage, msg), 138, &pb_type_TestMessage, -1},
+	{PROTO_POD, offsetof(struct TestMessage, pod), 146, &pb_type_TestPod, -1},
+	{PROTO_LIST_BOOL, offsetof(struct TestMessage, rb), 170, NULL, -1},
+	{PROTO_LIST_I32, offsetof(struct TestMessage, ri32), 178, NULL, -1},
+	{PROTO_LIST_S32, offsetof(struct TestMessage, rs32), 186, NULL, -1},
+	{PROTO_LIST_SF32, offsetof(struct TestMessage, rsf32), 194, NULL, -1},
+	{PROTO_LIST_U32, offsetof(struct TestMessage, ru32), 202, NULL, -1},
+	{PROTO_LIST_F32, offsetof(struct TestMessage, rf32), 210, NULL, -1},
+	{PROTO_LIST_I64, offsetof(struct TestMessage, ri64), 218, NULL, -1},
+	{PROTO_LIST_SF64, offsetof(struct TestMessage, rsf64), 226, NULL, -1},
+	{PROTO_LIST_S64, offsetof(struct TestMessage, rs64), 234, NULL, -1},
+	{PROTO_LIST_U64, offsetof(struct TestMessage, ru64), 1682, NULL, -1},
+	{PROTO_LIST_F64, offsetof(struct TestMessage, rf64), 1690, NULL, -1},
+	{PROTO_LIST_FLOAT, offsetof(struct TestMessage, rf), 1698, NULL, -1},
+	{PROTO_LIST_DOUBLE, offsetof(struct TestMessage, rd), 1706, NULL, -1},
+	{PROTO_LIST_BYTES, offsetof(struct TestMessage, rby), 1714, NULL, -1},
+	{PROTO_LIST_STRING, offsetof(struct TestMessage, rstr), 1722, NULL, -1},
+	{PROTO_LIST_ENUM, offsetof(struct TestMessage, ren), 1730, NULL, -1},
+	{PROTO_LIST_MESSAGE, offsetof(struct TestMessage, rmsg), 1738, &pb_type_TestMessage, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, rpod), 1746, &pb_type_TestPod, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mb), 1770, &pb_type_TestMessage_MbEntry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mi32), 1778, &pb_type_TestMessage_Mi32Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, ms32), 1786, &pb_type_TestMessage_Ms32Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, msf32), 1794, &pb_type_TestMessage_Msf32Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mu32), 1802, &pb_type_TestMessage_Mu32Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mf32), 1810, &pb_type_TestMessage_Mf32Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mi64), 1818, &pb_type_TestMessage_Mi64Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, msf64), 1826, &pb_type_TestMessage_Msf64Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, ms64), 1834, &pb_type_TestMessage_Ms64Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mu64), 17682, &pb_type_TestMessage_Mu64Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mf64), 17690, &pb_type_TestMessage_Mf64Entry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mf), 17698, &pb_type_TestMessage_MfEntry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, md), 17706, &pb_type_TestMessage_MdEntry, -1},
+	{PROTO_LIST_MESSAGE, offsetof(struct TestMessage, mby), 17714, &pb_type_TestMessage_MbyEntry, -1},
+	{PROTO_LIST_MESSAGE, offsetof(struct TestMessage, mstr), 17722, &pb_type_TestMessage_MstrEntry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, men), 17730, &pb_type_TestMessage_MenEntry, -1},
+	{PROTO_LIST_MESSAGE, offsetof(struct TestMessage, mmsg), 17738, &pb_type_TestMessage_MmsgEntry, -1},
+	{PROTO_LIST_POD, offsetof(struct TestMessage, mpod), 17746, &pb_type_TestMessage_MpodEntry, -1}
+};
+const struct proto_message pb_type_TestMessage = {
+	sizeof(struct TestMessage),
+	sizeof(fields_TestMessage) / sizeof(struct proto_field),
+	fields_TestMessage
+};
 char *pb_encode_TestMessage(char *p, struct TestMessage const *m) {
 	if (m->b) {
 		p = pb_put_tag_1(p, 8);
@@ -2148,6 +2209,15 @@ int pb_get_TestMessage_MbEntry(const char *p, const char *e, struct TestMessage_
 }
 void pb_term_TestMessage_MbEntry(struct TestMessage_MbEntry *m) {
 }
+static const struct proto_field fields_TestMessage_MbEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MbEntry, key), 8, NULL, -1},
+	{PROTO_BOOL, offsetof(struct TestMessage_MbEntry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_MbEntry = {
+	sizeof(struct TestMessage_MbEntry),
+	sizeof(fields_TestMessage_MbEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MbEntry
+};
 char *pb_encode_TestMessage_MbEntry(char *p, struct TestMessage_MbEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2233,6 +2303,15 @@ int pb_get_TestMessage_Mu32Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Mu32Entry(struct TestMessage_Mu32Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Mu32Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Mu32Entry, key), 8, NULL, -1},
+	{PROTO_U32, offsetof(struct TestMessage_Mu32Entry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Mu32Entry = {
+	sizeof(struct TestMessage_Mu32Entry),
+	sizeof(fields_TestMessage_Mu32Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Mu32Entry
+};
 char *pb_encode_TestMessage_Mu32Entry(char *p, struct TestMessage_Mu32Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2318,6 +2397,15 @@ int pb_get_TestMessage_Mu64Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Mu64Entry(struct TestMessage_Mu64Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Mu64Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Mu64Entry, key), 8, NULL, -1},
+	{PROTO_U64, offsetof(struct TestMessage_Mu64Entry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Mu64Entry = {
+	sizeof(struct TestMessage_Mu64Entry),
+	sizeof(fields_TestMessage_Mu64Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Mu64Entry
+};
 char *pb_encode_TestMessage_Mu64Entry(char *p, struct TestMessage_Mu64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2403,6 +2491,15 @@ int pb_get_TestMessage_Mi32Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Mi32Entry(struct TestMessage_Mi32Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Mi32Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Mi32Entry, key), 8, NULL, -1},
+	{PROTO_I32, offsetof(struct TestMessage_Mi32Entry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Mi32Entry = {
+	sizeof(struct TestMessage_Mi32Entry),
+	sizeof(fields_TestMessage_Mi32Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Mi32Entry
+};
 char *pb_encode_TestMessage_Mi32Entry(char *p, struct TestMessage_Mi32Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2488,6 +2585,15 @@ int pb_get_TestMessage_Mi64Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Mi64Entry(struct TestMessage_Mi64Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Mi64Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Mi64Entry, key), 8, NULL, -1},
+	{PROTO_I64, offsetof(struct TestMessage_Mi64Entry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Mi64Entry = {
+	sizeof(struct TestMessage_Mi64Entry),
+	sizeof(fields_TestMessage_Mi64Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Mi64Entry
+};
 char *pb_encode_TestMessage_Mi64Entry(char *p, struct TestMessage_Mi64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2573,6 +2679,15 @@ int pb_get_TestMessage_Ms32Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Ms32Entry(struct TestMessage_Ms32Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Ms32Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Ms32Entry, key), 8, NULL, -1},
+	{PROTO_S32, offsetof(struct TestMessage_Ms32Entry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Ms32Entry = {
+	sizeof(struct TestMessage_Ms32Entry),
+	sizeof(fields_TestMessage_Ms32Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Ms32Entry
+};
 char *pb_encode_TestMessage_Ms32Entry(char *p, struct TestMessage_Ms32Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2658,6 +2773,15 @@ int pb_get_TestMessage_Ms64Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Ms64Entry(struct TestMessage_Ms64Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Ms64Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Ms64Entry, key), 8, NULL, -1},
+	{PROTO_S64, offsetof(struct TestMessage_Ms64Entry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Ms64Entry = {
+	sizeof(struct TestMessage_Ms64Entry),
+	sizeof(fields_TestMessage_Ms64Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Ms64Entry
+};
 char *pb_encode_TestMessage_Ms64Entry(char *p, struct TestMessage_Ms64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2743,6 +2867,15 @@ int pb_get_TestMessage_Mf32Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Mf32Entry(struct TestMessage_Mf32Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Mf32Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Mf32Entry, key), 8, NULL, -1},
+	{PROTO_F32, offsetof(struct TestMessage_Mf32Entry, value), 21, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Mf32Entry = {
+	sizeof(struct TestMessage_Mf32Entry),
+	sizeof(fields_TestMessage_Mf32Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Mf32Entry
+};
 char *pb_encode_TestMessage_Mf32Entry(char *p, struct TestMessage_Mf32Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2828,6 +2961,15 @@ int pb_get_TestMessage_Mf64Entry(const char *p, const char *e, struct TestMessag
 }
 void pb_term_TestMessage_Mf64Entry(struct TestMessage_Mf64Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Mf64Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Mf64Entry, key), 8, NULL, -1},
+	{PROTO_F64, offsetof(struct TestMessage_Mf64Entry, value), 17, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Mf64Entry = {
+	sizeof(struct TestMessage_Mf64Entry),
+	sizeof(fields_TestMessage_Mf64Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Mf64Entry
+};
 char *pb_encode_TestMessage_Mf64Entry(char *p, struct TestMessage_Mf64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2913,6 +3055,15 @@ int pb_get_TestMessage_Msf32Entry(const char *p, const char *e, struct TestMessa
 }
 void pb_term_TestMessage_Msf32Entry(struct TestMessage_Msf32Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Msf32Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Msf32Entry, key), 8, NULL, -1},
+	{PROTO_SF32, offsetof(struct TestMessage_Msf32Entry, value), 21, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Msf32Entry = {
+	sizeof(struct TestMessage_Msf32Entry),
+	sizeof(fields_TestMessage_Msf32Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Msf32Entry
+};
 char *pb_encode_TestMessage_Msf32Entry(char *p, struct TestMessage_Msf32Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -2998,6 +3149,15 @@ int pb_get_TestMessage_Msf64Entry(const char *p, const char *e, struct TestMessa
 }
 void pb_term_TestMessage_Msf64Entry(struct TestMessage_Msf64Entry *m) {
 }
+static const struct proto_field fields_TestMessage_Msf64Entry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_Msf64Entry, key), 8, NULL, -1},
+	{PROTO_SF64, offsetof(struct TestMessage_Msf64Entry, value), 17, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_Msf64Entry = {
+	sizeof(struct TestMessage_Msf64Entry),
+	sizeof(fields_TestMessage_Msf64Entry) / sizeof(struct proto_field),
+	fields_TestMessage_Msf64Entry
+};
 char *pb_encode_TestMessage_Msf64Entry(char *p, struct TestMessage_Msf64Entry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3083,6 +3243,15 @@ int pb_get_TestMessage_MfEntry(const char *p, const char *e, struct TestMessage_
 }
 void pb_term_TestMessage_MfEntry(struct TestMessage_MfEntry *m) {
 }
+static const struct proto_field fields_TestMessage_MfEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MfEntry, key), 8, NULL, -1},
+	{PROTO_FLOAT, offsetof(struct TestMessage_MfEntry, value), 21, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_MfEntry = {
+	sizeof(struct TestMessage_MfEntry),
+	sizeof(fields_TestMessage_MfEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MfEntry
+};
 char *pb_encode_TestMessage_MfEntry(char *p, struct TestMessage_MfEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3168,6 +3337,15 @@ int pb_get_TestMessage_MdEntry(const char *p, const char *e, struct TestMessage_
 }
 void pb_term_TestMessage_MdEntry(struct TestMessage_MdEntry *m) {
 }
+static const struct proto_field fields_TestMessage_MdEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MdEntry, key), 8, NULL, -1},
+	{PROTO_DOUBLE, offsetof(struct TestMessage_MdEntry, value), 17, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_MdEntry = {
+	sizeof(struct TestMessage_MdEntry),
+	sizeof(fields_TestMessage_MdEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MdEntry
+};
 char *pb_encode_TestMessage_MdEntry(char *p, struct TestMessage_MdEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3255,6 +3433,15 @@ void pb_term_TestMessage_MbyEntry(struct TestMessage_MbyEntry *m) {
 		m->value.p = (uint8_t*) "";
 	}
 }
+static const struct proto_field fields_TestMessage_MbyEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MbyEntry, key), 8, NULL, -1},
+	{PROTO_BYTES, offsetof(struct TestMessage_MbyEntry, value), 18, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_MbyEntry = {
+	sizeof(struct TestMessage_MbyEntry),
+	sizeof(fields_TestMessage_MbyEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MbyEntry
+};
 char *pb_encode_TestMessage_MbyEntry(char *p, struct TestMessage_MbyEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3342,6 +3529,15 @@ void pb_term_TestMessage_MstrEntry(struct TestMessage_MstrEntry *m) {
 		m->value.c_str = "";
 	}
 }
+static const struct proto_field fields_TestMessage_MstrEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MstrEntry, key), 8, NULL, -1},
+	{PROTO_STRING, offsetof(struct TestMessage_MstrEntry, value), 18, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_MstrEntry = {
+	sizeof(struct TestMessage_MstrEntry),
+	sizeof(fields_TestMessage_MstrEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MstrEntry
+};
 char *pb_encode_TestMessage_MstrEntry(char *p, struct TestMessage_MstrEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3427,6 +3623,15 @@ int pb_get_TestMessage_MenEntry(const char *p, const char *e, struct TestMessage
 }
 void pb_term_TestMessage_MenEntry(struct TestMessage_MenEntry *m) {
 }
+static const struct proto_field fields_TestMessage_MenEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MenEntry, key), 8, NULL, -1},
+	{PROTO_ENUM, offsetof(struct TestMessage_MenEntry, value), 16, NULL, -1}
+};
+const struct proto_message pb_type_TestMessage_MenEntry = {
+	sizeof(struct TestMessage_MenEntry),
+	sizeof(fields_TestMessage_MenEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MenEntry
+};
 char *pb_encode_TestMessage_MenEntry(char *p, struct TestMessage_MenEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3519,6 +3724,15 @@ void pb_term_TestMessage_MmsgEntry(struct TestMessage_MmsgEntry *m) {
 		pb_term_TestMessage((struct TestMessage*) m->value);
 	}
 }
+static const struct proto_field fields_TestMessage_MmsgEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MmsgEntry, key), 8, NULL, -1},
+	{PROTO_MESSAGE, offsetof(struct TestMessage_MmsgEntry, value), 18, &pb_type_TestMessage, -1}
+};
+const struct proto_message pb_type_TestMessage_MmsgEntry = {
+	sizeof(struct TestMessage_MmsgEntry),
+	sizeof(fields_TestMessage_MmsgEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MmsgEntry
+};
 char *pb_encode_TestMessage_MmsgEntry(char *p, struct TestMessage_MmsgEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3612,6 +3826,15 @@ int pb_get_TestMessage_MpodEntry(const char *p, const char *e, struct TestMessag
 void pb_term_TestMessage_MpodEntry(struct TestMessage_MpodEntry *m) {
 	pb_term_TestPod((struct TestPod*) &m->value);
 }
+static const struct proto_field fields_TestMessage_MpodEntry[] = {
+	{PROTO_U32, offsetof(struct TestMessage_MpodEntry, key), 8, NULL, -1},
+	{PROTO_POD, offsetof(struct TestMessage_MpodEntry, value), 18, &pb_type_TestPod, -1}
+};
+const struct proto_message pb_type_TestMessage_MpodEntry = {
+	sizeof(struct TestMessage_MpodEntry),
+	sizeof(fields_TestMessage_MpodEntry) / sizeof(struct proto_field),
+	fields_TestMessage_MpodEntry
+};
 char *pb_encode_TestMessage_MpodEntry(char *p, struct TestMessage_MpodEntry const *m) {
 	if (m->key) {
 		p = pb_put_tag_1(p, 8);
@@ -3703,6 +3926,15 @@ int pb_get_TestPod(const char *p, const char *e, struct TestPod *m) {
 }
 void pb_term_TestPod(struct TestPod *m) {
 }
+static const struct proto_field fields_TestPod[] = {
+	{PROTO_U32, offsetof(struct TestPod, foo), 8, NULL, offsetof(struct TestPod, foo_type)},
+	{PROTO_S32, offsetof(struct TestPod, foo), 16, NULL, offsetof(struct TestPod, foo_type)}
+};
+const struct proto_message pb_type_TestPod = {
+	sizeof(struct TestPod),
+	sizeof(fields_TestPod) / sizeof(struct proto_field),
+	fields_TestPod
+};
 char *pb_encode_TestPod(char *p, struct TestPod const *m) {
 	if(m->foo_type == TESTPOD_U) {
 		p = pb_put_tag_1(p, 8);
