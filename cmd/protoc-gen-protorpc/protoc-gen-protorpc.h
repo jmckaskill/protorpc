@@ -72,5 +72,6 @@ void do_server(str_t *out, const struct type *t, bool define);
 void do_client(str_t *out, const struct type *t, bool define);
 void do_nonzero(str_t *o, const struct type *t, bool define);
 void do_typeinfo(str_t *o, const struct type *t, bool define);
+void do_enuminfo(str_t *o, const struct type *t, bool define);
 
 int exec_protoc(char *my_exe, char *protoc_exe, char *filename);

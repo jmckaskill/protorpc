@@ -253,6 +253,7 @@ extern const struct proto_message pb_type_TestPod;
 
 char *pb_print_TestEnum(char *p, enum TestEnum v);
 char *pb_parse_TestEnum(char *p, enum TestEnum *v);
+extern const struct proto_enum pb_enum_TestEnum;
 
 struct TestService {
 	int (*Test)(struct TestService*, pb_buf_t *obj, struct TestMessage const *in, struct TestMessage *out);

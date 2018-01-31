@@ -177,6 +177,7 @@ void do_enum_funcs(str_t *o, const struct type *t, bool define) {
     str_add(o, EOL);
     do_print_enum(o, t, define);
     do_parse_enum(o, t, define);
+	do_enuminfo(o, t, define);
 }
 
 static int cmp_field_number(const void *a, const void *b) {

@@ -111,14 +111,17 @@ void do_typeinfo(str_t *o, const struct type *t, bool define) {
 		str_addf(o, "\t{%s, offsetof(%s, %s), %u, ", type_enum, t->c_type.c_str, field_name, tag);
 		if (ft->msg) {
 			str_addf(o, "&pb_type_%s,", ft->proto_suffix.c_str);
+		} else if (f->type == TYPE_ENUM) {
+			str_addf(o, "&pb_enum_%s,", ft->json_suffix.c_str);
 		} else {
 			str_addf(o, "NULL,");
 		}
 		if (f->oneof_index.set) {
-			str_addf(o, " offsetof(%s, %s_type)}", t->c_type.c_str, field_name);
+			str_addf(o, " offsetof(%s, %s_type),", t->c_type.c_str, field_name);
 		} else {
-			str_add(o, " -1}");
+			str_add(o, " -1,");
 		}
+		str_addf(o, "\"%s\"}", f->json_name.c_str);
 	}
 	str_addf(o, EOL "};" EOL);
 
@@ -128,3 +131,25 @@ void do_typeinfo(str_t *o, const struct type *t, bool define) {
 	str_addf(o, "\tfields_%s" EOL, t->proto_suffix.c_str);
 	str_addf(o, "};" EOL);
 }
+
+void do_enuminfo(str_t *o, const struct type *t, bool define) {
+	if (!define) {
+		str_addf(o, "extern const struct proto_enum pb_enum_%s;" EOL, t->json_suffix.c_str);
+		return;
+	}
+	str_addf(o, "static const struct proto_enum_value values_%s[] = {" EOL, t->json_suffix.c_str);
+	for (int i = 0; i < t->en->value.len; i++) {
+		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
+		if (i) {
+			str_addf(o, "," EOL);
+		}
+		str_addf(o, "\t{%d, \"%s\"}", v->number, v->name.c_str);
+	}
+	str_add(o, EOL "};" EOL);
+	str_addf(o, "const struct proto_enum pb_enum_%s = {" EOL, t->json_suffix.c_str);
+	str_addf(o, "\tsizeof(values_%s) / sizeof(struct proto_enum_value)," EOL, t->json_suffix.c_str);
+	str_addf(o, "\tvalues_%s" EOL, t->json_suffix.c_str);
+	str_addf(o, "};" EOL);
+}
+
+

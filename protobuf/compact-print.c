@@ -93,9 +93,9 @@ static void print_enum(struct out *o, int value, const struct proto_enum *en) {
 				return;
 			}
 			*(o->next++) = '"';
-			*(o->next++) = '"';
 			memcpy(o->next, v->name, vsz);
 			o->next += vsz;
+			*(o->next++) = '"';
 			*(o->next++) = ',';
 			return;
 		}
@@ -227,6 +227,17 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 
 	for (;;) {
 		while (f < end) {
+			if (f->oneof >= 0) {
+				unsigned oneof = *(unsigned*)(msg + f->oneof);
+
+				// bottom three bits of the tag is the wire type
+				// type enum just have the field number
+				if (oneof != (f->tag >> 3)) {
+					f++;
+					continue;
+				}
+			}
+
 			switch (f->type) {
 			case PROTO_BOOL:
 				if (*(bool*)(msg + f->offset)) {
@@ -316,7 +327,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				int val = *(int*)(msg + f->offset);
 				if (val) {
 					print_key(&out, f->json_name);
-					print_enum(&out, val, (struct proto_enum*) f->type);
+					print_enum(&out, val, (struct proto_enum*) f->proto_type);
 				}
 				break;
 			}
@@ -434,7 +445,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				if (list->len) {
 					start_array(&out, f->json_name);
 					for (int i = 0; i < list->len; i++) {
-						print_enum(&out, list->v[i], (struct proto_enum*) f->type);
+						print_enum(&out, list->v[i], (struct proto_enum*) f->proto_type);
 					}
 					finish_array(&out);
 				}
@@ -476,12 +487,17 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				{
 					struct pb_message_list *msgs = (struct pb_message_list*) (msg + f->offset);
 					if (list_index >= msgs->len) {
+						if (list_index) {
+							finish_array(&out);
+						}
 						break;
 					}
 
 					if (!list_index) {
 						start_array(&out, f->json_name);
 					}
+
+					print_text(&out, "{", 1);
 
 					stack[depth].next_field = f;
 					stack[depth].field_end = end;
@@ -521,6 +537,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			if (!out.next) {
 				return -1;
 			}
+			*out.next = '\0';
 			return out.next - buf;
 		}
 
@@ -545,13 +562,14 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 		case PROTO_POD:
 		case PROTO_MESSAGE:
 		default:
-			// remove empty messages
 			if (out.next[-1] == '{') {
+				// remove empty messages
 				out.next -= 1 /*"*/ + strlen(f->json_name) + 3 /*":{*/;
+			} else {
+				// remove the trailing comma
+				out.next--;
+				print_text(&out, "},", 2);
 			}
-			// remove the trailing comma
-			out.next--;
-			print_text(&out, "},", 2);
 			break;
 		}
 
