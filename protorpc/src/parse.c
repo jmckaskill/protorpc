@@ -427,7 +427,6 @@ static char *parse_string(char *p, pb_string *v) {
 }
 
 static char *consume_key(char *p, pb_string *s) {
-	p = consume_space(p);
 	if (*p != '"') {
 		goto err;
 	}
@@ -634,8 +633,15 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 			// beginning of a key
 			field_seperator = ',';
 
-			p = consume_key(p + 1, &key);
+			p = consume_space(p + 1);
+			if (*p == '}') {
+				// close of the structure when a key was expected
+				// this happens with an empty struct {} or with a trailing
+				// comma
+				continue;
+			}
 
+			p = consume_key(p, &key);
 			fname = binary_search(type->by_name, type->num_fields, key);
 			if (!fname) {
 				p = skip_value(p);
