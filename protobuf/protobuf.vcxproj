@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="compact-decode.c" />
     <ClCompile Include="compact-encode.c" />
+    <ClCompile Include="compact-parse.c" />
     <ClCompile Include="compact-print.c" />
     <ClCompile Include="get.c" />
     <ClCompile Include="parse.c" />

@@ -266,7 +266,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 				list_index = 0;
 				// fallthrough
 			next_message_in_list: {
-				struct pb_pod_list *pod = (struct pb_pod_list*) (msg + f->offset);
+				pb_pod_list *pod = (pb_pod_list*) (msg + f->offset);
 				if (list_index >= pod->len) {
 					break;
 				}
@@ -622,7 +622,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
-					struct pb_pod_list *pods = (struct pb_pod_list*) msgs;
+					pb_pod_list *pods = (pb_pod_list*) msgs;
 					msg = pods->data + (list_index * ct->datasz);
 				} else {
 					msg = (char*)msgs->u.v[list_index];

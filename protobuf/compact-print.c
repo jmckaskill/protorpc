@@ -15,15 +15,14 @@ struct out {
 	char *end;
 };
 
-static void print_key(struct out *out, const char *key) {
-	size_t keysz = strlen(key);
-	char *keyend = out->next + 1 + keysz + 2;
+static void print_key(struct out *out, pb_string_t key) {
+	char *keyend = out->next + 1 + key.len + 2;
 	if (keyend > out->end) {
 		out->next = out->end = NULL;
 	} else {
 		*(out->next++) = '"';
-		memcpy(out->next, key, keysz);
-		out->next += keysz;
+		memcpy(out->next, key.c_str, key.len);
+		out->next += key.len;
 		*(out->next++) = '"';
 		*(out->next++) = ':';
 	}
@@ -87,14 +86,13 @@ static void print_enum(struct out *o, int value, const struct proto_enum *en) {
 	for (size_t i = 0; i < en->num_values; i++) {
 		const struct proto_enum_value *v = &en->values[i];
 		if (v->number == value) {
-			size_t vsz = strlen(v->name);
-			if (o->next + 1 + vsz + 2 > o->end) {
+			if (o->next + 1 + v->name.len + 2 > o->end) {
 				o->next = o->end = NULL;
 				return;
 			}
 			*(o->next++) = '"';
-			memcpy(o->next, v->name, vsz);
-			o->next += vsz;
+			memcpy(o->next, v->name.c_str, v->name.len);
+			o->next += v->name.len;
 			*(o->next++) = '"';
 			*(o->next++) = ',';
 			return;
@@ -202,7 +200,7 @@ static void print_bytes(struct out *o, pb_bytes_t v) {
 	o->next = p;
 }
 
-static void start_array(struct out *o, const char *json_name) {
+static void start_array(struct out *o, pb_string_t json_name) {
 	print_key(o, json_name);
 	print_text(o, "[", 1);
 }
@@ -511,7 +509,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 					const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 					if (f->type == PROTO_LIST_POD) {
-						struct pb_pod_list *pods = (struct pb_pod_list*) msgs;
+						pb_pod_list *pods = (pb_pod_list*) msgs;
 						msg = pods->data + (list_index * ct->datasz);
 					} else {
 						msg = (char*)msgs->u.v[list_index];
@@ -564,7 +562,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 		default:
 			if (out.next[-1] == '{') {
 				// remove empty messages
-				out.next -= 1 /*"*/ + strlen(f->json_name) + 3 /*":{*/;
+				out.next -= 1 /*"*/ + f->json_name.len + 3 /*":{*/;
 			} else {
 				// remove the trailing comma
 				out.next--;

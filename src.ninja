@@ -12,6 +12,7 @@ build $obj/protobuf/protobuf_test.o: cxx $SRC/protobuf/protobuf_test.cpp || $SRC
 build $obj/protobuf/decode.o: cc $SRC/protobuf/compact-decode.c
 build $obj/protobuf/encode.o: cc $SRC/protobuf/compact-encode.c
 build $obj/protobuf/compact-print.o: cc $SRC/protobuf/compact-print.c
+build $obj/protobuf/compact-parse.o: cc $SRC/protobuf/compact-parse.c
 
 build $obj/google/descriptor.proto.o: cc $SRC/google/protobuf/descriptor.proto.c
 build $obj/google/plugin.proto.o: cc $SRC/google/protobuf/compiler/plugin.proto.c
@@ -80,6 +81,7 @@ build $lib/protorpc.lib: lib $
  $obj/protobuf/decode.o $
  $obj/protobuf/encode.o $
  $obj/protobuf/compact-print.o $
+ $obj/protobuf/compact-parse.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protorpc.lib $
@@ -110,7 +112,6 @@ build $bin/protorpc_test.exe: cxxlink $
  $lib/protorpc.lib $
  $obj/protobuf/test.proto.o $
  $obj/protobuf/protobuf_test.o $
- $obj/protorpc/rpc_test.o $
  $obj/rpc-file-compiler_test.o $
  $obj/rpc-test-data.o $
  $obj/gtest_main.o $

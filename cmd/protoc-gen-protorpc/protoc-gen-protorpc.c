@@ -38,7 +38,7 @@ static void write_header(str_t *o, const struct FileDescriptorProto *f, bool dec
     }
 
     for (int i = 0; i < f->message_type.len; i++) {
-        do_struct_funcs(o, get_struct_type(f->message_type.v[i]), false, decode_only);
+        do_struct_funcs(o, get_struct_type(f->message_type.v[i]), false);
     }
 
 	if (!decode_only) {
@@ -67,7 +67,7 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f, bool dec
 
     for (int i = 0; i < f->message_type.len; i++) {
         const struct type *t = get_struct_type(f->message_type.v[i]);
-        do_struct_funcs(o, t, true, decode_only);
+        do_struct_funcs(o, t, true);
     }
     
 	if (!decode_only) {
@@ -76,10 +76,12 @@ static void write_source(str_t *o, const struct FileDescriptorProto *f, bool dec
 			do_enum_funcs(o, t, true);
 		}
 
+#if 0
 		for (int i = 0; i < f->service.len; i++) {
 			const struct type *t = get_service_type(f->service.v[i]);
 			do_server(o, t, true);
 		}
+#endif
 	}
 }
 

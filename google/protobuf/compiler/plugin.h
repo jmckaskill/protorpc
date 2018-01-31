@@ -53,6 +53,7 @@ struct FieldDescriptorProto {
 	pb_string_t	type_name;
 	pb_opt_uint	oneof_index;
 	pb_string_t	json_name;
+	int by_number_index;
 };
 struct OneofDescriptorProto {
 	union pb_msg pb_hdr;
@@ -67,6 +68,7 @@ struct EnumValueDescriptorProto {
 	union pb_msg pb_hdr;
 	pb_string_t	name;
 	int32_t	number;
+	int by_number_index;
 };
 struct ServiceDescriptorProto {
 	union pb_msg pb_hdr;

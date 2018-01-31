@@ -586,10 +586,14 @@ TEST(protobuf, parse) {
 	char objbuf[4096];
 	pb_buf_t obj = PB_INIT_BUF(objbuf);
 	char *json_in = strdup(test_json);
+#if 0
 	size_t in_len = strlen(json_in);
 	struct TestMessage m = {};
 	EXPECT_EQ(json_in + in_len, pb_parse_TestMessage(json_in, &obj, &m));
-	check_message(&m);
+#else
+	struct TestMessage *m = (struct TestMessage*) pb_parse(&obj, &pb_type_TestMessage, json_in);
+#endif
+	check_message(m);
 }
 
 TEST(protobuf, parse_bytes) {

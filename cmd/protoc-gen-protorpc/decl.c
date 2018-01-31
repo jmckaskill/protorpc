@@ -173,11 +173,39 @@ void define_struct(str_t *o, struct type *t) {
 	t->defined = true;
 }
 
+static int cmp_enum_number(const void *a, const void *b) {
+	struct EnumValueDescriptorProto *va = *(struct EnumValueDescriptorProto**) a;
+	struct EnumValueDescriptorProto *vb = *(struct EnumValueDescriptorProto**) b;
+	return va->number - vb->number;
+}
+
+static int cmp_enum_name(const void *a, const void *b) {
+	struct EnumValueDescriptorProto *va = *(struct EnumValueDescriptorProto**) a;
+	struct EnumValueDescriptorProto *vb = *(struct EnumValueDescriptorProto**) b;
+	int delta = va->name.len - vb->name.len;
+	if (!delta) {
+		delta = memcmp(va->name.c_str, vb->name.c_str, va->name.len);
+	}
+	return delta;
+}
+
 void do_enum_funcs(str_t *o, const struct type *t, bool define) {
     str_add(o, EOL);
-    do_print_enum(o, t, define);
-    do_parse_enum(o, t, define);
-	do_enuminfo(o, t, define);
+	if (!define) {
+		declare_enuminfo(o, t);
+	} else {
+		qsort((struct EnumValueDescriptorProto**) t->en->value.v, t->en->value.len, sizeof(t->en->value.v[0]), &cmp_enum_number);
+		for (int i = 0; i < t->en->value.len; i++) {
+			struct EnumValueDescriptorProto *v = (struct EnumValueDescriptorProto*) t->en->value.v[i];
+			v->by_number_index = i;
+		}
+
+		do_enums_by_number(o, t);
+	
+		qsort((struct EnumValueDescriptorProto**) t->en->value.v, t->en->value.len, sizeof(t->en->value.v[0]), &cmp_enum_name);
+		do_enums_by_name(o, t);
+		do_enuminfo(o, t);
+	}
 }
 
 static int cmp_field_number(const void *a, const void *b) {
@@ -186,35 +214,43 @@ static int cmp_field_number(const void *a, const void *b) {
     return fa->number - fb->number;
 }
 
-void do_struct_funcs(str_t *o, const struct type *t, bool define, bool decode_only) {
+static int cmp_field_name(const void *a, const void *b) {
+	struct FieldDescriptorProto *fa = *(struct FieldDescriptorProto**) a;
+	struct FieldDescriptorProto *fb = *(struct FieldDescriptorProto**) b;
+	int delta = fa->json_name.len - fb->json_name.len;
+	if (!delta) {
+		delta = memcmp(fa->json_name.c_str, fb->json_name.c_str, fa->json_name.len);
+	}
+	return delta;
+}
+
+void do_struct_funcs(str_t *o, const struct type *t, bool define) {
     str_add(o, EOL);
 
-	if (!decode_only) {
-		do_nonzero(o, t, define);
-		do_parse(o, t, define);
-		do_print(o, t, define);
-	}
-
-    if (define) {
+	if (!define) {
+		declare_typeinfo(o, t);
+	} else {
         qsort((struct FieldDescriptorProto**) t->msg->field.v, t->msg->field.len, sizeof(t->msg->field.v[0]), &cmp_field_number);
+
+		for (int i = 0; i < t->msg->field.len; i++) {
+			struct FieldDescriptorProto *f = (struct FieldDescriptorProto*) t->msg->field.v[i];
+			f->by_number_index = i;
+		}
+
+		do_fields_by_number(o, t);
+
+		qsort((struct FieldDescriptorProto**) t->msg->field.v, t->msg->field.len, sizeof(t->msg->field.v[0]), &cmp_field_name);
+
+		do_fields_by_name(o, t);
+		do_typeinfo(o, t);
     }
 
-    //do_decode(o, t, define);
-	//do_term(o, t, define);
-
-	do_typeinfo(o, t, define);
-
-	if (!decode_only) {
-		//do_encode(o, t, define);
-		//do_maxsz(o, t, define);
-
-		for (int i = 0; i < t->msg->enum_type.len; i++) {
-			do_enum_funcs(o, get_enum_type(t->msg->enum_type.v[i]), define);
-		}
+	for (int i = 0; i < t->msg->enum_type.len; i++) {
+		do_enum_funcs(o, get_enum_type(t->msg->enum_type.v[i]), define);
 	}
 
     for (int i = 0; i < t->msg->nested_type.len; i++) {
-        do_struct_funcs(o, get_struct_type(t->msg->nested_type.v[i]), define, decode_only);
+        do_struct_funcs(o, get_struct_type(t->msg->nested_type.v[i]), define);
     }
 }
 

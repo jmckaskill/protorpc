@@ -90,11 +90,19 @@ static const char *field_type(const struct FieldDescriptorProto *f, const struct
 	}
 }
 
-void do_typeinfo(str_t *o, const struct type *t, bool define) {
-	if (!define) {
-		str_addf(o, "extern const struct proto_message pb_type_%s;" EOL, t->proto_suffix.c_str);
-		return;
+void do_fields_by_name(str_t *o, const struct type *t) {
+	str_addf(o, "static const pb_string_t *by_name_%s[] = {" EOL, t->proto_suffix.c_str);
+	for (int i = 0; i < t->msg->field.len; i++) {
+		const struct FieldDescriptorProto *f = t->msg->field.v[i];
+		if (i) {
+			str_addf(o, "," EOL);
+		}
+		str_addf(o, "\t&fields_%s[%d].json_name", t->proto_suffix.c_str, f->by_number_index);
 	}
+	str_addf(o, EOL "};" EOL);
+}
+
+void do_fields_by_number(str_t *o, const struct type *t) {
 	str_addf(o, "static const struct proto_field fields_%s[] = {" EOL, t->proto_suffix.c_str);
 	for (int i = 0; i < t->msg->field.len; i++) {
 		const struct FieldDescriptorProto *f = t->msg->field.v[i];
@@ -108,7 +116,7 @@ void do_typeinfo(str_t *o, const struct type *t, bool define) {
 		if (i) {
 			str_addf(o, "," EOL);
 		}
-		str_addf(o, "\t{%s, offsetof(%s, %s), %u, ", type_enum, t->c_type.c_str, field_name, tag);
+		str_addf(o, "\t{{%d, \"%s\"}, %s, offsetof(%s, %s), %u, ", f->json_name.len, f->json_name.c_str, type_enum, t->c_type.c_str, field_name, tag);
 		if (ft->msg) {
 			str_addf(o, "&pb_type_%s,", ft->proto_suffix.c_str);
 		} else if (f->type == TYPE_ENUM) {
@@ -117,38 +125,60 @@ void do_typeinfo(str_t *o, const struct type *t, bool define) {
 			str_addf(o, "NULL,");
 		}
 		if (f->oneof_index.set) {
-			str_addf(o, " offsetof(%s, %s_type),", t->c_type.c_str, field_name);
+			str_addf(o, " offsetof(%s, %s_type)}", t->c_type.c_str, field_name);
 		} else {
-			str_add(o, " -1,");
+			str_add(o, " -1}");
 		}
-		str_addf(o, "\"%s\"}", f->json_name.c_str);
 	}
 	str_addf(o, EOL "};" EOL);
+}
 
+void declare_typeinfo(str_t *o, const struct type *t) {
+	str_addf(o, "extern const struct proto_message pb_type_%s;" EOL, t->proto_suffix.c_str);
+}
+
+void do_typeinfo(str_t *o, const struct type *t) {
 	str_addf(o, "const struct proto_message pb_type_%s = {" EOL, t->proto_suffix.c_str);
 	str_addf(o, "\tsizeof(%s)," EOL, t->c_type.c_str);
 	str_addf(o, "\tsizeof(fields_%s) / sizeof(struct proto_field)," EOL, t->proto_suffix.c_str);
-	str_addf(o, "\tfields_%s" EOL, t->proto_suffix.c_str);
+	str_addf(o, "\tfields_%s," EOL, t->proto_suffix.c_str);
+	str_addf(o, "\tby_name_%s" EOL, t->proto_suffix.c_str);
 	str_addf(o, "};" EOL);
 }
 
-void do_enuminfo(str_t *o, const struct type *t, bool define) {
-	if (!define) {
-		str_addf(o, "extern const struct proto_enum pb_enum_%s;" EOL, t->json_suffix.c_str);
-		return;
-	}
+void declare_enuminfo(str_t *o, const struct type *t) {
+	str_addf(o, "extern const struct proto_enum pb_enum_%s;" EOL, t->json_suffix.c_str);
+}
+
+void do_enums_by_number(str_t *o, const struct type *t) {
 	str_addf(o, "static const struct proto_enum_value values_%s[] = {" EOL, t->json_suffix.c_str);
 	for (int i = 0; i < t->en->value.len; i++) {
 		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
 		if (i) {
 			str_addf(o, "," EOL);
 		}
-		str_addf(o, "\t{%d, \"%s\"}", v->number, v->name.c_str);
+		str_addf(o, "\t{{%d, \"%s\"}, %d}", v->name.len, v->name.c_str, v->number);
 	}
 	str_add(o, EOL "};" EOL);
+}
+
+void do_enums_by_name(str_t *o, const struct type *t) {
+	str_addf(o, "static const pb_string_t *by_name_%s[] = {" EOL, t->json_suffix.c_str);
+	for (int i = 0; i < t->en->value.len; i++) {
+		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
+		if (i) {
+			str_addf(o, "," EOL);
+		}
+		str_addf(o, "\t{&values_%s[%d].name}", t->json_suffix.c_str, v->by_number_index);
+	}
+	str_add(o, EOL "};" EOL);
+}
+
+void do_enuminfo(str_t *o, const struct type *t) {
 	str_addf(o, "const struct proto_enum pb_enum_%s = {" EOL, t->json_suffix.c_str);
 	str_addf(o, "\tsizeof(values_%s) / sizeof(struct proto_enum_value)," EOL, t->json_suffix.c_str);
-	str_addf(o, "\tvalues_%s" EOL, t->json_suffix.c_str);
+	str_addf(o, "\tvalues_%s," EOL, t->json_suffix.c_str);
+	str_addf(o, "\tby_name_%s" EOL, t->json_suffix.c_str);
 	str_addf(o, "};" EOL);
 }
 

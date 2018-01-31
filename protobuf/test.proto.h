@@ -155,104 +155,46 @@ struct TestMessage {
 	struct {int len; struct TestMessage_MpodEntry const *v; int _encoded;}	mpod;
 };
 
-char *pb_parse_TestMessage(char *p, pb_buf_t *obj, struct TestMessage *m);
-int pb_print_TestMessage(pb_buf_t *a, struct TestMessage const *m);
 extern const struct proto_message pb_type_TestMessage;
 
-bool pb_nonzero_TestMessage_MbEntry(struct TestMessage_MbEntry const *m);
-char *pb_parse_TestMessage_MbEntry(char *p, struct TestMessage_MbEntry *m);
-int pb_print_TestMessage_MbEntry(pb_buf_t *a, struct TestMessage_MbEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MbEntry;
 
-bool pb_nonzero_TestMessage_Mu32Entry(struct TestMessage_Mu32Entry const *m);
-char *pb_parse_TestMessage_Mu32Entry(char *p, struct TestMessage_Mu32Entry *m);
-int pb_print_TestMessage_Mu32Entry(pb_buf_t *a, struct TestMessage_Mu32Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Mu32Entry;
 
-bool pb_nonzero_TestMessage_Mu64Entry(struct TestMessage_Mu64Entry const *m);
-char *pb_parse_TestMessage_Mu64Entry(char *p, struct TestMessage_Mu64Entry *m);
-int pb_print_TestMessage_Mu64Entry(pb_buf_t *a, struct TestMessage_Mu64Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Mu64Entry;
 
-bool pb_nonzero_TestMessage_Mi32Entry(struct TestMessage_Mi32Entry const *m);
-char *pb_parse_TestMessage_Mi32Entry(char *p, struct TestMessage_Mi32Entry *m);
-int pb_print_TestMessage_Mi32Entry(pb_buf_t *a, struct TestMessage_Mi32Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Mi32Entry;
 
-bool pb_nonzero_TestMessage_Mi64Entry(struct TestMessage_Mi64Entry const *m);
-char *pb_parse_TestMessage_Mi64Entry(char *p, struct TestMessage_Mi64Entry *m);
-int pb_print_TestMessage_Mi64Entry(pb_buf_t *a, struct TestMessage_Mi64Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Mi64Entry;
 
-bool pb_nonzero_TestMessage_Ms32Entry(struct TestMessage_Ms32Entry const *m);
-char *pb_parse_TestMessage_Ms32Entry(char *p, struct TestMessage_Ms32Entry *m);
-int pb_print_TestMessage_Ms32Entry(pb_buf_t *a, struct TestMessage_Ms32Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Ms32Entry;
 
-bool pb_nonzero_TestMessage_Ms64Entry(struct TestMessage_Ms64Entry const *m);
-char *pb_parse_TestMessage_Ms64Entry(char *p, struct TestMessage_Ms64Entry *m);
-int pb_print_TestMessage_Ms64Entry(pb_buf_t *a, struct TestMessage_Ms64Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Ms64Entry;
 
-bool pb_nonzero_TestMessage_Mf32Entry(struct TestMessage_Mf32Entry const *m);
-char *pb_parse_TestMessage_Mf32Entry(char *p, struct TestMessage_Mf32Entry *m);
-int pb_print_TestMessage_Mf32Entry(pb_buf_t *a, struct TestMessage_Mf32Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Mf32Entry;
 
-bool pb_nonzero_TestMessage_Mf64Entry(struct TestMessage_Mf64Entry const *m);
-char *pb_parse_TestMessage_Mf64Entry(char *p, struct TestMessage_Mf64Entry *m);
-int pb_print_TestMessage_Mf64Entry(pb_buf_t *a, struct TestMessage_Mf64Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Mf64Entry;
 
-bool pb_nonzero_TestMessage_Msf32Entry(struct TestMessage_Msf32Entry const *m);
-char *pb_parse_TestMessage_Msf32Entry(char *p, struct TestMessage_Msf32Entry *m);
-int pb_print_TestMessage_Msf32Entry(pb_buf_t *a, struct TestMessage_Msf32Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Msf32Entry;
 
-bool pb_nonzero_TestMessage_Msf64Entry(struct TestMessage_Msf64Entry const *m);
-char *pb_parse_TestMessage_Msf64Entry(char *p, struct TestMessage_Msf64Entry *m);
-int pb_print_TestMessage_Msf64Entry(pb_buf_t *a, struct TestMessage_Msf64Entry const *m);
 extern const struct proto_message pb_type_TestMessage_Msf64Entry;
 
-bool pb_nonzero_TestMessage_MfEntry(struct TestMessage_MfEntry const *m);
-char *pb_parse_TestMessage_MfEntry(char *p, struct TestMessage_MfEntry *m);
-int pb_print_TestMessage_MfEntry(pb_buf_t *a, struct TestMessage_MfEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MfEntry;
 
-bool pb_nonzero_TestMessage_MdEntry(struct TestMessage_MdEntry const *m);
-char *pb_parse_TestMessage_MdEntry(char *p, struct TestMessage_MdEntry *m);
-int pb_print_TestMessage_MdEntry(pb_buf_t *a, struct TestMessage_MdEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MdEntry;
 
-char *pb_parse_TestMessage_MbyEntry(char *p, pb_buf_t *obj, struct TestMessage_MbyEntry *m);
-int pb_print_TestMessage_MbyEntry(pb_buf_t *a, struct TestMessage_MbyEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MbyEntry;
 
-char *pb_parse_TestMessage_MstrEntry(char *p, pb_buf_t *obj, struct TestMessage_MstrEntry *m);
-int pb_print_TestMessage_MstrEntry(pb_buf_t *a, struct TestMessage_MstrEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MstrEntry;
 
-bool pb_nonzero_TestMessage_MenEntry(struct TestMessage_MenEntry const *m);
-char *pb_parse_TestMessage_MenEntry(char *p, struct TestMessage_MenEntry *m);
-int pb_print_TestMessage_MenEntry(pb_buf_t *a, struct TestMessage_MenEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MenEntry;
 
-char *pb_parse_TestMessage_MmsgEntry(char *p, pb_buf_t *obj, struct TestMessage_MmsgEntry *m);
-int pb_print_TestMessage_MmsgEntry(pb_buf_t *a, struct TestMessage_MmsgEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MmsgEntry;
 
-bool pb_nonzero_TestMessage_MpodEntry(struct TestMessage_MpodEntry const *m);
-char *pb_parse_TestMessage_MpodEntry(char *p, struct TestMessage_MpodEntry *m);
-int pb_print_TestMessage_MpodEntry(pb_buf_t *a, struct TestMessage_MpodEntry const *m);
 extern const struct proto_message pb_type_TestMessage_MpodEntry;
 
-bool pb_nonzero_TestPod(struct TestPod const *m);
-char *pb_parse_TestPod(char *p, struct TestPod *m);
-int pb_print_TestPod(pb_buf_t *a, struct TestPod const *m);
 extern const struct proto_message pb_type_TestPod;
 
-char *pb_print_TestEnum(char *p, enum TestEnum v);
-char *pb_parse_TestEnum(char *p, enum TestEnum *v);
 extern const struct proto_enum pb_enum_TestEnum;
 
 struct TestService {

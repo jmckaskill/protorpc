@@ -58,7 +58,7 @@ void declare_struct(str_t *out, struct type *t);
 void define_struct(str_t *out, struct type *t);
 
 void do_enum_funcs(str_t *out, const struct type *t, bool define);
-void do_struct_funcs(str_t *out, const struct type *t, bool define, bool decode_only);
+void do_struct_funcs(str_t *out, const struct type *t, bool define);
 
 void do_maxsz(str_t *out, const struct type *t, bool define);
 void do_decode(str_t *out, const struct type *t, bool define);
@@ -71,7 +71,15 @@ void do_encode(str_t *out, const struct type *t, bool define);
 void do_server(str_t *out, const struct type *t, bool define);
 void do_client(str_t *out, const struct type *t, bool define);
 void do_nonzero(str_t *o, const struct type *t, bool define);
-void do_typeinfo(str_t *o, const struct type *t, bool define);
-void do_enuminfo(str_t *o, const struct type *t, bool define);
+
+void declare_typeinfo(str_t *o, const struct type *t);
+void do_typeinfo(str_t *o, const struct type *t);
+void do_fields_by_name(str_t *o, const struct type *t);
+void do_fields_by_number(str_t *o, const struct type *t);
+
+void declare_enuminfo(str_t *o, const struct type *t);
+void do_enuminfo(str_t *o, const struct type *t);
+void do_enums_by_name(str_t *o, const struct type *t);
+void do_enums_by_number(str_t *o, const struct type *t);
 
 int exec_protoc(char *my_exe, char *protoc_exe, char *filename);

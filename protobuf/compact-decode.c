@@ -469,14 +469,14 @@ next_message_in_list:
 				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
-					struct pb_pod_list *list = (struct pb_pod_list*) (msg + f->offset);
+					pb_pod_list *list = (pb_pod_list*) (msg + f->offset);
 					if (!list->data) {
 						list->data = align(obj->next, OBJ_ALIGN);
 					}
 					msg = list->data + (list->len * ct->datasz);
 					memset(msg, 0, ct->datasz);
 					list->len++;
-					if (list->data + (list->len * ct->datasz) > obj->end) {
+					if (msg + ct->datasz > obj->end) {
 						goto err;
 					}
 				} else {
@@ -523,7 +523,7 @@ end_of_fields:
 
 			// we've finished the list, we should commit it
 			if (f->type == PROTO_LIST_POD) {
-				struct pb_pod_list *list = (struct pb_pod_list*) (msg + f->offset);
+				pb_pod_list *list = (pb_pod_list*) (msg + f->offset);
 				const struct proto_message *ct = (struct proto_message*) f->proto_type;
 				obj->next = list->data + (list->len * ct->datasz);
 			} else {

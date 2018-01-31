@@ -41,10 +41,10 @@ struct pb_message_list {
 	} u;
 };
 
-struct pb_pod_list {
+typedef struct {
 	int len;
 	char *data;
-};
+} pb_pod_list;
 
 typedef struct {bool set; unsigned val;} pb_opt_uint;
 
@@ -99,28 +99,32 @@ enum proto_field_type {
 };
 
 struct proto_enum_value {
+	// name needs to be first to allow the parse binary_search to work
+	pb_string_t name;
 	int number;
-	const char *name;
 };
 
 struct proto_enum {
 	size_t num_values;
 	const struct proto_enum_value *values;
+	const pb_string_t **by_name;
 };
 
 struct proto_field {
+	// json_name needs to be first to allow the parse binary_search to work
+	pb_string_t json_name;
 	enum proto_field_type type;
 	size_t offset;
 	unsigned tag;
 	const void *proto_type;
 	int oneof;
-	const char *json_name;
 };
 
 struct proto_message {
 	size_t datasz;
 	size_t num_fields;
 	const struct proto_field *fields;
+	const pb_string_t **by_name;
 };
 
 #ifdef __cplusplus
@@ -131,6 +135,7 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 int pb_encoded_size(void *obj, const struct proto_message *type);
 int pb_encode(void *obj, const struct proto_message *type, char *data);
 int pb_print(void *obj, const struct proto_message *type, char *buf, int sz);
+void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p);
 
 #ifdef __cplusplus
 }
