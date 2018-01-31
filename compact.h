@@ -98,12 +98,23 @@ enum proto_field_type {
 	PROTO_LIST_MESSAGE,
 };
 
+struct proto_enum_value {
+	int number;
+	const char *name;
+};
+
+struct proto_enum {
+	size_t num_values;
+	const struct proto_enum_value *values;
+};
+
 struct proto_field {
 	enum proto_field_type type;
 	size_t offset;
 	unsigned tag;
-	const struct proto_message *message;
+	const void *proto_type;
 	int oneof;
+	const char *json_name;
 };
 
 struct proto_message {
@@ -119,6 +130,7 @@ extern "C" {
 void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const struct proto_message *type);
 int pb_encode(void *obj, const struct proto_message *type, char *data);
+int pb_print(void *obj, const struct proto_message *type, char *buf, int sz);
 
 #ifdef __cplusplus
 }

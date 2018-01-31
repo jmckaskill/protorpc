@@ -255,7 +255,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 					msg = *(char**) (msg + f->offset);
 				}
 
-				const struct proto_message *ct = f->message;
+				const struct proto_message *ct = (struct proto_message*) f->proto_type;
 				f = ct->fields;
 				end = f + ct->num_fields;
 				ret = 0;
@@ -281,7 +281,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 					return -1;
 				}
 
-				const struct proto_message *ct = f->message;
+				const struct proto_message *ct = (struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
 					msg = pod->data + (list_index * ct->datasz);
@@ -586,7 +586,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 					msg = *(char**)(msg + f->offset);
 				}
 
-				const struct proto_message *ct = f->message;
+				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 				f = ct->fields;
 				end = f + ct->num_fields;
 				continue;
@@ -597,40 +597,40 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				list_index = 0;
 				// fallthrough
 			next_message_in_list: {
-					struct pb_message_list *msgs = (struct pb_message_list*) (msg + f->offset);
-					if (list_index >= msgs->len) {
-						break;
-					}
+				struct pb_message_list *msgs = (struct pb_message_list*) (msg + f->offset);
+				if (list_index >= msgs->len) {
+					break;
+				}
 
-					p = put_varint(p, f->tag);
+				p = put_varint(p, f->tag);
 
-					if (f->type == PROTO_LIST_POD) {
-						stack[depth].encoded_size.ptr = p++;
-					} else {
-						p = put_varint(p, msgs->u.v[list_index]->encoded_size);
-					}
+				if (f->type == PROTO_LIST_POD) {
+					stack[depth].encoded_size.ptr = p++;
+				} else {
+					p = put_varint(p, msgs->u.v[list_index]->encoded_size);
+				}
 
-					stack[depth].next_field = f;
-					stack[depth].field_end = end;
-					stack[depth].msg = msg;
-					stack[depth].next_index = list_index + 1;
+				stack[depth].next_field = f;
+				stack[depth].field_end = end;
+				stack[depth].msg = msg;
+				stack[depth].next_index = list_index + 1;
 
-					if (++depth == MAX_DEPTH) {
-						return -1;
-					}
+				if (++depth == MAX_DEPTH) {
+					return -1;
+				}
 
-					const struct proto_message *ct = f->message;
+				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
-					if (f->type == PROTO_LIST_POD) {
-						struct pb_pod_list *pods = (struct pb_pod_list*) msgs;
-						msg = pods->data + (list_index * ct->datasz);
-					} else {
-						msg = (char*)msgs->u.v[list_index];
-					}
+				if (f->type == PROTO_LIST_POD) {
+					struct pb_pod_list *pods = (struct pb_pod_list*) msgs;
+					msg = pods->data + (list_index * ct->datasz);
+				} else {
+					msg = (char*)msgs->u.v[list_index];
+				}
 
-					f = ct->fields;
-					end = f + ct->num_fields;
-					continue;
+				f = ct->fields;
+				end = f + ct->num_fields;
+				continue;
 				}
 			}
 

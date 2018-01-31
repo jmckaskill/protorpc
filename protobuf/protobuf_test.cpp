@@ -535,7 +535,11 @@ TEST(protobuf, print) {
 	pb_buf_t pr = PB_INIT_BUF(buf);
 	pb_buf_t pp = PB_INIT_BUF(pbuf);
 
+#if 1
 	EXPECT_EQ(0, pb_print_TestMessage(&pr, &m));
+#else
+	pb_print(&m, &pb_type_TestMessage, buf, sizeof(buf));
+#endif
 	EXPECT_EQ(0, pb_pretty_print(&pp, (char*) buf, pr.next - buf));
 	ASSERT_EQ(0, pb_append(&pr, "\0", 1));
 	ASSERT_EQ(0, pb_append(&pp, "\0", 1));

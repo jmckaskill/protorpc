@@ -349,7 +349,7 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 					goto err;
 				}
 
-				const struct proto_message *ct = f->message;
+				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_POD) {
 					msg = (msg + f->offset);
@@ -466,7 +466,7 @@ next_message_in_list:
 					goto err;
 				}
 
-				const struct proto_message *ct = f->message;
+				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
 					struct pb_pod_list *list = (struct pb_pod_list*) (msg + f->offset);
@@ -524,7 +524,8 @@ end_of_fields:
 			// we've finished the list, we should commit it
 			if (f->type == PROTO_LIST_POD) {
 				struct pb_pod_list *list = (struct pb_pod_list*) (msg + f->offset);
-				obj->next = list->data + (list->len * f->message->datasz);
+				const struct proto_message *ct = (struct proto_message*) f->proto_type;
+				obj->next = list->data + (list->len * ct->datasz);
 			} else {
 				struct pb_message_list *list = (struct pb_message_list*) (msg + f->offset);
 				union pb_msg **v = (union pb_msg**) buf_calloc(obj, list->len * sizeof(union pb_msg*), sizeof(void*));
