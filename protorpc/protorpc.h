@@ -2,34 +2,39 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <protobuf.h>
+#include <stddef.h>
 
-#if 0
-typedef struct {
-	uint8_t *next;
-	uint8_t *end;
-} pb_buf_t;
+typedef struct pb_allocator pb_allocator;
+typedef union pb_msg pb_msg;
+typedef struct pb_bytes pb_bytes;
+typedef struct pb_string pb_string;
+
+struct pb_allocator {
+	char *next;
+	char *end;
+};
+
+#define PB_INIT_ALLOCATOR(buf) {buf, buf + sizeof(buf)}
 
 // Messages are of the form
 // struct my_message {
-//   union pb_msg pb_msg;
+//   pb_msg _pbhdr;
 //   fields...
 // }
 union pb_msg {
-	union pb_msg *prev;
-	int maxsz;
+	pb_msg *previous;
+	int encoded_size;
 };
 
-typedef struct {
+struct pb_bytes {
 	int len;
 	const uint8_t *p;
-} pb_bytes_t;
+};
 
-typedef struct {
+struct pb_string {
 	int len;
 	const char *c_str;
-} pb_string_t;
-#endif
+};
 
 // lists are of the form
 // struct {int len; <type> const *v;} field;
@@ -49,14 +54,19 @@ typedef struct {
 typedef struct {bool set; unsigned val;} pb_opt_uint;
 
 typedef struct {int len; bool const *v;} pb_bool_list;
-typedef struct {int len; uint32_t const *v; int _encoded;} pb_uint_list;
-typedef struct {int len; int32_t const *v; int _encoded;} pb_int_list;
+typedef struct {int len; uint32_t const *v; int _encoded;} pb_u32_list;
+typedef struct {int len; int32_t const *v; int _encoded;} pb_i32_list;
 typedef struct {int len; uint64_t const *v; int _encoded;} pb_u64_list;
 typedef struct {int len; int64_t const *v; int _encoded;} pb_i64_list;
 typedef struct {int len; float const *v;} pb_float_list;
 typedef struct {int len; double const *v;} pb_double_list;
-typedef struct {int len; pb_string_t const *v;} pb_string_list;
-typedef struct {int len; pb_bytes_t const *v;} pb_bytes_list;
+typedef struct {int len; pb_string const *v;} pb_string_list;
+typedef struct {int len; pb_bytes const *v;} pb_bytes_list;
+
+typedef struct proto_field proto_field;
+typedef struct proto_enum proto_enum;
+typedef struct proto_enum_value proto_enum_value;
+typedef struct proto_message proto_message;
 
 enum proto_field_type {
 	PROTO_BOOL,
@@ -100,19 +110,19 @@ enum proto_field_type {
 
 struct proto_enum_value {
 	// name needs to be first to allow the parse binary_search to work
-	pb_string_t name;
+	pb_string name;
 	int number;
 };
 
 struct proto_enum {
 	size_t num_values;
 	const struct proto_enum_value *values;
-	const pb_string_t **by_name;
+	const pb_string **by_name;
 };
 
 struct proto_field {
 	// json_name needs to be first to allow the parse binary_search to work
-	pb_string_t json_name;
+	pb_string json_name;
 	enum proto_field_type type;
 	size_t offset;
 	unsigned tag;
@@ -124,18 +134,25 @@ struct proto_message {
 	size_t datasz;
 	size_t num_fields;
 	const struct proto_field *fields;
-	const pb_string_t **by_name;
+	const pb_string **by_name;
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int sz);
-int pb_encoded_size(void *obj, const struct proto_message *type);
-int pb_encode(void *obj, const struct proto_message *type, char *data);
-int pb_print(void *obj, const struct proto_message *type, char *buf, int sz);
-void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p);
+void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz);
+int pb_encoded_size(void *obj, const proto_message *type);
+int pb_encode(void *obj, const proto_message *type, char *data);
+int pb_print(void *obj, const proto_message *type, char *buf, int sz);
+void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
+
+static inline int pb_base64_size(int sz) {
+	return (sz * 4 + 3) / 3;
+}
+
+char *pb_encode_base64(char *out, const uint8_t *v, int n);
+char *pb_decode_base64(char *text, pb_bytes *v);
 
 #ifdef __cplusplus
 }

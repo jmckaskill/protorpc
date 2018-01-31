@@ -11,28 +11,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="compact-decode.c" />
-    <ClCompile Include="compact-encode.c" />
-    <ClCompile Include="compact-parse.c" />
-    <ClCompile Include="compact-print.c" />
-    <ClCompile Include="get.c" />
-    <ClCompile Include="parse.c" />
-    <ClCompile Include="pretty-print.c" />
-    <ClCompile Include="print.c" />
-    <ClCompile Include="protobuf_test.cpp" />
-    <ClCompile Include="put.c" />
-    <ClCompile Include="test.proto.c" />
+    <ClCompile Include="exec.c" />
+    <ClCompile Include="plugin.c" />
+    <ClCompile Include="protoc-gen-protorpc.c" />
+    <ClCompile Include="types.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="test.proto.h" />
+    <ClInclude Include="plugin.h" />
+    <ClInclude Include="protoc-gen-protorpc.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="test.proto" />
+    <None Include="descriptor.proto" />
+    <None Include="plugin.proto" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{01EF6A74-7AF7-41F2-BBF8-6FDE04AFFA0B}</ProjectGuid>
+    <ProjectGuid>{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
-    <ProjectName>lib - protobuf</ProjectName>
+    <ProjectName>bin - protoc-gen-protorpc</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -58,22 +53,22 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeOutput>$(SolutionDir)\lib\win32-debug\protobuf.lib</NMakeOutput>
+    <NMakeOutput>$(SolutionDir)\bin\win32-debug\protoc-gen-protorpc.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;DEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protobuf.lib</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-debug/protobuf.lib</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-debug/protobuf.lib</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protoc-gen-protorpc.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeOutput>$(SolutionDir)\lib\win32-release\protobuf.lib</NMakeOutput>
+    <NMakeOutput>$(SolutionDir)\bin\win32-release\protoc-gen-protorpc.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-release/protobuf.lib</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protobuf.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja lib/win32-release/protobuf.lib</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean lib/win32-release/protobuf.lib</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protoc-gen-protorpc.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />

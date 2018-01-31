@@ -1,4 +1,4 @@
-#include "str.h"
+#include <protorpc/str.h>
 
 #include <string.h>
 #include <stdlib.h>

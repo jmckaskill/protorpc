@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <zlib/zlib.h>
 
-extern "C" int rpc_test_data(const char *path, pb_buf_t *out);
+extern "C" int rpc_test_data(const char *path, pb_allocator *out);
 
 static const char test_js_header[] =
 "HTTP/1.1 200 OK\r\n"
@@ -24,7 +24,7 @@ static const char response_404[] =
 
 TEST(protorpc, compiler) {
 	char buf[4096];
-	pb_buf_t out = PB_INIT_BUF(buf);
+	pb_allocator out = PB_INIT_BUF(buf);
 	EXPECT_EQ(0, rpc_test_data("/rpc-test-data/test.4CDDE84B7A.js", &out));
 	size_t hdrsz = strlen(test_js_header);
 	char first = buf[hdrsz];

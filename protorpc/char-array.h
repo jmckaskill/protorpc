@@ -44,7 +44,7 @@ typedef struct {
 #define ca_setf(P, ...) 		(ca_setlen(P, 0), ca_addf_((P)->c_str, sizeof((P)->c_str), &(P)->len, __VA_ARGS__))
 
 
-// comparison functions can be used with str_t, pb_string_t or a char buffer like above
+// comparison functions can be used with str_t, pb_string or a char buffer like above
 
 // can be used with fixed sized arrays as well as str_t
 #define str_ends_with(P, TEST) 		(strlen(TEST) <= (size_t) (P).len && !memcmp((P).c_str + (P).len - strlen(TEST), (TEST), strlen(TEST)))

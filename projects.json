@@ -13,12 +13,6 @@
     ],
     "Projects": [
         {
-            "Name": "lib - protobuf",
-            "File": "protobuf/protobuf.vcxproj",
-            "UUID": "{01EF6A74-7AF7-41F2-BBF8-6FDE04AFFA0B}",
-            "Target": "lib/{TGT}/protobuf.lib"
-        },
-        {
             "Name": "lib - protorpc",
             "File": "protorpc/protorpc.vcxproj",
             "UUID": "{5EB12FC8-F54C-4257-829B-41916333921A}",
@@ -26,8 +20,8 @@
         },
         {
             "Name": "bin - protoc-gen-protorpc",
-            "File": "cmd/protoc-gen-protorpc/protoc-gen-protorpc.vcxproj",
-            "UUID": "{C676AF48-ED5F-4089-B356-9A26D3521FF2}",
+            "File": "protoc-gen-protorpc/protoc-gen-protorpc.vcxproj",
+            "UUID": "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}",
             "Target": "bin/{TGT}/protoc-gen-protorpc.exe"
         },
         {

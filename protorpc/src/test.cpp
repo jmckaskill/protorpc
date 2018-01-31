@@ -340,36 +340,36 @@ static const char test_pretty[] =
 	"}\n";
 
 static void setup_message(struct TestMessage *m) {
-	static const bool rb[3] = { false, true, false };
-	static const uint32_t ru32[3] = { 1,2,3 };
-	static const uint64_t ru64[3] = { 3,4,5 };
-	static const int32_t ri32[3] = { -1,0,1 };
-	static const int64_t ri64[3] = { -2,0,2 };
-	static const int32_t rs32[3] = { -10,0,10 };
-	static const int64_t rs64[3] = { -20,0,20 };
-	static const uint32_t rf32[3] = { 10,20,30 };
-	static const uint64_t rf64[3] = { 30,40,50 };
-	static const int32_t rsf32[3] = { -10,20,0 };
-	static const int64_t rsf64[3] = { -100,0,100 };
-	static const float rf[1] = { 3.5 };
-	static const double rd[3] = { 1.1,2.2,3.3 };
-	static const pb_bytes_t rby[2] = { {5,(uint8_t*)"defgh"}, {5, (uint8_t*)"abcde"} };
-	static const pb_string_t rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
-	static const enum TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
+	static bool rb[3] = { false, true, false };
+	static uint32_t ru32[3] = { 1,2,3 };
+	static uint64_t ru64[3] = { 3,4,5 };
+	static int32_t ri32[3] = { -1,0,1 };
+	static int64_t ri64[3] = { -2,0,2 };
+	static int32_t rs32[3] = { -10,0,10 };
+	static int64_t rs64[3] = { -20,0,20 };
+	static uint32_t rf32[3] = { 10,20,30 };
+	static uint64_t rf64[3] = { 30,40,50 };
+	static int32_t rsf32[3] = { -10,20,0 };
+	static int64_t rsf64[3] = { -100,0,100 };
+	static float rf[1] = { 3.5 };
+	static double rd[3] = { 1.1,2.2,3.3 };
+	static pb_bytes rby[2] = { {5,(uint8_t*)"defgh"}, {5, (uint8_t*)"abcde"} };
+	static pb_string rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
+	static TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
 
-	static struct TestMessage msg2 = {};
+	static TestMessage msg2 = {};
 	msg2.b = true;
 
-	static struct TestMessage msg3 = {};
+	static TestMessage msg3 = {};
 	msg3.u64 = 10234;
 
-	static const struct TestMessage *rmsg[2] = { &msg2, &msg3 };
+	static TestMessage *rmsg[2] = { &msg2, &msg3 };
 
-	static struct TestPod pod = {};
+	static TestPod pod = {};
 	pod.foo_type = TESTPOD_I;
 	pod.foo.i = -12;
 
-	static struct TestPod rpod[2] = {};
+	static TestPod rpod[2] = {};
 	rpod[0].foo_type = TESTPOD_U;
 	rpod[0].foo.u = 1;
 	rpod[1].foo_type = TESTPOD_I;
@@ -531,104 +531,71 @@ TEST(protobuf, print) {
 	struct TestMessage m = {};
 	setup_message(&m);
 
-	char buf[4096], pbuf[4096];
-	pb_buf_t pr = PB_INIT_BUF(buf);
-	pb_buf_t pp = PB_INIT_BUF(pbuf);
-
-#if 0
-	EXPECT_EQ(0, pb_print_TestMessage(&pr, &m));
-	EXPECT_EQ(0, pb_pretty_print(&pp, (char*)buf, pr.next - buf));
-	ASSERT_EQ(0, pb_append(&pr, "\0", 1));
-	int sz = pr.next - buf;
-#else
-	int sz = pb_print(&m, &pb_type_TestMessage, buf, sizeof(buf));
-#endif
-	EXPECT_EQ(0, pb_pretty_print(&pp, buf, sz));
-	ASSERT_EQ(0, pb_append(&pp, "\0", 1));
-	EXPECT_STREQ(test_json, (char*) buf);
-	EXPECT_STREQ(test_pretty, (char*) pbuf);
+	char buf[4096];
+	int sz = pb_print(&m, &proto_TestMessage, buf, sizeof(buf));
+	EXPECT_EQ(strlen(test_json), sz);
+	EXPECT_STREQ(test_json, buf);
 }
 
-TEST(protobuf, print_bytes) {
-	char buf[16];
-	pb_buf_t b;
-	pb_bytes_t by;
+TEST(protobuf, encode_base64) {
+	char buf[32];
 
-	by.len = 1;
-	by.p = (uint8_t*) "a";
-	b.next = buf;
-	b.end = buf + sizeof(buf);
-	EXPECT_EQ(0, pb_print_bytes(&b, by));
-	*b.next = 0;
-	EXPECT_EQ(buf + 5, b.next);
-	EXPECT_STREQ("\"YQ\",", (char*) buf);
+	EXPECT_EQ(buf + 2, pb_encode_base64(buf, (uint8_t*) "a", 1));
+	EXPECT_STREQ("YQ", buf);
 
-	by.len = 2;
-	by.p = (uint8_t*) "ab";
-	b.next = buf;
-	b.end = buf + sizeof(buf);
-	EXPECT_EQ(0, pb_print_bytes(&b, by));
-	*b.next = 0;
-	EXPECT_EQ(buf + 6, b.next);
-	EXPECT_STREQ("\"YWI\",", (char*) buf);
+	EXPECT_EQ(buf + 3, pb_encode_base64(buf, (uint8_t*) "ab", 2));
+	EXPECT_STREQ("YWI", buf);
 
-	by.len = 3;
-	by.p = (uint8_t*) "abc";
-	b.next = buf;
-	b.end = buf + sizeof(buf);
-	EXPECT_EQ(0, pb_print_bytes(&b, by));
-	*b.next = 0;
-	EXPECT_EQ(buf + 7, b.next);
-	EXPECT_STREQ("\"YWJj\",", (char*) buf);
+	EXPECT_EQ(buf + 4, pb_encode_base64(buf, (uint8_t*) "abc", 3));
+	EXPECT_STREQ("YWJj", buf);
 }
 
 TEST(protobuf, parse) {
 	char objbuf[4096];
-	pb_buf_t obj = PB_INIT_BUF(objbuf);
+	pb_allocator obj = PB_INIT_ALLOCATOR(objbuf);
 	char *json_in = strdup(test_json);
-#if 0
-	size_t in_len = strlen(json_in);
-	struct TestMessage m = {};
-	EXPECT_EQ(json_in + in_len, pb_parse_TestMessage(json_in, &obj, &m));
-#else
-	struct TestMessage *m = (struct TestMessage*) pb_parse(&obj, &pb_type_TestMessage, json_in);
-#endif
+	struct TestMessage *m = (struct TestMessage*) pb_parse(&obj, &proto_TestMessage, json_in);
 	check_message(m);
 }
 
-TEST(protobuf, parse_bytes) {
-	pb_bytes_t by;
-	char a[] = "\"YQ\"";
-	EXPECT_EQ(a + 4, pb_parse_bytes(a, &by));
+TEST(protobuf, decode_base64) {
+	pb_bytes by;
+	char a[] = "YQ";
+	EXPECT_EQ(a + 2, pb_decode_base64(a, &by));
 	EXPECT_EQ(1, by.len);
+	a[1] = 0;
 	EXPECT_STREQ("a", (char*)by.p);
 
-	char ab[] = "\"YWI\"";
-	EXPECT_EQ(ab + 5, pb_parse_bytes(ab, &by));
+	char ab[] = "YWI";
+	EXPECT_EQ(ab + 3, pb_decode_base64(ab, &by));
 	EXPECT_EQ(2, by.len);
+	ab[2] = 0;
 	EXPECT_STREQ("ab", (char*)by.p);
 
-	char abc[] = "\"YWJj\"";
-	EXPECT_EQ(abc + 6, pb_parse_bytes(abc, &by));
+	char abc[] = "YWJj";
+	EXPECT_EQ(abc + 4, pb_decode_base64(abc, &by));
 	EXPECT_EQ(3, by.len);
+	abc[3] = 0;
 	EXPECT_STREQ("abc", (char*)by.p);
 
-	char apad[] = "\"YQ==\"";
-	EXPECT_EQ(apad + 6, pb_parse_bytes(apad, &by));
+	char apad[] = "YQ==";
+	EXPECT_EQ(apad + 4, pb_decode_base64(apad, &by));
 	EXPECT_EQ(1, by.len);
+	apad[1] = 0;
 	EXPECT_STREQ("a", (char*)by.p);
 
-	char abpad[] = "\"YWI=\"";
-	EXPECT_EQ(abpad + 6, pb_parse_bytes(abpad, &by));
+	char abpad[] = "YWI=";
+	EXPECT_EQ(abpad + 4, pb_decode_base64(abpad, &by));
 	EXPECT_EQ(2, by.len);
+	abpad[2] = 0;
 	EXPECT_STREQ("ab", (char*)by.p);
 }
 
-bool operator==(pb_bytes_t a, pb_bytes_t b) {
+bool operator==(pb_bytes a, pb_bytes b) {
 	return a.len == b.len && !memcmp(a.p, b.p, a.len);
 }
 
-std::ostream& operator<<(std::ostream& o, pb_bytes_t m) {
+std::ostream& operator<<(std::ostream& o, pb_bytes m) {
 	std::ios_base::fmtflags flags = o.flags();
 	std::streamsize prec = o.precision();
 	char fill = o.fill();
@@ -651,39 +618,27 @@ TEST(protobuf, encode) {
 
 	char buf[1024];
 	memset(buf, 0xAB, sizeof(buf));
-#if 0
-	ASSERT_LT(pb_maxsz_TestMessage(&m), (int) sizeof(buf));
 
-	char *end = pb_encode_TestMessage(buf, &m);
-	pb_bytes_t have = {(int) (end - buf), (uint8_t*) buf};
-#else
-	int sz = pb_encoded_size(&m, &pb_type_TestMessage);
+	int sz = pb_encoded_size(&m, &proto_TestMessage);
 	ASSERT_EQ(sz, sizeof(test_proto));
-	pb_bytes_t have = { sz, (uint8_t*)buf };
-	sz = pb_encode(&m, &pb_type_TestMessage, buf);
-	EXPECT_EQ(sz, sizeof(test_proto));
-#endif
 
-	pb_bytes_t test = {sizeof(test_proto), test_proto};
+	sz = pb_encode(&m, &proto_TestMessage, buf);
+	EXPECT_EQ(sz, sizeof(test_proto));
+
+	pb_bytes have = { sz, (uint8_t*)buf };
+	pb_bytes test = {sizeof(test_proto), test_proto};
 	EXPECT_EQ(test, have);
 }
 
 TEST(protobuf, decode) {
 	char obuf[4096];
-	pb_buf_t obj = PB_INIT_BUF(obuf);
+	pb_allocator obj = PB_INIT_ALLOCATOR(obuf);
 
 	char *buf = (char*) malloc(sizeof(test_proto) + 1);
 	memcpy(buf, test_proto, sizeof(test_proto));
 
-#if 0
-	struct TestMessage m = {};
-	EXPECT_EQ(0, pb_get_TestMessage(buf, buf + sizeof(test_proto), &obj, &m));
-	pb_term_TestMessage(&m);
-	check_message(&m);
-#else
-	struct TestMessage *m = (struct TestMessage*) pb_decode(&obj, &pb_type_TestMessage, buf, sizeof(test_proto));
+	struct TestMessage *m = (struct TestMessage*) pb_decode(&obj, &proto_TestMessage, buf, sizeof(test_proto));
 	check_message(m);
-#endif
 
 	free(buf);
 }

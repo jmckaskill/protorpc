@@ -275,11 +275,11 @@ int main(int argc, char *argv[]) {
 
 	fprintf(cf, "extern int ");
 	print_csymbol(cf, outfn + dir.len);
-	fprintf(cf, "(const char *path, pb_buf_t *out);\n\n");
+	fprintf(cf, "(const char *path, pb_allocator *out);\n\n");
 
 	fprintf(cf, "int ");
 	print_csymbol(cf, outfn + dir.len);
-	fprintf(cf, "(const char *path, pb_buf_t *out) {\n");
+	fprintf(cf, "(const char *path, pb_allocator *out) {\n");
 	fprintf(cf, "\tswitch (pr_hash(path, %u) %% %u) {\n", hashmul, hashsz);
 
 	for (i = 0; i < filenum; i++) {

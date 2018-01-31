@@ -1,4 +1,5 @@
-#include "compact.h"
+#include <protorpc/protorpc.h>
+#include <string.h>
 
 #define WIRE_VARINT 0
 #define WIRE_FIXED_64 1
@@ -135,7 +136,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 			case PROTO_BYTES:
 			case PROTO_LIST_BOOL:
 			case PROTO_STRING: {
-				pb_bytes_t *bytes = (pb_bytes_t*) (msg + f->offset);
+				pb_bytes *bytes = (pb_bytes*) (msg + f->offset);
 				if (bytes->len) {
 					ret += varint_size(f->tag);
 					ret += varint_size(bytes->len);
@@ -146,7 +147,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 			case PROTO_LIST_ENUM:
 			case PROTO_LIST_U32:
 			case PROTO_LIST_I32: {
-				pb_uint_list *list = (pb_uint_list*) (msg + f->offset);
+				pb_u32_list *list = (pb_u32_list*) (msg + f->offset);
 				if (list->len) {
 					ret += varint_size(f->tag);
 					int enc = 0;
@@ -160,7 +161,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 				break;
 			}
 			case PROTO_LIST_S32: {
-				pb_int_list *list = (pb_int_list*)(msg + f->offset);
+				pb_i32_list *list = (pb_i32_list*)(msg + f->offset);
 				if (list->len) {
 					ret += varint_size(f->tag);
 					int enc = 0;
@@ -465,7 +466,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 			case PROTO_BYTES:
 			case PROTO_LIST_BOOL:
 			case PROTO_STRING: {
-				pb_bytes_t *bytes = (pb_bytes_t*)(msg + f->offset);
+				pb_bytes *bytes = (pb_bytes*)(msg + f->offset);
 				if (bytes->len) {
 					p = put_varint(p, f->tag);
 					p = put_varint(p, bytes->len);
@@ -477,7 +478,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 			case PROTO_LIST_ENUM:
 			case PROTO_LIST_U32:
 			case PROTO_LIST_I32: {
-				pb_uint_list *list = (pb_uint_list*)(msg + f->offset);
+				pb_u32_list *list = (pb_u32_list*)(msg + f->offset);
 				if (list->len) {
 					p = put_varint(p, f->tag);
 					p = put_varint(p, list->_encoded);
@@ -488,7 +489,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				break;
 			}
 			case PROTO_LIST_S32: {
-				pb_int_list *list = (pb_int_list*)(msg + f->offset);
+				pb_i32_list *list = (pb_i32_list*)(msg + f->offset);
 				if (list->len) {
 					p = put_varint(p, f->tag);
 					p = put_varint(p, list->_encoded);
@@ -549,7 +550,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 			case PROTO_LIST_STRING: {
 				pb_string_list *list = (pb_string_list*)(msg + f->offset);
 				for (int i = 0; i < list->len; i++) {
-					const pb_string_t *s = &list->v[i];
+					const pb_string *s = &list->v[i];
 					p = put_varint(p, f->tag);
 					p = put_varint(p, s->len);
 					memcpy(p, s->c_str, s->len);

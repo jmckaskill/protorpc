@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../protobuf.h"
-#include "../char-array.h"
+#include <protorpc/char-array.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>

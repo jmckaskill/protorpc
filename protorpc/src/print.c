@@ -1,5 +1,7 @@
-#include "compact.h"
+#include <protorpc/protorpc.h>
 #include <inttypes.h>
+#include <string.h>
+#include <stdio.h>
 
 #define MAX_DEPTH 8
 
@@ -15,7 +17,7 @@ struct out {
 	char *end;
 };
 
-static void print_key(struct out *out, pb_string_t key) {
+static void print_key(struct out *out, pb_string key) {
 	char *keyend = out->next + 1 + key.len + 2;
 	if (keyend > out->end) {
 		out->next = out->end = NULL;
@@ -125,7 +127,7 @@ static const char escapechar[] =
 "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0"
 "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0";
 
-static void print_string(struct out *o, pb_string_t v) {
+static void print_string(struct out *o, pb_string v) {
 	if (o->next + 1 /*"*/ + v.len + 2 /*",*/ > o->end) {
 		goto err;
 	}
@@ -164,11 +166,7 @@ err:
 	o->next = o->end = NULL;
 }
 
-static inline int base64_size(int sz) {
-	return (sz * 4 + 3) / 3;
-}
-
-static char *print_base64(char *p, const uint8_t *v, int n) {
+char *pb_encode_base64(char *p, const uint8_t *v, int n) {
 	int i;
 	for (i = 0; i < n - 2; i += 3) {
 		*p++ = base64char[(v[i] >> 2)];
@@ -184,23 +182,24 @@ static char *print_base64(char *p, const uint8_t *v, int n) {
 		*p++ = base64char[((v[i] & 3) << 4) | (v[i + 1] >> 4)];
 		*p++ = base64char[((v[i + 1] & 0xF) << 2)];
 	}
+	*p = '\0';
 	return p;
 }
 
-static void print_bytes(struct out *o, pb_bytes_t v) {
+static void print_bytes(struct out *o, pb_bytes v) {
 	char *p = o->next;
 	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ > o->end) {
 		o->next = o->end = NULL;
 		return;
 	}
 	*(p++) = '\"';
-	p = pb_print_base64(p, v.p, v.len);
+	p = pb_encode_base64(p, v.p, v.len);
 	*(p++) = '\"';
 	*(p++) = ',';
 	o->next = p;
 }
 
-static void start_array(struct out *o, pb_string_t json_name) {
+static void start_array(struct out *o, pb_string json_name) {
 	print_key(o, json_name);
 	print_text(o, "[", 1);
 }
@@ -306,7 +305,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				break;
 			}
 			case PROTO_STRING: {
-				pb_string_t *s = (pb_string_t*)(msg + f->offset);
+				pb_string *s = (pb_string*)(msg + f->offset);
 				if (s->len) {
 					print_key(&out, f->json_name);
 					print_string(&out, *s);
@@ -314,7 +313,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				break;
 			}
 			case PROTO_BYTES: {
-				pb_bytes_t *b = (pb_bytes_t*)(msg + f->offset);
+				pb_bytes *b = (pb_bytes*)(msg + f->offset);
 				if (b->len) {
 					print_key(&out, f->json_name);
 					print_bytes(&out, *b);
@@ -346,7 +345,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			}
 			case PROTO_LIST_F32:
 			case PROTO_LIST_U32: {
-				pb_uint_list *list = (pb_uint_list*)(msg + f->offset);
+				pb_u32_list *list = (pb_u32_list*)(msg + f->offset);
 				if (list->len) {
 					start_array(&out, f->json_name);
 					for (int i = 0; i < list->len; i++) {
@@ -359,7 +358,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_LIST_S32:
 			case PROTO_LIST_SF32:
 			case PROTO_LIST_I32: {
-				pb_int_list *list = (pb_int_list*)(msg + f->offset);
+				pb_i32_list *list = (pb_i32_list*)(msg + f->offset);
 				if (list->len) {
 					start_array(&out, f->json_name);
 					for (int i = 0; i < list->len; i++) {
@@ -439,7 +438,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				break;
 			}
 			case PROTO_LIST_ENUM: {
-				pb_int_list *list = (pb_int_list*)(msg + f->offset);
+				pb_i32_list *list = (pb_i32_list*)(msg + f->offset);
 				if (list->len) {
 					start_array(&out, f->json_name);
 					for (int i = 0; i < list->len; i++) {

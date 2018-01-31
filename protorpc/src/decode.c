@@ -1,4 +1,4 @@
-#include "compact.h"
+#include <protorpc/protorpc.h>
 #include <string.h>
 
 #define WIRE_VARINT 0
@@ -24,7 +24,7 @@ static inline char *align(char *p, size_t align) {
 	return (char*) (((uintptr_t)p + (align - 1)) &~(align - 1));
 }
 
-static inline char *buf_calloc(pb_buf_t *b, size_t sz, size_t alignment) {
+static inline char *buf_calloc(pb_allocator *b, size_t sz, size_t alignment) {
 	char *p = align(b->next, alignment);
 	char *n = p + sz;
 	if (n > b->end) {
@@ -115,7 +115,7 @@ static int64_t decode_zigzag_64(uint64_t u) {
 	return (u >> 1) ^ -(int64_t)(u & 1);
 }
 
-static int get_bytes(struct in *in, pb_bytes_t *p) {
+static int get_bytes(struct in *in, pb_bytes *p) {
 	unsigned len;
 	if (get_varint(in, &len)) {
 		return -1;
@@ -129,8 +129,8 @@ static int get_bytes(struct in *in, pb_bytes_t *p) {
 	return 0;
 }
 
-static int get_varint_list(struct in *in, pb_buf_t *obj, pb_uint_list *plist) {
-	pb_bytes_t bytes;
+static int get_varint_list(struct in *in, pb_allocator *obj, pb_u32_list *plist) {
+	pb_bytes bytes;
 	if (get_bytes(in, &bytes)) {
 		return -1;
 	}
@@ -155,8 +155,8 @@ static int get_varint_list(struct in *in, pb_buf_t *obj, pb_uint_list *plist) {
 	return 0;
 }
 
-static int get_varint_list_64(struct in *in, pb_buf_t *obj, pb_u64_list *plist) {
-	pb_bytes_t bytes;
+static int get_varint_list_64(struct in *in, pb_allocator *obj, pb_u64_list *plist) {
+	pb_bytes bytes;
 	if (get_bytes(in, &bytes)) {
 		return -1;
 	}
@@ -211,7 +211,7 @@ static int skip(struct in *in, unsigned tag) {
     return 0;
 }
 
-void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int sz) {
+void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data, int sz) {
 	int depth = 0;
 	struct decode_stack stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
@@ -272,7 +272,7 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 
 			unsigned u;
 			uint64_t u64;
-			pb_bytes_t bytes;
+			pb_bytes bytes;
 
 			switch (f->type) {
 			case PROTO_BOOL:
@@ -330,7 +330,7 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 				break;
 			case PROTO_BYTES:
 			case PROTO_STRING:
-				if (get_bytes(&in, (pb_bytes_t*)(msg + f->offset))) {
+				if (get_bytes(&in, (pb_bytes*)(msg + f->offset))) {
 					goto err;
 				}
 				break;
@@ -371,12 +371,12 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 			case PROTO_LIST_U32:
 			case PROTO_LIST_I32:
 			case PROTO_LIST_ENUM:
-				if (get_varint_list(&in, obj, (pb_uint_list*) (msg + f->offset))) {
+				if (get_varint_list(&in, obj, (pb_u32_list*) (msg + f->offset))) {
 					goto err;
 				}
 				break;
 			case PROTO_LIST_S32:{
-				pb_uint_list *list = (pb_uint_list*) (msg + f->offset);
+				pb_u32_list *list = (pb_u32_list*) (msg + f->offset);
 				if (get_varint_list(&in, obj, list)) {
 					goto err;
 				}
@@ -404,7 +404,7 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 				break;
 			}
 			case PROTO_LIST_BOOL:
-				if (get_bytes(&in, (pb_bytes_t*) (msg + f->offset))) {
+				if (get_bytes(&in, (pb_bytes*) (msg + f->offset))) {
 					goto err;
 				}
 				break;
@@ -432,7 +432,7 @@ void *pb_decode(pb_buf_t *obj, const struct proto_message *type, char *data, int
 			}
 			case PROTO_LIST_BYTES:
 			case PROTO_LIST_STRING: {
-				pb_bytes_t *v = (pb_bytes_t*) align(obj->next, sizeof(void*));
+				pb_bytes *v = (pb_bytes*) align(obj->next, sizeof(void*));
 				int num = 0;
 				do {
 					if ((char*) (v + num + 1) > obj->end) {
@@ -486,7 +486,7 @@ next_message_in_list:
 					}
 					struct pb_message_list *list = (struct pb_message_list*) (msg + f->offset);
 					list->len++;
-					child->prev = list->u.last;
+					child->previous = list->u.last;
 					list->u.last = child;
 					msg = (char*)child;
 				}
@@ -535,7 +535,7 @@ end_of_fields:
 				union pb_msg *iter = list->u.last;
 				for (int i = list->len-1; i >= 0; i--) {
 					v[i] = iter;
-					iter = iter->prev;
+					iter = iter->previous;
 				}
 				list->u.v = v;
 			}

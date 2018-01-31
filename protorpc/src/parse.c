@@ -1,4 +1,4 @@
-#include "compact.h"
+#include <protorpc/protorpc.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +16,7 @@ static inline char *align(char *p, size_t align) {
 	return (char*)(((uintptr_t)p + (align - 1)) &~(align - 1));
 }
 
-static inline char *buf_calloc(pb_buf_t *b, size_t sz, size_t alignment) {
+static inline char *buf_calloc(pb_allocator *b, size_t sz, size_t alignment) {
 	char *p = align(b->next, alignment);
 	char *n = p + sz;
 	if (n > b->end) {
@@ -229,7 +229,7 @@ static const signed char hexrev[256] = {
 	-1,-1,-1,-1,-1,-1,-1,-1,    -1,-1,-1,-1,-1,-1,-1,-1,
 };
 
-static char *parse_base64(char *p, pb_bytes_t *v) {
+static char *decode_unpadded(char *p, pb_bytes *v) {
 	uint8_t *in = (uint8_t*)p;
 	uint8_t *out = (uint8_t*)p;
 	uint8_t *ret = (uint8_t*)p;
@@ -271,17 +271,22 @@ static char *parse_base64(char *p, pb_bytes_t *v) {
 	}
 }
 
-static char *parse_bytes(char *p, pb_bytes_t *v) {
+char *pb_decode_base64(char *p, pb_bytes *v) {
+	p = decode_unpadded(p, v);
+	if (*p == '=') {
+		p++;
+	}
+	if (*p == '=') {
+		p++;
+	}
+	return p;
+}
+
+static char *parse_bytes(char *p, pb_bytes *v) {
 	if (*p != '\"') {
 		return errret;
 	}
-	p = parse_base64(p + 1, v);
-	if (*p == '=') {
-		p++;
-	}
-	if (*p == '=') {
-		p++;
-	}
+	p = pb_decode_base64(p + 1, v);
 	if (*p != '\"') {
 		return errret;
 	}
@@ -289,7 +294,7 @@ static char *parse_bytes(char *p, pb_bytes_t *v) {
 	return p + 1;
 }
 
-static char *parse_string(char *p, pb_string_t *v) {
+static char *parse_string(char *p, pb_string *v) {
 	if (*p != '\"') {
 		return errret;
 	}
@@ -421,7 +426,7 @@ static char *parse_string(char *p, pb_string_t *v) {
 	}
 }
 
-static char *consume_key(char *p, pb_string_t *s) {
+static char *consume_key(char *p, pb_string *s) {
 	p = consume_space(p);
 	if (*p != '"') {
 		goto err;
@@ -483,7 +488,7 @@ static bool more_in_array(char **pp) {
 	}
 }
 
-static void *start_list(pb_buf_t *obj, char **pp, pb_pod_list *list, size_t datasz) {
+static void *start_list(pb_allocator *obj, char **pp, pb_pod_list *list, size_t datasz) {
 	if (!start_array(pp)) {
 		return NULL;
 	}
@@ -498,7 +503,7 @@ static void *start_list(pb_buf_t *obj, char **pp, pb_pod_list *list, size_t data
 	return ret;
 }
 
-static void *append_to_list(pb_buf_t *obj, char **pp, pb_pod_list *list, size_t datasz) {
+static void *append_to_list(pb_allocator *obj, char **pp, pb_pod_list *list, size_t datasz) {
 	if (!more_in_array(pp)) {
 		return NULL;
 	}
@@ -562,13 +567,13 @@ static char *skip_value(char *p) {
 
 // find_field does a binary search on the field names
 // the field names are ordered by length and then bitwise
-static const pb_string_t *binary_search(const pb_string_t **names, int num, pb_string_t want) {
+static const pb_string *binary_search(const pb_string **names, int num, pb_string want) {
 	int left = 0;
 	int right = num - 1;
 
 	while (left <= right) {
 		int mid = left + (right - left) / 2;
-		const pb_string_t *mids = names[mid];
+		const pb_string *mids = names[mid];
 
 		int diff = want.len - mids->len;
 		if (!diff) {
@@ -591,9 +596,9 @@ static const pb_string_t *binary_search(const pb_string_t **names, int num, pb_s
 }
 
 char *parse_enum(char *p, const struct proto_enum *en, int *pv) {
-	pb_string_t str;
+	pb_string str;
 	p = parse_string(p, &str);
-	const pb_string_t *vname = binary_search(en->by_name, en->num_values, str);
+	const pb_string *vname = binary_search(en->by_name, en->num_values, str);
 	if (vname) {
 		const struct proto_enum_value *v = (const struct proto_enum_value*) vname;
 		*pv = v->number;
@@ -601,7 +606,7 @@ char *parse_enum(char *p, const struct proto_enum *en, int *pv) {
 	return p;
 }
 
-void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p) {
+void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 	int depth = 0;
 	struct parse_stack stack[MAX_DEPTH];
 	char *objstart = obj->next;
@@ -616,8 +621,8 @@ void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p) {
 		goto err;
 	}
 
-	pb_string_t key;
-	const pb_string_t *fname;
+	pb_string key;
+	const pb_string *fname;
 	const struct proto_field *f;
 	pb_pod_list *list;
 
@@ -678,10 +683,10 @@ void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p) {
 				p = parse_double(p, (double*)(msg + f->offset));
 				break;
 			case PROTO_STRING:
-				p = parse_string(p, (pb_string_t*)(msg + f->offset));
+				p = parse_string(p, (pb_string*)(msg + f->offset));
 				break;
 			case PROTO_BYTES:
-				p = parse_bytes(p, (pb_bytes_t*)(msg + f->offset));
+				p = parse_bytes(p, (pb_bytes*)(msg + f->offset));
 				break;
 			case PROTO_ENUM:
 				p = parse_enum(p, (struct proto_enum*) f->proto_type, (int*)(msg + f->offset));
@@ -728,13 +733,13 @@ void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p) {
 				}
 				break;
 			case PROTO_LIST_STRING:
-				for (void *v = start_list(obj, &p, list, sizeof(pb_string_t)); v != NULL; v = append_to_list(obj, &p, list, sizeof(pb_string_t))) {
-					p = parse_string(p, (pb_string_t*)v);
+				for (void *v = start_list(obj, &p, list, sizeof(pb_string)); v != NULL; v = append_to_list(obj, &p, list, sizeof(pb_string))) {
+					p = parse_string(p, (pb_string*)v);
 				}
 				break;
 			case PROTO_LIST_BYTES:
-				for (void *v = start_list(obj, &p, list, sizeof(pb_bytes_t)); v != NULL; v = append_to_list(obj, &p, list, sizeof(pb_bytes_t))) {
-					p = parse_bytes(p, (pb_bytes_t*)v);
+				for (void *v = start_list(obj, &p, list, sizeof(pb_bytes)); v != NULL; v = append_to_list(obj, &p, list, sizeof(pb_bytes))) {
+					p = parse_bytes(p, (pb_bytes*)v);
 				}
 				break;
 			case PROTO_LIST_ENUM:
@@ -798,7 +803,7 @@ void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p) {
 						goto err;
 					}
 					struct pb_message_list *mlist = (struct pb_message_list*) list;
-					child->prev = mlist->u.last;
+					child->previous = mlist->u.last;
 					mlist->u.last = child;
 					msg = (char*)child;
 				}
@@ -840,7 +845,7 @@ void *pb_parse(pb_buf_t *obj, const struct proto_message *type, char *p) {
 					union pb_msg *iter = mlist->u.last;
 					for (int i = list->len - 1; i >= 0; i--) {
 						v[i] = iter;
-						iter = iter->prev;
+						iter = iter->previous;
 					}
 					mlist->u.v = v;
 				}
