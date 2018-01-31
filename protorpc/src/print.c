@@ -9,6 +9,7 @@ struct print_stack {
 	const struct proto_field *next_field;
 	const struct proto_field *field_end;
 	char *msg;
+	char *key_start;
 	int next_index;
 };
 
@@ -17,16 +18,22 @@ struct out {
 	char *end;
 };
 
-static void print_key(struct out *out, pb_string key) {
-	char *keyend = out->next + 1 + key.len + 2;
+static void print_key(struct out *out, pb_string key, int indent) {
+	char *keyend = out->next + /*\n*/ 1 + indent + 1 /*"*/ + key.len + 3 /*": */;
 	if (keyend > out->end) {
 		out->next = out->end = NULL;
 	} else {
+		*(out->next++) = '\n';
+		while (indent) {
+			*(out->next++) = '\t';
+			indent--;
+		}
 		*(out->next++) = '"';
 		memcpy(out->next, key.c_str, key.len);
 		out->next += key.len;
 		*(out->next++) = '"';
 		*(out->next++) = ':';
+		*(out->next++) = ' ';
 	}
 }
 
@@ -199,14 +206,35 @@ static void print_bytes(struct out *o, pb_bytes v) {
 	o->next = p;
 }
 
-static void start_array(struct out *o, pb_string json_name) {
-	print_key(o, json_name);
+static void start_array(struct out *o, pb_string json_name, int indent) {
+	print_key(o, json_name, indent);
 	print_text(o, "[", 1);
 }
 
-static void finish_array(struct out *o) {
+static void print_indent(struct out *o, int indent) {
+	if (o->next + 1 /*\n*/ + indent > o->end) {
+		o->next = o->end = NULL;
+	}
+	*(o->next++) = '\n';
+	while (indent) {
+		*(o->next++) = '\t';
+		indent--;
+	}
+}
+
+static void finish_array(struct out *o, int indent) {
 	o->next--; // remove trailing ,
-	print_text(o, "],", 2);
+	// now add \n<indent>],
+	if (o->next + 1 /*\n*/ + indent + 2 /*],*/ > o->end) {
+		o->next = o->end = NULL;
+	}
+	*(o->next++) = '\n';
+	while (indent) {
+		*(o->next++) = '\t';
+		indent--;
+	}
+	*(o->next++) = ']';
+	*(o->next++) = ',';
 }
 
 int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
@@ -221,6 +249,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 	out.end = buf + sz;
 
 	print_text(&out, "{", 1);
+	int indent = 1;
 
 	for (;;) {
 		while (f < end) {
@@ -238,7 +267,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			switch (f->type) {
 			case PROTO_BOOL:
 				if (*(bool*)(msg + f->offset)) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_text(&out, "true,", 5);
 				}
 				break;
@@ -246,7 +275,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_U32: {
 				unsigned val = *(unsigned*)(msg + f->offset);
 				if (val) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_u32(&out, val);
 				}
 				break;
@@ -254,7 +283,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_OPTIONAL_U32: {
 				pb_opt_uint *opt = (pb_opt_uint*)(msg + f->offset);
 				if (opt->set) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_u32(&out, opt->val);
 				}
 				break;
@@ -264,7 +293,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_I32: {
 				int val = *(int*)(msg + f->offset);
 				if (val) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_i32(&out, val);
 				}
 				break;
@@ -273,7 +302,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_U64: {
 				uint64_t val = *(uint64_t*)(msg + f->offset);
 				if (val) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_u64(&out, val);
 				}
 				break;
@@ -283,7 +312,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_I64: {
 				int64_t val = *(int64_t*)(msg + f->offset);
 				if (val) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_i64(&out, val);
 				}
 				break;
@@ -291,7 +320,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_FLOAT: {
 				float val = *(float*)(msg + f->offset);
 				if (val != 0) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_float(&out, val);
 				}
 				break;
@@ -299,7 +328,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_DOUBLE: {
 				double val = *(double*)(msg + f->offset);
 				if (val != 0) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_double(&out, val);
 				}
 				break;
@@ -307,7 +336,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_STRING: {
 				pb_string *s = (pb_string*)(msg + f->offset);
 				if (s->len) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_string(&out, *s);
 				}
 				break;
@@ -315,7 +344,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_BYTES: {
 				pb_bytes *b = (pb_bytes*)(msg + f->offset);
 				if (b->len) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_bytes(&out, *b);
 				}
 				break;
@@ -323,7 +352,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_ENUM: {
 				int val = *(int*)(msg + f->offset);
 				if (val) {
-					print_key(&out, f->json_name);
+					print_key(&out, f->json_name, indent);
 					print_enum(&out, val, (struct proto_enum*) f->proto_type);
 				}
 				break;
@@ -331,15 +360,16 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_LIST_BOOL: {
 				pb_bool_list *list = (pb_bool_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						if (list->v[i]) {
 							print_text(&out, "true,", 5);
 						} else {
 							print_text(&out, "false,", 6);
 						}
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
@@ -347,11 +377,12 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_LIST_U32: {
 				pb_u32_list *list = (pb_u32_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_u32(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
@@ -360,11 +391,12 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_LIST_I32: {
 				pb_i32_list *list = (pb_i32_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_i32(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
@@ -372,11 +404,12 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_LIST_U64: {
 				pb_u64_list *list = (pb_u64_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_u64(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
@@ -385,66 +418,72 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 			case PROTO_LIST_I64: {
 				pb_i64_list *list = (pb_i64_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_i64(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
 			case PROTO_LIST_FLOAT: {
 				pb_float_list *list = (pb_float_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_float(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
 			case PROTO_LIST_DOUBLE: {
 				pb_double_list *list = (pb_double_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_double(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
 			case PROTO_LIST_STRING: {
 				pb_string_list *list = (pb_string_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_string(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
 			case PROTO_LIST_BYTES: {
 				pb_bytes_list *list = (pb_bytes_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_bytes(&out, list->v[i]);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
 			case PROTO_LIST_ENUM: {
 				pb_i32_list *list = (pb_i32_list*)(msg + f->offset);
 				if (list->len) {
-					start_array(&out, f->json_name);
+					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
+						print_indent(&out, indent);
 						print_enum(&out, list->v[i], (struct proto_enum*) f->proto_type);
 					}
-					finish_array(&out);
+					finish_array(&out, --indent);
 				}
 				break;
 			}
@@ -457,8 +496,9 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				stack[depth].next_field = f;
 				stack[depth].field_end = end;
 				stack[depth].msg = msg;
+				stack[depth].key_start = out.next;
 
-				print_key(&out, f->json_name);
+				print_key(&out, f->json_name, indent++);
 				print_text(&out, "{", 1);
 
 				if (++depth == MAX_DEPTH) {
@@ -485,15 +525,16 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 					struct pb_message_list *msgs = (struct pb_message_list*) (msg + f->offset);
 					if (list_index >= msgs->len) {
 						if (list_index) {
-							finish_array(&out);
+							finish_array(&out, --indent);
 						}
 						break;
 					}
 
 					if (!list_index) {
-						start_array(&out, f->json_name);
+						start_array(&out, f->json_name, indent++);
 					}
 
+					print_indent(&out, indent++);
 					print_text(&out, "{", 1);
 
 					stack[depth].next_field = f;
@@ -526,10 +567,11 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 		if (!depth) {
 			if (out.next[-1] == ',') {
 				// non-empty message
-				out.next[-1] = '}';
+				out.next--;
+				print_text(&out, "\n}\n", 3);
 			} else {
 				// empty message "{}"
-				print_text(&out, "}", 1);
+				print_text(&out, "}\n", 2);
 			}
 			if (!out.next) {
 				return -1;
@@ -539,6 +581,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 		}
 
 		depth--;
+		indent--;
 
 		f = stack[depth].next_field;
 		end = stack[depth].field_end;
@@ -547,10 +590,11 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 		switch (f->type) {
 		case PROTO_LIST_POD:
 		case PROTO_LIST_MESSAGE:
-			// remove the trailing comma
-			// only present if it's a non-empty message
 			if (out.next[-1] == ',') {
+				// non-empty message
+				// remove the trailing comma
 				out.next--;
+				print_indent(&out, indent);
 			}
 			print_text(&out, "},", 2);
 			list_index = stack[depth].next_index;
@@ -561,10 +605,11 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 		default:
 			if (out.next[-1] == '{') {
 				// remove empty messages
-				out.next -= 1 /*"*/ + f->json_name.len + 3 /*":{*/;
+				out.next = stack[depth].key_start;
 			} else {
 				// remove the trailing comma
 				out.next--;
+				print_indent(&out, indent);
 				print_text(&out, "},", 2);
 			}
 			break;

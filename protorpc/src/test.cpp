@@ -28,204 +28,122 @@
 static const uint8_t test_proto[] = {
 	// b = true
 	TAG1(1, VAR), 1,
-	// 2
 
 	// -23 = 0xFFFFFFE9 = xF,x7F,x7F,x7F,x69
 	TAG1(2, VAR), 0xE9, 0xFF, 0xFF, 0xFF, 0xF,
-	// 8
 
 	// s32 = -1234 = 2469 = 0x9A3 = 0x13,0x23
 	TAG1(3, VAR), 0xA3, 0x13,
-	// 11
 
 	// sf32 = -34757 = 0xFFFF783B
 	TAG1(4, F32), 0x3B, 0x78, 0xFF, 0xFF,
-	// 16
 
 	// u32 = 1
 	TAG1(5, VAR), 1,
-	// 18
 
 	// f32 = -34757 = 0x000087C5
 	TAG1(6, F32), 0xC5, 0x87, 0, 0,
-	// 23
 
 	// i64 = -34 = 0xFFFFFFFFFFFFFFDE = x01,x7F,x7F,x7F,x7F,x7F,x7F,x7F,x7F,x5E
 	TAG1(7, VAR), 0xDE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01,
-	// 34
 
 	// sf64 = -575859 = 0xFFFFFFFFFFF7368D
 	TAG1(8, F64), 0x8D, 0x36, 0xF7, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-	// 43
 
 	// s64 = -23585 = 47169 = xB841 = x02,x70,x41
 	TAG1(9, VAR), 0xC1, 0xF0, 0x02,
-	// 47
 
 	// u64 = 10234 = 0x27FA = 0x4F,0x7A
 	TAG1(10, VAR), 0xFA, 0x4F,
-	// 50
 
 	// f64 = 575859 = 0x000000000008C973
 	TAG1(11, F64), 0x73, 0xC9, 0x08, 0, 0, 0, 0, 0,
-	// 59
 
 	// f = 314 = 0x439d0000
 	TAG1(12, F32), 0, 0, 0x9D, 0x43,
-	// 64
 
 	// d = 3.141 = 0x4009 20C4 9BA5 E354
 	TAG1(13, F64), 0x54, 0xE3, 0xA5, 0x9B, 0xC4, 0x20, 0x09, 0x40,
-	// 73
 
 	// by = "abcde" = x61 x62 x63 x64 x65
 	TAG1(14, LEN), 5, 0x61, 0x62, 0x63, 0x64, 0x65,
-	// 80
 
 	// str = "abcde" = x61 x62 x63 x64 x65
 	TAG1(15, LEN), 5, 0x61, 0x62, 0x63, 0x64, 0x65,
-	// 87
 
 	// en = ENUM_C = 2
 	TAG2_LO(16, VAR), TAG2_HI(16), 2,
-	// 90
 
 	// msg = {b = true}
 	TAG2_LO(17, LEN), TAG2_HI(17), 2, TAG1(1, VAR), 1,
-	// 95
 
 	// pod = {i = -12}, -12 zigzag = 23
 	TAG2_LO(18, LEN), TAG2_HI(18), 2, TAG1(2, VAR), 23,
-	// 100
 
 	// rb = [false,true,false]
 	TAG2_LO(21, LEN), TAG2_HI(21), 3, 0, 1, 0,
-	// 106
 
 	// ri32 = [-1,0,1] = [0xFFFFFFFF,0,1] = [xF x7F x7F x7F x7F, 0, 1]
 	TAG2_LO(22, LEN), TAG2_HI(22), 7, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 0, 1,
-	// 116
 
 	// rs32 = [-10,0,10] = [19,0,20]
 	TAG2_LO(23, LEN), TAG2_HI(23), 3, 19, 0, 20,
-	// 122
 
 	// rsf32 = [-10,20,0] = [0xFFFFFFF6,20,0]
 	TAG2_LO(24, LEN), TAG2_HI(24), 12, 0xF6, 0xFF, 0xFF, 0xFF, 20, 0, 0, 0, 0, 0, 0, 0,
-	// 137
 
 	// ru32 = [1,2,3]
 	TAG2_LO(25, LEN), TAG2_HI(25), 3, 1, 2, 3,
-	// 143
 
 	// rf32 = [10,20,30]
 	TAG2_LO(26, LEN), TAG2_HI(26), 12, 10, 0, 0, 0, 20, 0, 0, 0, 30, 0, 0, 0,
-	// 158
 	
 	// ri64 = [-2,0,2] = [0xFFFFFFFFFFFFFFFE,0,2] = [x01 x7F x7F x7F x7F x7F x7F x7F x7F x7E, 0, 2]
 	TAG2_LO(27, LEN), TAG2_HI(27), 12, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0, 2,
-	// 173
 
 	// rsf64 = [-100, 0, 100] = [0xFFFFFFFFFFFFFF9C, 0, 100]
 	TAG2_LO(28, LEN), TAG2_HI(28), 24, 0x9C, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0,
-	// 200
 
 	// rs64 = [-20,0,20] = [39,0,40]
 	TAG2_LO(29, LEN), TAG2_HI(29), 3, 39, 0, 40,
-	// 206
 
 	// ru64 = [3,4,5]
 	TAG2_LO(210, LEN), TAG2_HI(210), 3, 3, 4, 5,
-	// 212
 
 	// rf64 = [30,40,50]
 	TAG2_LO(211, LEN), TAG2_HI(211), 24, 30, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0,
-	// 239
 
 	// rf = [3.5] = [0x40600000]
 	TAG2_LO(212, LEN), TAG2_HI(212), 4, 0, 0, 0x60, 0x40,
-	// 246
 
 	// rd = [1.1,2.2,3.3] = [0x3FF1 9999 9999 999A, 0x4001 9999 9999 999A, 0x400A 6666 6666 6666]
 	TAG2_LO(213, LEN), TAG2_HI(213), 24,
 		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0xF1, 0x3F, 
 		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0x01, 0x40,
 		0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0A, 0x40,
-	// 273
 
 	// rby = ["defgh", "abcde"] = [x64 x65 x66 x67 x68, x61 x62 x63 x64 x65]
 	TAG2_LO(214, LEN), TAG2_HI(214), 5, 0x64, 0x65, 0x66, 0x67, 0x68,
-	// 281
 	TAG2_LO(214, LEN), TAG2_HI(214), 5, 0x61, 0x62, 0x63, 0x64, 0x65,
-	// 289
 
 	// rstr = ["ghikj","lmnop"] = [x67 x68 x69 x6b x6a, x6c x6d x6e x6f x70]
 	TAG2_LO(215, LEN), TAG2_HI(215), 5, 0x67, 0x68, 0x69, 0x6B, 0x6A,
-	// 297
 	TAG2_LO(215, LEN), TAG2_HI(215), 5, 0x6C, 0x6D, 0x6E, 0x6F, 0x70,
-	// 305
 
 	// ren = [ENUM_C,ENUM_B,ENUM_A] = [2,1,0]
 	TAG2_LO(216, LEN), TAG2_HI(216), 3, 2, 1, 0,
-	// 311
 
-	// rmsg = [{b = true},{u64 = 10234}]; 10234 = 0x27FA = 0x4F,0x7A
+	// rmsg = [{b = true},{u64 = 10234},{}]; 10234 = 0x27FA = 0x4F,0x7A
 	TAG2_LO(217, LEN), TAG2_HI(217), 2, TAG1(1, VAR), 1,
-	// 316
 	TAG2_LO(217, LEN), TAG2_HI(217), 3, TAG1(10, VAR), 0xFA, 0x4F,
-	// 322
+	TAG2_LO(217, LEN), TAG2_HI(217), 0,
 
 	// rpod = [{u = 1},{i = -1}]
 	TAG2_LO(218, LEN), TAG2_HI(218), 2, TAG1(1, VAR), 1,
-	// 327
 	TAG2_LO(218, LEN), TAG2_HI(218), 2, TAG1(2, VAR), 1,
-	// 332
 };
 
 static const char test_json[] = 
-	"{"
-		"\"b\":true,"
-		"\"i32\":-23,"
-		"\"s32\":-1234,"
-		"\"sf32\":-34757,"
-		"\"u32\":1,"
-		"\"f32\":34757,"
-		"\"i64\":\"-34\","
-		"\"sf64\":\"-575859\","
-		"\"s64\":\"-23585\","
-		"\"u64\":\"10234\","
-		"\"f64\":\"575859\","
-		"\"f\":314,"
-		"\"d\":3.141,"
-		"\"by\":\"YWJjZGU\","
-		"\"str\":\"abcde\","
-		"\"en\":\"ENUM_C\","
-		"\"msg\":{"
-			"\"b\":true"
-		"},"
-		"\"pod\":{\"i\":-12},"
-		"\"rb\":[false,true,false],"
-		"\"ri32\":[-1,0,1],"
-		"\"rs32\":[-10,0,10],"
-		"\"rsf32\":[-10,20,0],"
-		"\"ru32\":[1,2,3],"
-		"\"rf32\":[10,20,30],"
-		"\"ri64\":[\"-2\",\"0\",\"2\"],"
-		"\"rsf64\":[\"-100\",\"0\",\"100\"],"
-		"\"rs64\":[\"-20\",\"0\",\"20\"],"
-		"\"ru64\":[\"3\",\"4\",\"5\"],"
-		"\"rf64\":[\"30\",\"40\",\"50\"],"
-		"\"rf\":[3.5],"
-		"\"rd\":[1.1,2.2,3.3],"
-		"\"rby\":[\"ZGVmZ2g\",\"YWJjZGU\"],"
-		"\"rstr\":[\"ghikj\",\"lmnop\"],"
-		"\"ren\":[\"ENUM_C\",\"ENUM_B\",\"ENUM_A\"],"
-		"\"rmsg\":[{\"b\":true},{\"u64\":\"10234\"}],"
-		"\"rpod\":[{\"u\":1},{\"i\":-1}]"
-	"}";
-
-
-static const char test_pretty[] = 
 	"{\n"
 		"\t\"b\": true,\n"
 		"\t\"i32\": -23,\n"
@@ -325,15 +243,20 @@ static const char test_pretty[] =
 			"\t\t\"ENUM_B\",\n"
 			"\t\t\"ENUM_A\"\n"
 		"\t],\n"
-		"\t\"rmsg\": [{\n"
+		"\t\"rmsg\": [\n"
+			"\t\t{\n"
 				"\t\t\t\"b\": true\n"
-			"\t\t},{\n"
+			"\t\t},\n"
+			"\t\t{\n"
 				"\t\t\t\"u64\": \"10234\"\n"
-			"\t\t}\n"
+			"\t\t},\n"
+			"\t\t{}\n"
 		"\t],\n"
-		"\t\"rpod\": [{\n"
+		"\t\"rpod\": [\n"
+			"\t\t{\n"
 				"\t\t\t\"u\": 1\n"
-			"\t\t},{\n"
+			"\t\t},\n"
+			"\t\t{\n"
 				"\t\t\t\"i\": -1\n"
 			"\t\t}\n"
 		"\t]\n"
@@ -359,11 +282,10 @@ static void setup_message(struct TestMessage *m) {
 
 	static TestMessage msg2 = {};
 	msg2.b = true;
-
 	static TestMessage msg3 = {};
 	msg3.u64 = 10234;
-
-	static TestMessage *rmsg[2] = { &msg2, &msg3 };
+	static TestMessage emptymsg = {};
+	static TestMessage *rmsg[3] = { &msg2, &msg3, &emptymsg };
 
 	static TestPod pod = {};
 	pod.foo_type = TESTPOD_I;
@@ -427,13 +349,14 @@ static void setup_message(struct TestMessage *m) {
 	m->ren.v = ren;
 	m->msg = &msg2;
 	m->pod = pod;
-	m->rmsg.len = 2;
+	m->rmsg.len = 3;
 	m->rmsg.v = rmsg;
 	m->rpod.len = 2;
 	m->rpod.v = rpod;
 }
 
 static void check_message(const struct TestMessage *m) {
+	ASSERT_TRUE(m != NULL);
 	EXPECT_EQ(true, m->b);
 	EXPECT_EQ(1, m->u32);
 	EXPECT_EQ(10234, m->u64);
@@ -517,7 +440,7 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(true, m->msg->b);
 	EXPECT_EQ(TESTPOD_I, m->pod.foo_type);
 	EXPECT_EQ(-12, m->pod.foo.i);
-	EXPECT_EQ(2, m->rmsg.len);
+	EXPECT_EQ(3, m->rmsg.len);
 	EXPECT_EQ(true, m->rmsg.v[0]->b);
 	EXPECT_EQ(10234, m->rmsg.v[1]->u64);
 	EXPECT_EQ(2, m->rpod.len);
