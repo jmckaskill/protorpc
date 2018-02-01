@@ -11,8 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\http.c" />
     <ClCompile Include="src\\decode.c" />
     <ClCompile Include="src\\encode.c" />
+    <ClCompile Include="src\http2.c" />
+    <ClCompile Include="src\\http_test.cpp" />
     <ClCompile Include="src\\parse.c" />
     <ClCompile Include="src\\print.c" />
     <ClCompile Include="src\\protorpc.c" />
@@ -25,10 +28,12 @@
   <ItemGroup>
     <ClInclude Include="char-array.h" />
     <ClInclude Include="http-parser.h" />
+    <ClInclude Include="http.h" />
     <ClInclude Include="protorpc.h" />
     <ClInclude Include="ptr-array.h" />
     <ClInclude Include="ptr-vector.h" />
     <ClInclude Include="src\\common.h" />
+    <ClInclude Include="src\\rpc.h" />
     <ClInclude Include="src\\test.proto.h" />
     <ClInclude Include="str.h" />
   </ItemGroup>

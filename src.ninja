@@ -10,6 +10,7 @@ build $obj/protorpc/ptr-vector.o: cc $SRC/protorpc/src/ptr-vector.c
 build $obj/protorpc/str.o: cc $SRC/protorpc/src/str.c
 build $obj/protorpc/protorpc.o: cc $SRC/protorpc/src/protorpc.c
 build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
+build $obj/protorpc/http.o: cc $SRC/protorpc/src/http.c
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
@@ -62,6 +63,7 @@ build $lib/protorpc.lib: lib $
  $obj/protorpc/ptr-vector.o $
  $obj/protorpc/str.o $
  $obj/protorpc/service.o $
+ $obj/protorpc/http.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protorpc.lib $

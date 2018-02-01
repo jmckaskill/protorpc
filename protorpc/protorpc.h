@@ -149,7 +149,9 @@ int pb_encoded_size(void *obj, const proto_message *type);
 int pb_encode(void *obj, const proto_message *type, char *data);
 int pb_print(void *obj, const proto_message *type, char *buf, int sz);
 void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
-int pb_dispatch(void *svc, const proto_service *type, pb_allocator *obj, const char *path, pb_bytes in, pb_bytes *out);
+
+const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path);
+int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int *outsz);
 
 static inline int pb_base64_size(int sz) {
 	return (sz * 4 + 3) / 3;

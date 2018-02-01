@@ -3,8 +3,6 @@
 
 typedef struct FileDescriptorProto FileDescriptorProto;
 typedef struct DescriptorProto DescriptorProto;
-typedef enum FieldDescriptorProto_Type FieldDescriptorProto_Type;
-typedef enum FieldDescriptorProto_Label FieldDescriptorProto_Label;
 typedef struct FieldDescriptorProto FieldDescriptorProto;
 typedef struct OneofDescriptorProto OneofDescriptorProto;
 typedef struct EnumDescriptorProto EnumDescriptorProto;
@@ -51,11 +49,15 @@ enum FieldDescriptorProto_Type {
 	TYPE_SINT32 = 17,
 	TYPE_SINT64 = 18
 };
+typedef enum FieldDescriptorProto_Type FieldDescriptorProto_Type;
+
 enum FieldDescriptorProto_Label {
 	LABEL_OPTIONAL = 1,
 	LABEL_REQUIRED = 2,
 	LABEL_REPEATED = 3
 };
+typedef enum FieldDescriptorProto_Label FieldDescriptorProto_Label;
+
 struct FieldDescriptorProto {
 	pb_msg _pbhdr;
 	pb_string	name;

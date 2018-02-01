@@ -21,9 +21,9 @@ static const proto_enum_value values_TestEnum[] = {
 	{{6, "ENUM_C"}, 2}
 };
 static const pb_string *by_name_TestEnum[] = {
-	{&values_TestEnum[0].name},
-	{&values_TestEnum[1].name},
-	{&values_TestEnum[2].name}
+	&values_TestEnum[0].name,
+	&values_TestEnum[1].name,
+	&values_TestEnum[2].name
 };
 const proto_enum proto_TestEnum = {
 	3,
@@ -150,21 +150,21 @@ const proto_message proto_TestMessage = {
 	by_name_TestMessage
 };
 
-static const proto_method method_TestService_rpc2 = {
+const proto_method proto_TestService_rpc2 = {
 	{23, "/twirp/TestService/rpc2"},
 	0,
 	&proto_TestPod,
 	&proto_TestMessage
 };
-static const proto_method method_TestService_rpc1 = {
+const proto_method proto_TestService_rpc1 = {
 	{23, "/twirp/TestService/rpc1"},
 	1,
 	&proto_TestMessage,
 	&proto_TestPod
 };
 static const pb_string *by_name_TestService[] = {
-	&method_TestService_rpc1.path,
-	&method_TestService_rpc2.path,
+	&proto_TestService_rpc1.path,
+	&proto_TestService_rpc2.path,
 };
 const proto_service proto_TestService = {
 	2,

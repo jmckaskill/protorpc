@@ -1,5 +1,15 @@
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+#include <poll.h>
+#include <sys/socket.h>
+#endif
+
 #include <gtest/gtest.h>
 #include "test.proto.h"
+#include <protorpc/http.h>
+#include <vector>
+#include <memory>
 
 // wire types
 #define VAR 0
@@ -588,8 +598,8 @@ static int test_rpc1(TestService *s, pb_allocator *a, const TestMessage *in, Tes
 }
 
 TEST(protobuf, dispatch) {
-	uint8_t ibuf[4096];
-	uint8_t obuf[4096];
+	char ibuf[4096];
+	char obuf[4096];
 	char abuf[4096];
 
 	pb_allocator obj = PB_INIT_ALLOCATOR(abuf);
@@ -597,32 +607,158 @@ TEST(protobuf, dispatch) {
 	TestService svc = { 0 };
 	svc.rpc1 = &test_rpc1;
 
+	EXPECT_EQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, "/twirp/TestService/rpc1"));	
+
 	// Try with protobufs
-	pb_bytes in, out;
-	out.len = sizeof(obuf);
-	out.p = obuf;
+	int outlen = sizeof(obuf);
+	int inlen = sizeof(test_proto);
+	memcpy(ibuf, test_proto, inlen);
 
-	memcpy(ibuf, test_proto, sizeof(test_proto));
-	in.p = ibuf;
-	in.len = sizeof(test_proto);
+	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, &outlen));
 
-	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService, &obj, "/twirp/TestService/rpc1", in, &out));
-
+	pb_bytes have = { outlen, (uint8_t*) obuf };
 	pb_bytes want = { sizeof(test_pod_proto), test_pod_proto };
-	EXPECT_EQ(want, out);
+	EXPECT_EQ(want, have);
 
 
 	// Try with json
-	out.len = sizeof(obuf);
-	out.p = obuf;
+	outlen = sizeof(obuf);
+	inlen = strlen(test_json);
+	memcpy(ibuf, test_json, inlen);
 
-	memcpy(ibuf, test_json, strlen(test_json));
-	in.p = ibuf;
-	in.len = strlen(test_json);
+	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, &outlen));
 
-	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService, &obj, "/twirp/TestService/rpc1", in, &out));
+	EXPECT_EQ(strlen(test_pod_json), outlen);
+	obuf[outlen] = 0;
+	EXPECT_STREQ(test_pod_json, obuf);
+}
 
-	EXPECT_EQ(strlen(test_pod_json), out.len);
-	obuf[out.len] = 0;
-	EXPECT_STREQ(test_pod_json, (char*)obuf);
+struct http_connection {
+	http h;
+	const proto_method *method;
+	bool processed_header;
+	int fd;
+	char rx[4096];
+	char tx[4096];
+};
+
+struct http_server {
+	TestService svc;
+	std::vector<http_connection*> conns;
+	int lfd;
+};
+
+#ifdef _WIN32
+typedef WSAPOLLFD pollfd;
+#define poll WSAPoll
+#else
+#define closesocket(fd) close(fd)
+#endif
+
+static bool would_block() {
+#ifdef _WIN32
+	return WSAGetLastError() == WSAEWOULDBLOCK;
+#else
+	return errno == EWOULDBLOCK || errno == EINTR;
+#endif
+}
+
+static void decide_on_dispatch(http_server *s, http_connection *c) {
+	c->method = pb_lookup_method(&s->svc, &proto_TestService, c->h.path.c_str);
+	if (!c->method) {
+		http_start_response(&c->h, NULL);
+		http_finish_response(&c->h, 404, 0);
+	}
+}
+
+void poll_http_server(http_server *s) {
+	std::vector<pollfd> fds;
+	fds.resize(s->conns.size() + 1);
+	fds[0].events = POLLIN;
+	fds[0].revents = 0;
+	fds[0].fd = s->lfd;
+
+	for (size_t i = 0; i < s->conns.size(); i++) {
+		auto& c = s->conns[i];
+		int rlen, wlen;
+		http_recv_buffer(&c->h, &rlen);
+		http_recv_buffer(&c->h, &wlen);
+
+		fds[i + 1].fd = c->fd;
+		fds[i + 1].events = (rlen ? POLLIN : 0) | (wlen ? POLLOUT : 0);
+		fds[i + 1].revents = 0;
+	}
+
+	poll(&fds[0], fds.size(), -1);
+
+	if (fds[0].revents & POLLIN) {
+		int fd;
+		while ((fd = accept(s->lfd, NULL, NULL)) >= 0) {
+			http_connection *c = new http_connection();
+			memset(c, 0, sizeof(*c));
+			http_reset(&c->h, c->rx, sizeof(c->rx), c->tx, sizeof(c->tx), NULL);
+			c->fd = fd;
+		}
+	}
+
+	for (size_t i = 0; i < s->conns.size();) {
+		auto& c = s->conns[i];
+		if (fds[i + 1].revents & POLLIN) {
+			int r;
+			char *buf = http_recv_buffer(&c->h, &r);
+			r = recv(c->fd, buf, r, 0);
+			if (r < 0 && would_block()) {
+				continue;
+			}
+			if (http_received(&c->h, r)) {
+				goto do_close;
+			}
+			if (!c->h.headers_complete) {
+				continue;
+			}
+			if (!c->processed_header) {
+				decide_on_dispatch(s, c);
+			}
+			if (!c->method) {
+				int sz;
+				http_request_data(&c->h, &sz);
+				http_consume_data(&c->h, sz);
+			} else if (c->h.request_complete) {
+				char obj[4096];
+				pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
+				int reqsz, respsz;
+				char *req = http_request_data(&c->h, &reqsz);
+				char *resp = http_start_response(&c->h, &respsz);
+				int sts = pb_dispatch(s, c->method, &alloc, req, reqsz, resp, &respsz);
+				http_finish_response(&c->h, sts, respsz);
+			}
+		} else if (fds[i + 1].revents & POLLOUT) {
+			int w;
+			char *buf = http_send_buffer(&c->h, &w);
+			w = send(c->fd, buf, w, 0);
+			if (w < 0 && would_block()) {
+				continue;
+			} else if (http_sent(&c->h, w)) {
+				goto do_close;
+			}
+
+			if (c->h.response_complete) {
+				http_next_request(&c->h);
+				c->processed_header = false;
+				c->method = NULL;
+			}
+		}
+
+		i++;
+		continue;
+
+	do_close:
+		closesocket(c->fd);
+		delete c;
+		s->conns.erase(s->conns.begin() + i);
+	}
+}
+
+TEST(protobuf, http) {
+
 }

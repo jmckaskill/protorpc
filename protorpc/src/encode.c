@@ -72,6 +72,14 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 					ret += 1;
 				}
 				break;
+			case PROTO_OPTIONAL_U32: {
+				pb_opt_uint *opt = (pb_opt_uint*) (msg + f->offset);
+				if (opt->set) {
+					ret += varint_size(f->tag);
+					ret += varint_size(opt->val);
+				}
+				break;
+			}
 			case PROTO_ENUM:
 			case PROTO_I32:
 			case PROTO_U32: {
@@ -402,6 +410,14 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 					*(p++) = 1;
 				}
 				break;
+			case PROTO_OPTIONAL_U32: {
+				pb_opt_uint *opt = (pb_opt_uint*)(msg + f->offset);
+				if (opt->set) {
+					p = put_varint(p, f->tag);
+					p = put_varint(p, opt->val);
+				}
+				break;
+			}
 			case PROTO_ENUM:
 			case PROTO_I32:
 			case PROTO_U32: {

@@ -57,8 +57,8 @@ typedef struct {
 
 #define str_equals(A, B) ((A).len == (B).len && !memcmp((A).c_str, (B).c_str, (A).len))
 
-#define str_find_char(P, CH)    ((const char*) memchr((P).c_str, (CH), (P).len))
-#define str_rfind_char(P, CH) 	((const char*) memrchr((P).c_str, (CH), (P).len))
+#define str_find_char(P, CH)    ((char*) memchr((P).c_str, (CH), (P).len))
+#define str_rfind_char(P, CH) 	((char*) memrchr((P).c_str, (CH), (P).len))
 
 #define slice_all(P, STR) ((P)->len = (STR).len, (P)->c_str = (STR).c_str)
 #define slice_left(P, STR, PTR) ((P)->len = (PTR) - (STR).c_str, (P)->c_str = (STR).c_str)

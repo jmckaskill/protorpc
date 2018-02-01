@@ -617,6 +617,12 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 			case PROTO_BOOL:
 				p = parse_bool(p, (bool*)(msg + f->offset));
 				break;
+			case PROTO_OPTIONAL_U32: {
+				pb_opt_uint *opt = (pb_opt_uint*) (msg + f->offset);
+				opt->set = true;
+				p = parse_u32(p, &opt->val);
+				break;
+			}
 			case PROTO_F32:
 			case PROTO_U32:
 				p = parse_u32(p, (unsigned*)(msg + f->offset));

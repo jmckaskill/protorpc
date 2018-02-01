@@ -5,7 +5,6 @@ extern "C" {
 #endif
 
 typedef struct TestPod TestPod;
-typedef enum TestEnum TestEnum;
 typedef struct TestMessage TestMessage;
 typedef struct TestService TestService;
 typedef struct TestMessage_MbEntry TestMessage_MbEntry;
@@ -31,6 +30,8 @@ extern const proto_message proto_TestPod;
 extern const proto_enum proto_TestEnum;
 extern const proto_message proto_TestMessage;
 extern const proto_service proto_TestService;
+extern const proto_method proto_TestService_rpc2;
+extern const proto_method proto_TestService_rpc1;
 extern const proto_message proto_TestMessage_MbEntry;
 extern const proto_message proto_TestMessage_MdEntry;
 extern const proto_message proto_TestMessage_MfEntry;
@@ -68,6 +69,7 @@ enum TestEnum {
 	ENUM_B = 1,
 	ENUM_C = 2
 };
+typedef enum TestEnum TestEnum;
 
 struct TestMessage {
 	pb_msg _pbhdr;

@@ -124,6 +124,7 @@ static void define_enum(str_t *o, const proto_type *t) {
 		str_addf(o, "\t%s = %d", v->name.c_str, v->number);
 	}
 	str_add(o, EOL "};" EOL);
+	str_addf(o, "typedef enum %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
 }
 
 static void define_service(str_t *o, const proto_type *t) {
@@ -163,8 +164,6 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 		proto_type *t = types[i];
 		if (t->file == f && (t->msg || t->svc)) {
 			str_addf(o, "typedef struct %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
-		} else if (t->file == f && t->en) {
-			str_addf(o, "typedef enum %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
 		}
 	}
 
@@ -178,6 +177,10 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 			str_addf(o, "extern const proto_enum proto_%s;" EOL, t->c_type.c_str);
 		} else if (t->file == f && t->svc) {
 			str_addf(o, "extern const proto_service proto_%s;" EOL, t->c_type.c_str);
+			for (int j = 0; j < t->svc->method.len; j++) {
+				MethodDescriptorProto *m = t->svc->method.v[j];
+				str_addf(o, "extern const proto_method proto_%s_%s;" EOL, t->c_type.c_str, m->name.c_str);
+			}
 		}
 	}
 
@@ -224,7 +227,7 @@ static int cmp_field_name(const void **a, const void **b) {
 	return compare_string(fa->json_name.c_str, fa->json_name.len, fb->json_name.c_str, fb->json_name.len);
 }
 
-static int cmp_method_name(const void *a, const void *b) {
+static int cmp_method_name(const void **a, const void **b) {
 	MethodDescriptorProto *ma = *(MethodDescriptorProto**)a;
 	MethodDescriptorProto *mb = *(MethodDescriptorProto**)b;
 	return compare_string(ma->name.c_str, ma->name.len, mb->name.c_str, mb->name.len);
@@ -299,7 +302,7 @@ static void do_enum_by_name(str_t *o, const proto_type *t) {
 		if (i) {
 			str_addf(o, "," EOL);
 		}
-		str_addf(o, "\t{&values_%s[%d].name}", t->c_type.c_str, v->by_number_index);
+		str_addf(o, "\t&values_%s[%d].name", t->c_type.c_str, v->by_number_index);
 	}
 	str_add(o, EOL "};" EOL);
 }
@@ -318,7 +321,7 @@ static void do_method_by_index(str_t *o, const proto_type *t) {
 		MethodDescriptorProto *m = t->svc->method.v[i];
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
-		str_addf(o, "static const proto_method method_%s_%s = {" EOL, t->c_type.c_str, m->name.c_str);
+		str_addf(o, "const proto_method proto_%s_%s = {" EOL, t->c_type.c_str, m->name.c_str);
 		str_addf(o, "\t{%d, \"/twirp/%s/%s\"}," EOL,
 			7 /*/twirp*/ + (t->proto_type.len-1) + 1 + m->name.len, t->proto_type.c_str+1, m->name.c_str);
 		str_addf(o, "\t%d," EOL, i);
@@ -332,7 +335,7 @@ static void do_method_by_name(str_t *o, const proto_type *t) {
 	str_addf(o, "static const pb_string *by_name_%s[] = {" EOL, t->c_type.c_str);
 	for (int i = 0; i < t->svc->method.len; i++) {
 		MethodDescriptorProto *m = t->svc->method.v[i];
-		str_addf(o, "\t&method_%s_%s.path," EOL, t->c_type.c_str, m->name.c_str);
+		str_addf(o, "\t&proto_%s_%s.path," EOL, t->c_type.c_str, m->name.c_str);
 	}
 	str_addf(o, "};" EOL);
 }
@@ -462,6 +465,4 @@ int main(int argc, char *argv[]) {
 		str_add(&fn, ".c");
 		write_file(fn.c_str, data.c_str, data.len);
 	}
-
-
 }
