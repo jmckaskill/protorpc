@@ -126,6 +126,19 @@ static void define_enum(str_t *o, const proto_type *t) {
 	str_add(o, EOL "};" EOL);
 }
 
+static void define_service(str_t *o, const proto_type *t) {
+	str_add(o, EOL);
+	str_addf(o, "struct %s {" EOL, t->c_type.c_str);
+	for (int i = 0; i < t->svc->method.len; i++) {
+		MethodDescriptorProto *m = t->svc->method.v[i];
+		proto_type *it = get_type(m->input_type);
+		proto_type *ot = get_type(m->output_type);
+		str_addf(o, "\tint (*%s)(%s *svc, pb_allocator *obj, const %s *in, %s *out);" EOL,
+			m->name.c_str, t->c_type.c_str, it->c_type.c_str, ot->c_type.c_str);
+	}
+	str_add(o, "};" EOL);
+}
+
 static void write_header(str_t *o, const FileDescriptorProto *f) {
 	int num;
 	proto_type **types = get_all_types(&num);
@@ -148,7 +161,7 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 	str_add(o, EOL);
 	for (int i = 0; i < num; i++) {
 		proto_type *t = types[i];
-		if (t->file == f && t->msg) {
+		if (t->file == f && (t->msg || t->svc)) {
 			str_addf(o, "typedef struct %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
 		} else if (t->file == f && t->en) {
 			str_addf(o, "typedef enum %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
@@ -163,6 +176,8 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 			str_addf(o, "extern const proto_message proto_%s;" EOL, t->c_type.c_str);
 		} else if (t->file == f && t->en) {
 			str_addf(o, "extern const proto_enum proto_%s;" EOL, t->c_type.c_str);
+		} else if (t->file == f && t->svc) {
+			str_addf(o, "extern const proto_service proto_%s;" EOL, t->c_type.c_str);
 		}
 	}
 
@@ -173,6 +188,8 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 			define_message(o, t);
 		} else if (t->file == f && t->en) {
 			define_enum(o, t);
+		} else if (t->file == f && t->svc) {
+			define_service(o, t);
 		}
 	}
 
@@ -183,28 +200,34 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 	str_add(o, EOL);
 }
 
-static int cmp_enum_number(const void *a, const void *b) {
+static int cmp_enum_number(const void **a, const void **b) {
 	EnumValueDescriptorProto *va = *(EnumValueDescriptorProto**)a;
 	EnumValueDescriptorProto *vb = *(EnumValueDescriptorProto**)b;
 	return va->number - vb->number;
 }
 
-static int cmp_enum_name(const void *a, const void *b) {
+static int cmp_enum_name(const void **a, const void **b) {
 	EnumValueDescriptorProto *va = *(EnumValueDescriptorProto**)a;
 	EnumValueDescriptorProto *vb = *(EnumValueDescriptorProto**)b;
 	return compare_string(va->name.c_str, va->name.len, vb->name.c_str, vb->name.len);
 }
 
-static int cmp_field_number(const void *a, const void *b) {
+static int cmp_field_number(const void **a, const void **b) {
 	FieldDescriptorProto *fa = *(FieldDescriptorProto**)a;
 	FieldDescriptorProto *fb = *(FieldDescriptorProto**)b;
 	return fa->number - fb->number;
 }
 
-static int cmp_field_name(const void *a, const void *b) {
+static int cmp_field_name(const void **a, const void **b) {
 	FieldDescriptorProto *fa = *(FieldDescriptorProto**)a;
 	FieldDescriptorProto *fb = *(FieldDescriptorProto**)b;
 	return compare_string(fa->json_name.c_str, fa->json_name.len, fb->json_name.c_str, fb->json_name.len);
+}
+
+static int cmp_method_name(const void *a, const void *b) {
+	MethodDescriptorProto *ma = *(MethodDescriptorProto**)a;
+	MethodDescriptorProto *mb = *(MethodDescriptorProto**)b;
+	return compare_string(ma->name.c_str, ma->name.len, mb->name.c_str, mb->name.len);
 }
 
 static void do_fields_by_number(str_t *o, const proto_type *t) {
@@ -249,7 +272,7 @@ static void do_fields_by_name(str_t *o, const proto_type *t) {
 }
 
 static void do_typeinfo(str_t *o, const proto_type *t) {
-	str_addf(o, "const struct proto_message proto_%s = {" EOL, t->c_type.c_str);
+	str_addf(o, "const proto_message proto_%s = {" EOL, t->c_type.c_str);
 	str_addf(o, "\tsizeof(%s)," EOL, t->c_type.c_str);
 	str_addf(o, "\t%d," EOL, t->msg->field.len);
 	str_addf(o, "\tfields_%s," EOL, t->c_type.c_str);
@@ -282,13 +305,44 @@ static void do_enum_by_name(str_t *o, const proto_type *t) {
 }
 
 static void do_enuminfo(str_t *o, const proto_type *t) {
-	str_addf(o, "const struct proto_enum proto_%s = {" EOL, t->c_type.c_str);
+	str_addf(o, "const proto_enum proto_%s = {" EOL, t->c_type.c_str);
 	str_addf(o, "\t%d," EOL, t->en->value.len);
 	str_addf(o, "\tvalues_%s," EOL, t->c_type.c_str);
 	str_addf(o, "\tby_name_%s" EOL, t->c_type.c_str);
 	str_addf(o, "};" EOL);
 }
 
+static void do_method_by_index(str_t *o, const proto_type *t) {
+	for (int i = 0; i < t->svc->method.len; i++) {
+		// Note the proto_type has a leading . that we want to remove
+		MethodDescriptorProto *m = t->svc->method.v[i];
+		proto_type *it = get_type(m->input_type);
+		proto_type *ot = get_type(m->output_type);
+		str_addf(o, "static const proto_method method_%s_%s = {" EOL, t->c_type.c_str, m->name.c_str);
+		str_addf(o, "\t{%d, \"/twirp/%s/%s\"}," EOL,
+			7 /*/twirp*/ + (t->proto_type.len-1) + 1 + m->name.len, t->proto_type.c_str+1, m->name.c_str);
+		str_addf(o, "\t%d," EOL, i);
+		str_addf(o, "\t&proto_%s," EOL, it->c_type.c_str);
+		str_addf(o, "\t&proto_%s" EOL, ot->c_type.c_str);
+		str_add(o, "};" EOL);
+	}
+}
+
+static void do_method_by_name(str_t *o, const proto_type *t) {
+	str_addf(o, "static const pb_string *by_name_%s[] = {" EOL, t->c_type.c_str);
+	for (int i = 0; i < t->svc->method.len; i++) {
+		MethodDescriptorProto *m = t->svc->method.v[i];
+		str_addf(o, "\t&method_%s_%s.path," EOL, t->c_type.c_str, m->name.c_str);
+	}
+	str_addf(o, "};" EOL);
+}
+
+static void do_svcinfo(str_t *o, const proto_type *t) {
+	str_addf(o, "const proto_service proto_%s = {" EOL, t->c_type.c_str);
+	str_addf(o, "\t%d," EOL, t->svc->method.len);
+	str_addf(o, "\tby_name_%s" EOL, t->c_type.c_str);
+	str_addf(o, "};" EOL);
+}
 
 static void write_source(str_t *o, const FileDescriptorProto *f) {
 	int num;
@@ -332,6 +386,13 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 
 			do_enum_by_name(o, t);
 			do_enuminfo(o, t);
+
+		} else if (t->file == f && t->svc) {
+			str_add(o, EOL);
+			do_method_by_index(o, t);
+			pa_sort(t->svc->method, &cmp_method_name);
+			do_method_by_name(o, t);
+			do_svcinfo(o, t);
 		}
 	}
 

@@ -7,6 +7,7 @@ extern "C" {
 typedef struct TestPod TestPod;
 typedef enum TestEnum TestEnum;
 typedef struct TestMessage TestMessage;
+typedef struct TestService TestService;
 typedef struct TestMessage_MbEntry TestMessage_MbEntry;
 typedef struct TestMessage_MdEntry TestMessage_MdEntry;
 typedef struct TestMessage_MfEntry TestMessage_MfEntry;
@@ -29,6 +30,7 @@ typedef struct TestMessage_Msf64Entry TestMessage_Msf64Entry;
 extern const proto_message proto_TestPod;
 extern const proto_enum proto_TestEnum;
 extern const proto_message proto_TestMessage;
+extern const proto_service proto_TestService;
 extern const proto_message proto_TestMessage_MbEntry;
 extern const proto_message proto_TestMessage_MdEntry;
 extern const proto_message proto_TestMessage_MfEntry;
@@ -123,6 +125,11 @@ struct TestMessage {
 	struct {int len; TestMessage_MenEntry *v;} men;
 	struct {int len; TestMessage_MmsgEntry **v;} mmsg;
 	struct {int len; TestMessage_MpodEntry *v;} mpod;
+};
+
+struct TestService {
+	int (*rpc2)(TestService *svc, pb_allocator *obj, const TestPod *in, TestMessage *out);
+	int (*rpc1)(TestService *svc, pb_allocator *obj, const TestMessage *in, TestPod *out);
 };
 
 struct TestMessage_MbEntry {

@@ -8,7 +8,7 @@ static const pb_string *by_name_TestPod[] = {
 	&fields_TestPod[1].json_name,
 	&fields_TestPod[0].json_name
 };
-const struct proto_message proto_TestPod = {
+const proto_message proto_TestPod = {
 	sizeof(TestPod),
 	2,
 	fields_TestPod,
@@ -25,7 +25,7 @@ static const pb_string *by_name_TestEnum[] = {
 	{&values_TestEnum[1].name},
 	{&values_TestEnum[2].name}
 };
-const struct proto_enum proto_TestEnum = {
+const proto_enum proto_TestEnum = {
 	3,
 	values_TestEnum,
 	by_name_TestEnum
@@ -143,11 +143,32 @@ static const pb_string *by_name_TestMessage[] = {
 	&fields_TestMessage[21].json_name,
 	&fields_TestMessage[25].json_name
 };
-const struct proto_message proto_TestMessage = {
+const proto_message proto_TestMessage = {
 	sizeof(TestMessage),
 	54,
 	fields_TestMessage,
 	by_name_TestMessage
+};
+
+static const proto_method method_TestService_rpc2 = {
+	{23, "/twirp/TestService/rpc2"},
+	0,
+	&proto_TestPod,
+	&proto_TestMessage
+};
+static const proto_method method_TestService_rpc1 = {
+	{23, "/twirp/TestService/rpc1"},
+	1,
+	&proto_TestMessage,
+	&proto_TestPod
+};
+static const pb_string *by_name_TestService[] = {
+	&method_TestService_rpc1.path,
+	&method_TestService_rpc2.path,
+};
+const proto_service proto_TestService = {
+	2,
+	by_name_TestService
 };
 
 static const struct proto_field fields_TestMessage_MbEntry[] = {
@@ -158,7 +179,7 @@ static const pb_string *by_name_TestMessage_MbEntry[] = {
 	&fields_TestMessage_MbEntry[0].json_name,
 	&fields_TestMessage_MbEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MbEntry = {
+const proto_message proto_TestMessage_MbEntry = {
 	sizeof(TestMessage_MbEntry),
 	2,
 	fields_TestMessage_MbEntry,
@@ -173,7 +194,7 @@ static const pb_string *by_name_TestMessage_MdEntry[] = {
 	&fields_TestMessage_MdEntry[0].json_name,
 	&fields_TestMessage_MdEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MdEntry = {
+const proto_message proto_TestMessage_MdEntry = {
 	sizeof(TestMessage_MdEntry),
 	2,
 	fields_TestMessage_MdEntry,
@@ -188,7 +209,7 @@ static const pb_string *by_name_TestMessage_MfEntry[] = {
 	&fields_TestMessage_MfEntry[0].json_name,
 	&fields_TestMessage_MfEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MfEntry = {
+const proto_message proto_TestMessage_MfEntry = {
 	sizeof(TestMessage_MfEntry),
 	2,
 	fields_TestMessage_MfEntry,
@@ -203,7 +224,7 @@ static const pb_string *by_name_TestMessage_MbyEntry[] = {
 	&fields_TestMessage_MbyEntry[0].json_name,
 	&fields_TestMessage_MbyEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MbyEntry = {
+const proto_message proto_TestMessage_MbyEntry = {
 	sizeof(TestMessage_MbyEntry),
 	2,
 	fields_TestMessage_MbyEntry,
@@ -218,7 +239,7 @@ static const pb_string *by_name_TestMessage_MenEntry[] = {
 	&fields_TestMessage_MenEntry[0].json_name,
 	&fields_TestMessage_MenEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MenEntry = {
+const proto_message proto_TestMessage_MenEntry = {
 	sizeof(TestMessage_MenEntry),
 	2,
 	fields_TestMessage_MenEntry,
@@ -233,7 +254,7 @@ static const pb_string *by_name_TestMessage_Mf32Entry[] = {
 	&fields_TestMessage_Mf32Entry[0].json_name,
 	&fields_TestMessage_Mf32Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Mf32Entry = {
+const proto_message proto_TestMessage_Mf32Entry = {
 	sizeof(TestMessage_Mf32Entry),
 	2,
 	fields_TestMessage_Mf32Entry,
@@ -248,7 +269,7 @@ static const pb_string *by_name_TestMessage_Mf64Entry[] = {
 	&fields_TestMessage_Mf64Entry[0].json_name,
 	&fields_TestMessage_Mf64Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Mf64Entry = {
+const proto_message proto_TestMessage_Mf64Entry = {
 	sizeof(TestMessage_Mf64Entry),
 	2,
 	fields_TestMessage_Mf64Entry,
@@ -263,7 +284,7 @@ static const pb_string *by_name_TestMessage_Mi32Entry[] = {
 	&fields_TestMessage_Mi32Entry[0].json_name,
 	&fields_TestMessage_Mi32Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Mi32Entry = {
+const proto_message proto_TestMessage_Mi32Entry = {
 	sizeof(TestMessage_Mi32Entry),
 	2,
 	fields_TestMessage_Mi32Entry,
@@ -278,7 +299,7 @@ static const pb_string *by_name_TestMessage_Mi64Entry[] = {
 	&fields_TestMessage_Mi64Entry[0].json_name,
 	&fields_TestMessage_Mi64Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Mi64Entry = {
+const proto_message proto_TestMessage_Mi64Entry = {
 	sizeof(TestMessage_Mi64Entry),
 	2,
 	fields_TestMessage_Mi64Entry,
@@ -293,7 +314,7 @@ static const pb_string *by_name_TestMessage_MmsgEntry[] = {
 	&fields_TestMessage_MmsgEntry[0].json_name,
 	&fields_TestMessage_MmsgEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MmsgEntry = {
+const proto_message proto_TestMessage_MmsgEntry = {
 	sizeof(TestMessage_MmsgEntry),
 	2,
 	fields_TestMessage_MmsgEntry,
@@ -308,7 +329,7 @@ static const pb_string *by_name_TestMessage_MpodEntry[] = {
 	&fields_TestMessage_MpodEntry[0].json_name,
 	&fields_TestMessage_MpodEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MpodEntry = {
+const proto_message proto_TestMessage_MpodEntry = {
 	sizeof(TestMessage_MpodEntry),
 	2,
 	fields_TestMessage_MpodEntry,
@@ -323,7 +344,7 @@ static const pb_string *by_name_TestMessage_Ms32Entry[] = {
 	&fields_TestMessage_Ms32Entry[0].json_name,
 	&fields_TestMessage_Ms32Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Ms32Entry = {
+const proto_message proto_TestMessage_Ms32Entry = {
 	sizeof(TestMessage_Ms32Entry),
 	2,
 	fields_TestMessage_Ms32Entry,
@@ -338,7 +359,7 @@ static const pb_string *by_name_TestMessage_Ms64Entry[] = {
 	&fields_TestMessage_Ms64Entry[0].json_name,
 	&fields_TestMessage_Ms64Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Ms64Entry = {
+const proto_message proto_TestMessage_Ms64Entry = {
 	sizeof(TestMessage_Ms64Entry),
 	2,
 	fields_TestMessage_Ms64Entry,
@@ -353,7 +374,7 @@ static const pb_string *by_name_TestMessage_MstrEntry[] = {
 	&fields_TestMessage_MstrEntry[0].json_name,
 	&fields_TestMessage_MstrEntry[1].json_name
 };
-const struct proto_message proto_TestMessage_MstrEntry = {
+const proto_message proto_TestMessage_MstrEntry = {
 	sizeof(TestMessage_MstrEntry),
 	2,
 	fields_TestMessage_MstrEntry,
@@ -368,7 +389,7 @@ static const pb_string *by_name_TestMessage_Mu32Entry[] = {
 	&fields_TestMessage_Mu32Entry[0].json_name,
 	&fields_TestMessage_Mu32Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Mu32Entry = {
+const proto_message proto_TestMessage_Mu32Entry = {
 	sizeof(TestMessage_Mu32Entry),
 	2,
 	fields_TestMessage_Mu32Entry,
@@ -383,7 +404,7 @@ static const pb_string *by_name_TestMessage_Mu64Entry[] = {
 	&fields_TestMessage_Mu64Entry[0].json_name,
 	&fields_TestMessage_Mu64Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Mu64Entry = {
+const proto_message proto_TestMessage_Mu64Entry = {
 	sizeof(TestMessage_Mu64Entry),
 	2,
 	fields_TestMessage_Mu64Entry,
@@ -398,7 +419,7 @@ static const pb_string *by_name_TestMessage_Msf32Entry[] = {
 	&fields_TestMessage_Msf32Entry[0].json_name,
 	&fields_TestMessage_Msf32Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Msf32Entry = {
+const proto_message proto_TestMessage_Msf32Entry = {
 	sizeof(TestMessage_Msf32Entry),
 	2,
 	fields_TestMessage_Msf32Entry,
@@ -413,7 +434,7 @@ static const pb_string *by_name_TestMessage_Msf64Entry[] = {
 	&fields_TestMessage_Msf64Entry[0].json_name,
 	&fields_TestMessage_Msf64Entry[1].json_name
 };
-const struct proto_message proto_TestMessage_Msf64Entry = {
+const proto_message proto_TestMessage_Msf64Entry = {
 	sizeof(TestMessage_Msf64Entry),
 	2,
 	fields_TestMessage_Msf64Entry,

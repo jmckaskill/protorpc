@@ -75,5 +75,6 @@ message TestPod {
 }
 
 service TestService {
-    rpc Test (TestMessage) returns (TestMessage);
+	rpc rpc2 (TestPod) returns (TestMessage);
+    rpc rpc1 (TestMessage) returns (TestPod);
 }

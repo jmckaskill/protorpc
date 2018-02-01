@@ -1,12 +1,5 @@
-#include <protorpc/protorpc.h>
+#include "common.h"
 #include <string.h>
-
-#define WIRE_VARINT 0
-#define WIRE_FIXED_64 1
-#define WIRE_VARIABLE 2
-#define WIRE_FIXED_32 5
-#define MAX_DEPTH 8
-#define OBJ_ALIGN 8
 
 struct in {
 	uint8_t *next;
@@ -19,21 +12,6 @@ struct decode_stack {
 	char *msg;
 	uint8_t *data_end;
 };
-
-static inline char *align(char *p, size_t align) {
-	return (char*) (((uintptr_t)p + (align - 1)) &~(align - 1));
-}
-
-static inline char *buf_calloc(pb_allocator *b, size_t sz, size_t alignment) {
-	char *p = align(b->next, alignment);
-	char *n = p + sz;
-	if (n > b->end) {
-		return NULL;
-	}
-	memset(p, 0, sz);
-	b->next = n;
-	return p;
-}
 
 static int get_varint(struct in *in, unsigned *pv) {
     size_t shift = 0;
@@ -226,7 +204,7 @@ void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data,
 	// being the last entry
 	data[sz] = '\0';
 
-	char *msg = buf_calloc(obj, type->datasz, OBJ_ALIGN);
+	char *msg = (char*) pb_calloc(obj, 1, type->datasz);
 	if (!msg) {
 		goto err;
 	}
@@ -334,40 +312,6 @@ void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data,
 					goto err;
 				}
 				break;
-			case PROTO_POD:
-			case PROTO_MESSAGE: {
-				if (get_bytes(&in, &bytes)) {
-					goto err;
-				}
-
-				stack[depth].next_field = f+1;
-				stack[depth].field_end = end;
-				stack[depth].msg = msg;
-				stack[depth].data_end = in.end;
-
-				if (++depth == MAX_DEPTH) {
-					goto err;
-				}
-
-				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
-
-				if (f->type == PROTO_POD) {
-					msg = (msg + f->offset);
-				} else {
-					char *child = buf_calloc(obj, ct->datasz, OBJ_ALIGN);
-					if (!child) {
-						goto err;
-					}
-					*(char**)(msg + f->offset) = child;
-					msg = child;
-				}
-
-				in.next = (uint8_t*) bytes.p;
-				in.end = in.next + bytes.len;
-				f = ct->fields;
-				end = f + ct->num_fields;
-				continue;
-			}
 			case PROTO_LIST_U32:
 			case PROTO_LIST_I32:
 			case PROTO_LIST_ENUM:
@@ -450,6 +394,39 @@ void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data,
 				list->v = v;
 				break;
 			}
+			case PROTO_POD:
+			case PROTO_MESSAGE: {
+				if (get_bytes(&in, &bytes)) {
+					goto err;
+				}
+
+				stack[depth].next_field = f + 1;
+				stack[depth].field_end = end;
+				stack[depth].msg = msg;
+				stack[depth].data_end = in.end;
+
+				if (++depth == MAX_DEPTH) {
+					goto err;
+				}
+
+				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
+
+				if (f->type == PROTO_POD) {
+					msg += f->offset;
+				} else {
+					msg = create_child_message(obj, msg + f->offset, ct->datasz);
+				}
+
+				if (!msg) {
+					goto err;
+				}
+
+				in.next = (uint8_t*)bytes.p;
+				in.end = in.next + bytes.len;
+				f = ct->fields;
+				end = f + ct->num_fields;
+				continue;
+			}
 next_message_in_list:
 			case PROTO_LIST_MESSAGE:
 			case PROTO_LIST_POD: {
@@ -469,26 +446,13 @@ next_message_in_list:
 				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
-					pb_pod_list *list = (pb_pod_list*) (msg + f->offset);
-					if (!list->data) {
-						list->data = align(obj->next, OBJ_ALIGN);
-					}
-					msg = list->data + (list->len * ct->datasz);
-					memset(msg, 0, ct->datasz);
-					list->len++;
-					if (msg + ct->datasz > obj->end) {
-						goto err;
-					}
+					msg = append_pod_list(obj, msg + f->offset, ct->datasz);
 				} else {
-					union pb_msg *child = (union pb_msg*) buf_calloc(obj, ct->datasz, OBJ_ALIGN);
-					if (!child) {
-						goto err;
-					}
-					struct pb_message_list *list = (struct pb_message_list*) (msg + f->offset);
-					list->len++;
-					child->previous = list->u.last;
-					list->u.last = child;
-					msg = (char*)child;
+					msg = append_message_list(obj, msg + f->offset, ct->datasz);
+				}
+
+				if (!msg) {
+					goto err;
 				}
 
 				in.next = (uint8_t*) bytes.p;
@@ -522,22 +486,8 @@ end_of_fields:
 			}
 
 			// we've finished the list, we should commit it
-			if (f->type == PROTO_LIST_POD) {
-				pb_pod_list *list = (pb_pod_list*) (msg + f->offset);
-				const struct proto_message *ct = (struct proto_message*) f->proto_type;
-				obj->next = list->data + (list->len * ct->datasz);
-			} else {
-				struct pb_message_list *list = (struct pb_message_list*) (msg + f->offset);
-				union pb_msg **v = (union pb_msg**) buf_calloc(obj, list->len * sizeof(union pb_msg*), sizeof(void*));
-				if (!v) {
-					goto err;
-				}
-				union pb_msg *iter = list->u.last;
-				for (int i = list->len-1; i >= 0; i--) {
-					v[i] = iter;
-					iter = iter->previous;
-				}
-				list->u.v = v;
+			if (f->type == PROTO_LIST_MESSAGE && create_message_list(obj, msg + f->offset)) {
+				goto err;
 			}
 
 			f++;

@@ -8,6 +8,8 @@ build $obj/protorpc/decode.o: cc $SRC/protorpc/src/decode.c
 build $obj/protorpc/encode.o: cc $SRC/protorpc/src/encode.c
 build $obj/protorpc/ptr-vector.o: cc $SRC/protorpc/src/ptr-vector.c
 build $obj/protorpc/str.o: cc $SRC/protorpc/src/str.c
+build $obj/protorpc/protorpc.o: cc $SRC/protorpc/src/protorpc.c
+build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
@@ -56,8 +58,10 @@ build $lib/protorpc.lib: lib $
  $obj/protorpc/encode.o $
  $obj/protorpc/print.o $
  $obj/protorpc/parse.o $
+ $obj/protorpc/protorpc.o $
  $obj/protorpc/ptr-vector.o $
  $obj/protorpc/str.o $
+ $obj/protorpc/service.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protorpc.lib $

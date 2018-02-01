@@ -1,11 +1,5 @@
-#include <protorpc/protorpc.h>
+#include "common.h"
 #include <string.h>
-
-#define WIRE_VARINT 0
-#define WIRE_FIXED_64 1
-#define WIRE_VARIABLE 2
-#define WIRE_FIXED_32 5
-#define MAX_DEPTH 8
 
 struct encode_stack {
 	const struct proto_field *next_field;
@@ -287,7 +281,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 				if (f->type == PROTO_LIST_POD) {
 					msg = pod->data + (list_index * ct->datasz);
 				} else {
-					struct pb_message_list *list = (struct pb_message_list*) pod;
+					pb_message_list *list = (pb_message_list*) pod;
 					msg = (char*) list->u.v[list_index];
 				}
 
@@ -598,7 +592,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				list_index = 0;
 				// fallthrough
 			next_message_in_list: {
-				struct pb_message_list *msgs = (struct pb_message_list*) (msg + f->offset);
+				pb_message_list *msgs = (pb_message_list*) (msg + f->offset);
 				if (list_index >= msgs->len) {
 					break;
 				}

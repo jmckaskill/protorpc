@@ -1,9 +1,7 @@
-#include <protorpc/protorpc.h>
+#include "common.h"
 #include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
-
-#define MAX_DEPTH 8
 
 struct print_stack {
 	const struct proto_field *next_field;
@@ -522,7 +520,7 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 				// fallthrough
 			next_message_in_list: 
 				{
-					struct pb_message_list *msgs = (struct pb_message_list*) (msg + f->offset);
+					pb_message_list *msgs = (pb_message_list*) (msg + f->offset);
 					if (list_index >= msgs->len) {
 						if (list_index) {
 							finish_array(&out, --indent);

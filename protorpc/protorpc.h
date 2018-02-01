@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct pb_allocator pb_allocator;
 typedef union pb_msg pb_msg;
 typedef struct pb_bytes pb_bytes;
@@ -36,21 +40,6 @@ struct pb_string {
 	const char *c_str;
 };
 
-// lists are of the form
-// struct {int len; <type> const *v;} field;
-struct pb_message_list {
-	int len;
-	union {
-		union pb_msg **v;
-		union pb_msg *last;
-	} u;
-};
-
-typedef struct {
-	int len;
-	char *data;
-} pb_pod_list;
-
 typedef struct {bool set; unsigned val;} pb_opt_uint;
 
 typedef struct {int len; bool const *v;} pb_bool_list;
@@ -63,10 +52,6 @@ typedef struct {int len; double const *v;} pb_double_list;
 typedef struct {int len; pb_string const *v;} pb_string_list;
 typedef struct {int len; pb_bytes const *v;} pb_bytes_list;
 
-typedef struct proto_field proto_field;
-typedef struct proto_enum proto_enum;
-typedef struct proto_enum_value proto_enum_value;
-typedef struct proto_message proto_message;
 
 enum proto_field_type {
 	PROTO_BOOL,
@@ -108,6 +93,13 @@ enum proto_field_type {
 	PROTO_LIST_MESSAGE,
 };
 
+typedef struct proto_field proto_field;
+typedef struct proto_enum proto_enum;
+typedef struct proto_enum_value proto_enum_value;
+typedef struct proto_message proto_message;
+typedef struct proto_service proto_service;
+typedef struct proto_method proto_method;
+
 struct proto_enum_value {
 	// name needs to be first to allow the parse binary_search to work
 	pb_string name;
@@ -137,15 +129,27 @@ struct proto_message {
 	const pb_string **by_name;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef int(*proto_method_fn)(void *, pb_allocator*, const void*, void*);
 
+struct proto_method {
+	pb_string path;
+	int offset;
+	const proto_message *input;
+	const proto_message *output;
+};
+
+struct proto_service {
+	size_t num_methods;
+	const pb_string **by_path;
+};
+
+void *pb_calloc(pb_allocator *obj, size_t num, size_t sz);
 void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const proto_message *type);
 int pb_encode(void *obj, const proto_message *type, char *data);
 int pb_print(void *obj, const proto_message *type, char *buf, int sz);
 void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
+int pb_dispatch(void *svc, const proto_service *type, pb_allocator *obj, const char *path, pb_bytes in, pb_bytes *out);
 
 static inline int pb_base64_size(int sz) {
 	return (sz * 4 + 3) / 3;

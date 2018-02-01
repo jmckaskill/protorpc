@@ -25,6 +25,16 @@
 #define TAG3_MID(TAG)     (0x80 | (TAG >> 4))
 #define TAG3_HI(TAG)      (TAG >> 11)
 
+static const uint8_t test_pod_proto[] = {
+	// i = -34, zigzag = 34*2-1 = 67
+	TAG1(2, VAR), 67
+};
+
+static const char test_pod_json[] =
+	"{\n"
+		"\t\"i\": -34\n"
+	"}\n";
+
 static const uint8_t test_proto[] = {
 	// b = true
 	TAG1(1, VAR), 1,
@@ -355,6 +365,11 @@ static void setup_message(struct TestMessage *m) {
 	m->rpod.v = rpod;
 }
 
+static void setup_pod(TestPod *m) {
+	m->foo_type = TESTPOD_I;
+	m->foo.i = -34;
+}
+
 static void check_message(const struct TestMessage *m) {
 	ASSERT_TRUE(m != NULL);
 	EXPECT_EQ(true, m->b);
@@ -564,4 +579,50 @@ TEST(protobuf, decode) {
 	check_message(m);
 
 	free(buf);
+}
+
+static int test_rpc1(TestService *s, pb_allocator *a, const TestMessage *in, TestPod *out) {
+	check_message(in);
+	setup_pod(out);
+	return 201;
+}
+
+TEST(protobuf, dispatch) {
+	uint8_t ibuf[4096];
+	uint8_t obuf[4096];
+	char abuf[4096];
+
+	pb_allocator obj = PB_INIT_ALLOCATOR(abuf);
+
+	TestService svc = { 0 };
+	svc.rpc1 = &test_rpc1;
+
+	// Try with protobufs
+	pb_bytes in, out;
+	out.len = sizeof(obuf);
+	out.p = obuf;
+
+	memcpy(ibuf, test_proto, sizeof(test_proto));
+	in.p = ibuf;
+	in.len = sizeof(test_proto);
+
+	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService, &obj, "/twirp/TestService/rpc1", in, &out));
+
+	pb_bytes want = { sizeof(test_pod_proto), test_pod_proto };
+	EXPECT_EQ(want, out);
+
+
+	// Try with json
+	out.len = sizeof(obuf);
+	out.p = obuf;
+
+	memcpy(ibuf, test_json, strlen(test_json));
+	in.p = ibuf;
+	in.len = strlen(test_json);
+
+	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService, &obj, "/twirp/TestService/rpc1", in, &out));
+
+	EXPECT_EQ(strlen(test_pod_json), out.len);
+	obuf[out.len] = 0;
+	EXPECT_STREQ(test_pod_json, (char*)obuf);
 }

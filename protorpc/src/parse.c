@@ -1,31 +1,14 @@
-#include <protorpc/protorpc.h>
+#include "common.h"
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_DEPTH 8
-#define OBJ_ALIGN 8
 
 struct parse_stack {
 	const struct proto_message *type;
 	const struct proto_field *field;
 	char *msg;
 };
-
-static inline char *align(char *p, size_t align) {
-	return (char*)(((uintptr_t)p + (align - 1)) &~(align - 1));
-}
-
-static inline char *buf_calloc(pb_allocator *b, size_t sz, size_t alignment) {
-	char *p = align(b->next, alignment);
-	char *n = p + sz;
-	if (n > b->end) {
-		return NULL;
-	}
-	memset(p, 0, sz);
-	b->next = n;
-	return p;
-}
 
 static char errret[] = { 0 };
 
@@ -564,36 +547,6 @@ static char *skip_value(char *p) {
 	}
 }
 
-// find_field does a binary search on the field names
-// the field names are ordered by length and then bitwise
-static const pb_string *binary_search(const pb_string **names, int num, pb_string want) {
-	int left = 0;
-	int right = num - 1;
-
-	while (left <= right) {
-		int mid = left + (right - left) / 2;
-		const pb_string *mids = names[mid];
-
-		int diff = want.len - mids->len;
-		if (!diff) {
-			diff = memcmp(want.c_str, mids->c_str, want.len);
-			if (!diff) {
-				return mids;
-			}
-		}
-
-		if (diff > 0) {
-			// name is larger than midpoint
-			left = mid + 1;
-		} else {
-			// name is smaller than midpoint
-			right = mid - 1;
-		}
-	}
-
-	return NULL;
-}
-
 char *parse_enum(char *p, const struct proto_enum *en, int *pv) {
 	pb_string str;
 	p = parse_string(p, &str);
@@ -615,7 +568,7 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 		goto err;
 	}
 
-	char *msg = buf_calloc(obj, type->datasz, OBJ_ALIGN);
+	char *msg = (char*) pb_calloc(obj, 1, type->datasz);
 	if (!msg) {
 		goto err;
 	}
@@ -769,12 +722,11 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 				if (f->type == PROTO_POD) {
 					msg += f->offset;
 				} else {
-					char *child = buf_calloc(obj, type->datasz, OBJ_ALIGN);
-					if (!child) {
-						goto err;
-					}
-					*(char**)(msg + f->offset) = child;
-					msg = child;
+					msg = create_child_message(obj, msg + f->offset, type->datasz);
+				}
+
+				if (!msg) {
+					goto err;
 				}
 				break;
 			case PROTO_LIST_POD:
@@ -795,26 +747,14 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 				type = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
-					if (!list->data) {
-						list->data = align(obj->next, OBJ_ALIGN);
-					}
-					msg = list->data + (list->len * type->datasz);
-					memset(msg, 0, type->datasz);
-					if (msg + type->datasz > obj->end) {
-						goto err;
-					}
+					msg = append_pod_list(obj, msg + f->offset, type->datasz);
 				} else {
-					union pb_msg *child = (union pb_msg*) buf_calloc(obj, type->datasz, OBJ_ALIGN);
-					if (!child) {
-						goto err;
-					}
-					struct pb_message_list *mlist = (struct pb_message_list*) list;
-					child->previous = mlist->u.last;
-					mlist->u.last = child;
-					msg = (char*)child;
+					msg = append_message_list(obj, msg + f->offset, type->datasz);
 				}
 
-				list->len++;
+				if (!msg) {
+					goto err;
+				}
 				break;
 			}
 
@@ -839,21 +779,8 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 				}
 
 				// commit the list
-				if (f->type == PROTO_LIST_POD) {
-					const struct proto_message *ct = (const struct proto_message*) f->proto_type;
-					obj->next = list->data + (list->len + ct->datasz);
-				} else {
-					struct pb_message_list *mlist = (struct pb_message_list*) list;
-					union pb_msg **v = (union pb_msg**) buf_calloc(obj, list->len * sizeof(union pb_msg*), sizeof(void*));
-					if (!v) {
-						goto err;
-					}
-					union pb_msg *iter = mlist->u.last;
-					for (int i = list->len - 1; i >= 0; i--) {
-						v[i] = iter;
-						iter = iter->previous;
-					}
-					mlist->u.v = v;
+				if (f->type == PROTO_LIST_MESSAGE && create_message_list(obj, msg + f->offset)) {
+					goto err;
 				}
 			}
 		} else {
