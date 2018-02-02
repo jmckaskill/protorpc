@@ -80,15 +80,15 @@ static int process_path(http *h, slice *data) {
 		return ERROR;
 	}
 
-	slice version;
-	if (split(&line, &version, ' ')) {
+	slice path;
+	if (split(&line, &path, ' ')) {
 		return ERROR;
 	}
 
-	h->version_1_0 = str_itest(version, "HTTP/1.0") ? 1 : 0;
+	h->connection_close = str_itest(line, "HTTP/1.0") ? 1 : 0;
 
 	ca_setstr(&h->method, method);
-	ca_setstr(&h->path, line);
+	ca_setstr(&h->path, path);
 
 	// check for an absolute form address e.g. GET http://www.example.com:80/foo HTTP/1.1
 	char *scheme = (char*)memmem(h->path.c_str, h->path.len, "://", 3);
@@ -141,11 +141,13 @@ static void trim_right(slice *p) {
 static slice next_token(slice *line) {
 	slice token;
 	if (split(line, &token, ',')) {
+		token = *line;
+		line->c_str += line->len;
 		line->len = 0;
-		return *line;
+	} else {
+		trim_right(&token);
+		trim_left(line);
 	}
-	trim_right(&token);
-	trim_left(line);
 	return token;
 }
 
@@ -161,12 +163,12 @@ static int process_headers(http *h, slice *data) {
 			return DONE;
 		}
 
-		slice value;
-		if (split(&line, &value, ':')) {
+		slice key;
+		if (split(&line, &key, ':')) {
 			return ERROR;
 		}
 
-		slice key = line;
+		slice value = line;
 		trim_right(&key);
 		trim_left(&value);
 		trim_right(&value);
@@ -175,15 +177,18 @@ static int process_headers(http *h, slice *data) {
 
 		if (str_itest(key, "content-length")) {
 			h->content_length = 0;
+			h->have_content_length = 1;
 			char *p = value.c_str;
 			while (*p) {
 				// include check for overflow
-				if (*p < '0' || *p > '0' || h->content_length > (INT64_MAX >> 4)) {
+				if (*p < '0' || *p > '9' || h->content_length > (INT64_MAX >> 4)) {
 					return ERROR;
 				}
 				h->content_length *= 10;
 				h->content_length += *p - '0';
+				p++;
 			}
+			h->length_remaining = h->content_length;
 
 		} else if (str_itest(key, "transfer-encoding")) {
 			while (value.len) {
@@ -209,31 +214,100 @@ static int process_headers(http *h, slice *data) {
 				}
 			}
 			
-		} else if (h->on_header) {
+		}
+		
+		if (h->on_header) {
 			h->on_header(h, key.c_str, value.c_str);
 		}
-
 	}
 }
 
-void http_reset(http *h, char *rxbuf, int rxbufsz, char *txbuf, int txbufsz, http_on_header on_header) {
-	assert(rxbufsz >= 256 && txbufsz >= 256);
-	memset(h, 0, sizeof(*h));
+static void check_request_data(http *h) {
+	if (h->have_content_length && h->rxused >= h->length_remaining) {
+		h->state = HTTP_DATA_RECEIVED;
+		if (!h->have_nextch && h->rxused > h->length_remaining) {
+			h->have_nextch = 1;
+			h->nextch = h->rxbuf[h->length_remaining];
+		}
+		if (h->txnext) {
+			h->state = HTTP_SENDING_RESPONSE;
+		}
+	}
+}
+
+static int process_request(http *h) {
+	slice data = { h->rxused, h->rxbuf };
+
+	switch (h->state) {
+	case HTTP_IDLE:
+	case HTTP_RECEIVING_HEADERS:
+		if (!h->method.len) {
+			if (h->rxused) {
+				h->state = HTTP_RECEIVING_HEADERS;
+			}
+
+			switch (process_path(h, &data)) {
+			case ERROR:
+				return -1;
+			case MORE:
+				return 0;
+			}
+		}
+
+		switch (process_headers(h, &data)) {
+		case ERROR:
+			return -1;
+		case MORE:
+			return 0;
+		}
+
+		if (!h->have_content_length && !h->connection_close) {
+			h->have_content_length = 1;
+			h->length_remaining = 0;
+			h->content_length = 0;
+		}
+
+		h->state = HTTP_HEADERS_RECEIVED;
+		break;
+	}
+
+	if (h->dump_request_data) {
+		int todump = data.len;
+		if (h->have_content_length && (int64_t)todump > h->length_remaining) {
+			todump = (int)h->length_remaining;
+		}
+		data.c_str += todump;
+		data.len -= todump;
+	}
+
+	if (data.c_str > h->rxbuf) {
+		h->rxused = data.len;
+		memmove(h->rxbuf, data.c_str, h->rxused);
+	}
+
+	if (h->state == HTTP_RECEIVING_DATA) {
+		check_request_data(h);
+	}
+
+	return 0;
+}
+
+void http_reset(http *h, char *rxbuf, int sz, http_on_header on_header) {
+	h->state = HTTP_RESPONSE_SENT;
 	h->on_header = on_header;
+	h->connection_close = 0;
+	h->have_nextch = 0;
 	h->rxbuf = rxbuf;
-	h->rxbufsz = rxbufsz;
-	h->txbuf = txbuf;
-	h->txbufsz = txbufsz;
+	h->rxbufsz = sz;
+	h->rxused = 0;
 	http_next_request(h);
 }
 
-void http_next_request(http *h) {
-	assert(h->txleft == 0);
-	assert(!h->connection_close);
-	assert(!h->expect_continue);
-
-	if (h->length_remaining) {
-		http_consume_data(h, h->length_remaining);
+int http_next_request(http *h) {
+	if (h->state != HTTP_RESPONSE_SENT) {
+		return -1;
+	} else if (h->connection_close) {
+		return 1;
 	}
 
 	if (h->have_nextch) {
@@ -241,35 +315,49 @@ void http_next_request(http *h) {
 		h->have_nextch = 0;
 	}
 
-	h->content_length = 0;
-	h->length_remaining = 0;
+	h->expect_continue = 0;
+	h->have_content_length = 0;
+	h->dump_request_data = 0;
 
-	h->path_complete = 0;
-	h->headers_complete = 0;
-	h->request_complete = 0;
-	h->response_complete = 0;
+	ca_setlen(&h->method, 0);
+	ca_setlen(&h->path, 0);
 
-	h->method.len = 0;
-	h->path.len = 0;
+	h->txnext = NULL;
+	h->txleft = 0;
+
+	h->state = HTTP_IDLE;
+
+	return process_request(h);
 }
 
-char *http_recv_buffer(http *h, int *plen) {
-	if (h->txleft || (h->request_complete && h->connection_close)) {
-		*plen = 0;
-		return NULL;
-	} else {
+char *http_recv_buffer(const http *h, int *plen) {
+	switch (h->state) {
+	case HTTP_IDLE:
+	case HTTP_RECEIVING_HEADERS:
+	case HTTP_RECEIVING_DATA:
 		*plen = h->rxbufsz - h->rxused;
 		return h->rxbuf + h->rxused;
+	default:
+		*plen = 0;
+		return NULL;
 	}
 }
 
-char *http_send_buffer(http *h, int *plen) {
-	*plen = h->txleft;
-	return h->txnext;
+const char *http_send_buffer(const http *h, int *plen) {
+	switch (h->state) {
+	case HTTP_SENDING_CONTINUE:
+	case HTTP_SENDING_RESPONSE:
+		*plen = h->txleft;
+		return h->txnext;
+	default:
+		*plen = 0;
+		return NULL;
+	}
 }
 
 int http_sent(http *h, int w) {
-	if (w <= 0 || w > h->txleft) {
+	if ((h->state != HTTP_SENDING_CONTINUE && h->state != HTTP_SENDING_RESPONSE) 
+		|| w <= 0 || w > h->txleft) {
 		return -1;
 	}
 
@@ -277,20 +365,19 @@ int http_sent(http *h, int w) {
 	h->txnext += w;
 
 	if (h->txleft) {
-		// more data to be sent
-		return 0;
-	} else if (h->expect_continue) {
-		// finished sending the 101 continue
-		h->expect_continue = 0;
-		return 0;
-	} else if (h->connection_close) {
-		// connection:close finish
-		return 1;
-	} else {
-		// finished sending the full response
-		h->response_complete = 1;
 		return 0;
 	}
+
+	h->txnext = NULL;
+
+	if (h->state == HTTP_SENDING_CONTINUE) {
+		h->state = HTTP_RECEIVING_DATA;
+		check_request_data(h);
+	} else {
+		h->state = HTTP_RESPONSE_SENT;
+	}
+
+	return 0;
 }
 
 int http_received(http *h, int r) {
@@ -301,61 +388,86 @@ int http_received(http *h, int r) {
 	h->rxused += r;
 
 	if (!r) {
-		if (h->headers_complete && h->connection_close) {
-			h->request_complete = 1;
+		if (h->state == HTTP_RECEIVING_DATA && h->connection_close) {
+			h->state = HTTP_DATA_RECEIVED;
 			return 0;
+		} else if (h->state == HTTP_IDLE) {
+			return 1;
 		} else {
 			return -1;
 		}
 	}
 
-	slice data = { h->rxused, h->rxbuf };
-
-	if (!h->path_complete) {
-		switch (process_path(h, &data)) {
-		case ERROR:
-			return -1;
-		case MORE:
-			return 0;
-		}
-		h->path_complete = true;
-	}
-
-	if (!h->headers_complete) {
-		switch (process_headers(h, &data)) {
-		case ERROR:
-			return -1;
-		case MORE:
-			return 0;
-		}
-		h->headers_complete = true;
-	}
-
-	if (h->expect_continue) {
-		h->txleft = sprintf(h->txbuf, "100 Continue\r\n\r\n");
-		h->txnext = h->txbuf;
-	}
-
-	if (data.c_str > h->rxbuf) {
-		h->rxused = data.len;
-		memmove(h->rxbuf, data.c_str, h->rxused);
-	}
-
-	if (!h->connection_close && h->rxused >= h->length_remaining) {
-		h->request_complete = 1;
-		if (h->rxused > h->length_remaining) {
-			h->nextch = h->rxbuf[h->rxused];
-			h->have_nextch = 1;
-		}
-	}
-
-	return 0;
+	return process_request(h);
 }
 
-char *http_request_data(http *h, int *plen) {
-	assert(h->headers_complete);
-	if (!h->connection_close && h->rxused > h->length_remaining) {
-		*plen = h->length_remaining;
+static const char continue_response[] =
+	"HTTP/1.1 100 Continue\r\n\r\n";
+
+void http_send_continue(http *h) {
+	if (h->state != HTTP_HEADERS_RECEIVED) {
+		// do nothing
+	} else if (h->expect_continue) {
+		h->txleft = sizeof(continue_response) - 1;
+		h->txnext = continue_response;
+		h->state = HTTP_SENDING_CONTINUE;
+	} else {
+		h->state = HTTP_RECEIVING_DATA;
+		check_request_data(h);
+	}
+}
+
+void http_send_response(http *h, const char *p, int len) {
+	h->txnext = p;
+	h->txleft = len;
+
+	switch (h->state) {
+	case HTTP_HEADERS_RECEIVED:
+		// we've elected not to send the continue
+		if (h->expect_continue) {
+			h->expect_continue = 0;
+			h->length_remaining = 0;
+		} else {
+			h->dump_request_data = 1;
+		}
+		h->state = HTTP_RECEIVING_DATA;
+		check_request_data(h);
+		break;
+	case HTTP_RECEIVING_DATA:
+		// we sent the continue, but have an early response
+		// check_request_data will set the state to HTTP_SENDING_RESPONSE
+		// once the rest of the request data has come in
+		h->dump_request_data = 1; // dump data yet to be received
+		h->rxused = 0; // dump what we've already got
+		break;
+	case HTTP_DATA_RECEIVED: {
+		// we sent the continue and have received all of the request data
+		h->state = HTTP_SENDING_RESPONSE;
+		int todump = h->rxused;
+		if (h->have_content_length && (int64_t)todump > h->length_remaining) {
+			todump = (int)h->length_remaining;
+		}
+		memmove(h->rxbuf, h->rxbuf + todump, h->rxused - todump);
+		h->rxused -= todump;
+		break;
+	}
+	case HTTP_RESPONSE_SENT:
+		// user wants to send some more data - used for streaming output
+		h->state = HTTP_SENDING_RESPONSE;
+		break;
+	default:
+		// do nothing - invalid usage
+		break;
+	}
+}
+
+char *http_request_data(const http *h, int *plen) {
+	if (h->state != HTTP_RECEIVING_DATA && h->state != HTTP_DATA_RECEIVED) {
+		*plen = 0;
+		return NULL;
+	}
+	if (h->have_content_length && h->rxused > h->length_remaining) {
+		*plen = (int) h->length_remaining;
 	} else {
 		*plen = h->rxused;
 	}
@@ -363,47 +475,14 @@ char *http_request_data(http *h, int *plen) {
 }
 
 void http_consume_data(http *h, int used) {
-	assert(used <= h->rxused);
-	if (!h->connection_close) {
-		assert(used <= h->length_remaining);
+	if ((h->state != HTTP_DATA_RECEIVED && h->state != HTTP_RECEIVING_DATA)
+		|| used > h->rxused 
+		|| (h->have_content_length && used > h->length_remaining)) {
+		return;
+	}
+	if (h->have_content_length) {
 		h->length_remaining -= used;
 	}
 	memmove(h->rxbuf, h->rxbuf + used, h->rxused - used);
 	h->rxused -= used;
 }
-
-static const char response_template[] =
-	"HTTP/1.1 123 \r\nContent-Length:      \r\n\r\n";
-
-char *http_start_response(http *h, int *plen) {
-	assert(h->headers_complete);
-	size_t tsz = sizeof(response_template) - 1;
-	memcpy(h->txbuf, response_template, tsz);
-	if (plen) {
-		*plen = h->txbufsz - tsz;
-	}
-	return h->txbuf;
-}
-
-void http_finish_response(http *h, int sts, int len) {
-	char *p = h->txbuf + strlen("HTTP/1.1 ");
-	*(p++) = (char)(sts / 100) + '0';
-	*(p++) = (char)((sts % 100) / 10) + '0';
-	*(p++) = (char)(sts % 10) + '0';
-
-	// start at last digit and work backwards
-	p += strlen(" \r\nContent-Length:") + 5;
-	do {
-		*p-- = (len % 10) + '0';
-		len /= 10;
-	} while (len);
-
-	h->txnext = h->txbuf;
-	h->txleft = sizeof(response_template) - 1 + len;
-}
-
-void http_send_data(http *h, char *p, int len) {
-	h->txnext = p;
-	h->txleft = len;
-}
-

@@ -151,7 +151,7 @@ int pb_print(void *obj, const proto_message *type, char *buf, int sz);
 void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
 
 const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path);
-int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int *outsz);
+int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int outsz);
 
 static inline int pb_base64_size(int sz) {
 	return (sz * 4 + 3) / 3;

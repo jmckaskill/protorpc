@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include "test.proto.h"
 #include <protorpc/http.h>
+#include <protorpc/char-array.h>
 #include <vector>
 #include <memory>
 
@@ -600,6 +601,7 @@ static int test_rpc1(TestService *s, pb_allocator *a, const TestMessage *in, Tes
 TEST(protobuf, dispatch) {
 	char ibuf[4096];
 	char obuf[4096];
+	char tbuf[4096];
 	char abuf[4096];
 
 	pb_allocator obj = PB_INIT_ALLOCATOR(abuf);
@@ -610,33 +612,31 @@ TEST(protobuf, dispatch) {
 	EXPECT_EQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, "/twirp/TestService/rpc1"));	
 
 	// Try with protobufs
-	int outlen = sizeof(obuf);
 	int inlen = sizeof(test_proto);
 	memcpy(ibuf, test_proto, inlen);
+	int osz = pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, sizeof(obuf));
+	int tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/protobuf\r\nContent-Length:%6d\r\n\r\n%.*s",
+		(int) sizeof(test_pod_proto), (int) sizeof(test_pod_proto), test_pod_proto);
 
-	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, &outlen));
-
-	pb_bytes have = { outlen, (uint8_t*) obuf };
-	pb_bytes want = { sizeof(test_pod_proto), test_pod_proto };
+	pb_bytes have = { osz, (uint8_t*) obuf };
+	pb_bytes want = { tsz, (uint8_t*) tbuf };
 	EXPECT_EQ(want, have);
 
-
 	// Try with json
-	outlen = sizeof(obuf);
 	inlen = strlen(test_json);
 	memcpy(ibuf, test_json, inlen);
+	osz = pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, sizeof(obuf));
+	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+		(int)strlen(test_pod_json), test_pod_json);
 
-	EXPECT_EQ(201, pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, &outlen));
-
-	EXPECT_EQ(strlen(test_pod_json), outlen);
-	obuf[outlen] = 0;
-	EXPECT_STREQ(test_pod_json, obuf);
+	pb_bytes have2 = { osz, (uint8_t*)obuf };
+	pb_bytes want2 = { tsz, (uint8_t*)tbuf };
+	EXPECT_EQ(want2, have2);
 }
 
 struct http_connection {
 	http h;
 	const proto_method *method;
-	bool processed_header;
 	int fd;
 	char rx[4096];
 	char tx[4096];
@@ -651,6 +651,7 @@ struct http_server {
 #ifdef _WIN32
 typedef WSAPOLLFD pollfd;
 #define poll WSAPoll
+#pragma comment(lib,"ws2_32")
 #else
 #define closesocket(fd) close(fd)
 #endif
@@ -663,29 +664,42 @@ static bool would_block() {
 #endif
 }
 
+static int set_non_blocking(int fd) {
+#ifdef _WIN32
+	u_long nonblock = 1;
+	return ioctlsocket(fd, FIONBIO, &nonblock);
+#else
+	fcntl(...)
+#endif
+}
+
+static const char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
+
 static void decide_on_dispatch(http_server *s, http_connection *c) {
 	c->method = pb_lookup_method(&s->svc, &proto_TestService, c->h.path.c_str);
 	if (!c->method) {
-		http_start_response(&c->h, NULL);
-		http_finish_response(&c->h, 404, 0);
+		http_send_response(&c->h, not_found, sizeof(not_found) - 1);
+	} else {
+		http_send_continue(&c->h);
 	}
 }
 
+// poll_http_server serves as both a tester and an example of how to use the http library
 void poll_http_server(http_server *s) {
+	size_t num = s->conns.size();
 	std::vector<pollfd> fds;
-	fds.resize(s->conns.size() + 1);
+	fds.resize(num + 1);
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
 	fds[0].fd = s->lfd;
 
-	for (size_t i = 0; i < s->conns.size(); i++) {
+	for (size_t i = 0; i < num; i++) {
 		auto& c = s->conns[i];
-		int rlen, wlen;
-		http_recv_buffer(&c->h, &rlen);
-		http_recv_buffer(&c->h, &wlen);
+		int wlen;
+		http_send_buffer(&c->h, &wlen);
 
 		fds[i + 1].fd = c->fd;
-		fds[i + 1].events = (rlen ? POLLIN : 0) | (wlen ? POLLOUT : 0);
+		fds[i + 1].events = wlen ? POLLOUT : POLLIN;
 		fds[i + 1].revents = 0;
 	}
 
@@ -695,58 +709,56 @@ void poll_http_server(http_server *s) {
 		int fd;
 		while ((fd = accept(s->lfd, NULL, NULL)) >= 0) {
 			http_connection *c = new http_connection();
-			memset(c, 0, sizeof(*c));
-			http_reset(&c->h, c->rx, sizeof(c->rx), c->tx, sizeof(c->tx), NULL);
+			http_reset(&c->h, c->rx, sizeof(c->rx), NULL);
+			set_non_blocking(fd);
+			c->method = NULL;
 			c->fd = fd;
+			s->conns.push_back(c);
 		}
 	}
 
-	for (size_t i = 0; i < s->conns.size();) {
-		auto& c = s->conns[i];
-		if (fds[i + 1].revents & POLLIN) {
+	for (size_t i = 0; i < num;) {
+		http_connection *c = s->conns[i];
+
+		if (fds[i + 1].revents & (POLLIN|POLLHUP)) {
 			int r;
 			char *buf = http_recv_buffer(&c->h, &r);
 			r = recv(c->fd, buf, r, 0);
 			if (r < 0 && would_block()) {
 				continue;
-			}
-			if (http_received(&c->h, r)) {
+			} else if (http_received(&c->h, r)) {
 				goto do_close;
 			}
-			if (!c->h.headers_complete) {
-				continue;
-			}
-			if (!c->processed_header) {
-				decide_on_dispatch(s, c);
-			}
-			if (!c->method) {
-				int sz;
-				http_request_data(&c->h, &sz);
-				http_consume_data(&c->h, sz);
-			} else if (c->h.request_complete) {
-				char obj[4096];
-				pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
-				int reqsz, respsz;
-				char *req = http_request_data(&c->h, &reqsz);
-				char *resp = http_start_response(&c->h, &respsz);
-				int sts = pb_dispatch(s, c->method, &alloc, req, reqsz, resp, &respsz);
-				http_finish_response(&c->h, sts, respsz);
-			}
+			
 		} else if (fds[i + 1].revents & POLLOUT) {
 			int w;
-			char *buf = http_send_buffer(&c->h, &w);
+			const char *buf = http_send_buffer(&c->h, &w);
 			w = send(c->fd, buf, w, 0);
 			if (w < 0 && would_block()) {
 				continue;
 			} else if (http_sent(&c->h, w)) {
 				goto do_close;
 			}
+		}
 
-			if (c->h.response_complete) {
-				http_next_request(&c->h);
-				c->processed_header = false;
-				c->method = NULL;
+		if (c->h.state == HTTP_RESPONSE_SENT) {
+			if (http_next_request(&c->h)) {
+				goto do_close;
 			}
+			c->method = NULL;
+		}
+
+		if (c->h.state == HTTP_HEADERS_RECEIVED) {
+			decide_on_dispatch(s, c);
+		}
+
+		if (c->h.state == HTTP_DATA_RECEIVED && c->method) {
+			char obj[4096];
+			pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
+			int rxlen;
+			char *req = http_request_data(&c->h, &rxlen);
+			int txlen = pb_dispatch(s, c->method, &alloc, req, rxlen, c->tx, sizeof(c->tx));
+			http_send_response(&c->h, c->tx, txlen);
 		}
 
 		i++;
@@ -756,9 +768,147 @@ void poll_http_server(http_server *s) {
 		closesocket(c->fd);
 		delete c;
 		s->conns.erase(s->conns.begin() + i);
+		num--;
 	}
 }
 
-TEST(protobuf, http) {
+static void sendf(int fd, const char *fmt, ...) {
+	struct {int len; char c_str[4096];} buf;
+	va_list ap;
+	va_start(ap, fmt);
+	ca_vsetf(&buf, fmt, ap);
+	send(fd, buf.c_str, buf.len, 0);
+}
 
+static void recv_string(int fd, char *buf, int bufsz) {
+	int r = recv(fd, buf, bufsz, 0);
+	EXPECT_GE(r, 0);
+	buf[r > 0 ? r : 0] = 0;
+}
+
+TEST(protobuf, http) {
+#ifdef _WIN32
+	WSADATA wsa;
+	WSAStartup(MAKEWORD(2, 2), &wsa);
+#endif
+
+	http_server s;
+	s.svc.rpc1 = &test_rpc1;
+	s.svc.rpc2 = NULL;
+	s.lfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	EXPECT_GE(s.lfd, 0);
+
+	struct sockaddr_in sa;
+	sa.sin_family = AF_INET;
+	sa.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);
+	sa.sin_port = 0;
+	EXPECT_EQ(0, bind(s.lfd, (struct sockaddr*) &sa, sizeof(sa)));
+	EXPECT_EQ(0, listen(s.lfd, 0));
+	EXPECT_EQ(0, set_non_blocking(s.lfd));
+
+	int sasz = sizeof(sa);
+	EXPECT_EQ(0, getsockname(s.lfd, (struct sockaddr*) &sa, &sasz));
+
+	int cfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	EXPECT_EQ(0, connect(cfd, (struct sockaddr*) &sa, sasz));
+
+	poll_http_server(&s);
+
+	ASSERT_EQ(1, s.conns.size());
+	http_connection *c = s.conns[0];
+	EXPECT_EQ(HTTP_IDLE, c->h.state);
+
+	char buf[4096];
+	char tbuf[4096];
+
+	// simple post
+	sendf(cfd, "POST /not_found HTTP/1.1\r\nContent-Length:0\r\n\r\n");
+
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_IDLE, c->h.state);
+
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ("HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n", buf);
+
+	
+	// simple post with failed expectation
+	sendf(cfd, "POST /not_found HTTP/1.1\r\nContent-Length:10\r\nExpect:100-continue\r\n\r\n");
+
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_IDLE, c->h.state);
+
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ("HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n", buf);
+
+
+	// post to rpc
+	sendf(cfd, "POST /twirp/TestService/rpc1 HTTP/1.1\r\nContent-Length:%d\r\n\r\n%s",
+		(int) strlen(test_json), test_json);
+
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_IDLE, c->h.state);
+
+	int tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+		(int)strlen(test_pod_json), test_pod_json);
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ(tbuf, buf);
+
+
+	// post with expect continue
+	sendf(cfd, "POST /twirp/TestService/rpc1 HTTP/1.1\r\nContent-Length:%d\r\nExpect:100-continue\r\n\r\n",
+		(int) strlen(test_json));
+
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_SENDING_CONTINUE, c->h.state);
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_RECEIVING_DATA, c->h.state);
+
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ("HTTP/1.1 100 Continue\r\n\r\n", buf);
+
+	sendf(cfd, "%s", test_json);
+
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
+	poll_http_server(&s);
+	EXPECT_EQ(HTTP_IDLE, c->h.state);
+
+	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+		(int)strlen(test_pod_json), test_pod_json);
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ(tbuf, buf);
+
+	// pipelining
+	sendf(cfd, "POST /twirp/TestService/rpc1 HTTP/1.1\r\nContent-Length:%d\r\n\r\n%s"
+			   "POST /not_found HTTP/1.1\r\nContent-Length:0\r\n\r\n",
+		(int)strlen(test_json), test_json);
+
+	poll_http_server(&s); // receive both requests
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
+
+	poll_http_server(&s); // send the first response
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
+
+	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+		(int)strlen(test_pod_json), test_pod_json);
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ(tbuf, buf);
+
+	poll_http_server(&s); // send the second response
+	EXPECT_EQ(HTTP_IDLE, c->h.state);
+
+	recv_string(cfd, buf, sizeof(buf));
+	EXPECT_STREQ("HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n", buf);
+
+	// close the connection
+	closesocket(cfd);
+	poll_http_server(&s);
+	EXPECT_EQ(0, s.conns.size());
+	closesocket(s.lfd);
 }

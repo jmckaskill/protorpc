@@ -1,5 +1,6 @@
 #include "common.h"
 #include <string.h>
+#include <stdio.h>
 
 const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path) {
 	pb_string pathstr = { strlen(path), path };
@@ -18,20 +19,23 @@ const proto_method *pb_lookup_method(void *svc, const proto_service *type, const
 
 
 // pb_dispatch dispatches a RPC service call
-// It returns the http status code
-// The output data is written to the buffer pointed to by out
-// and out->len is updated to reflect the length of the output.
+// An HTTP header + output data is written to the `out` buffer.
+// The function returns the number of bytes used.
 // The input data is provided in `in`. Note that one more byte than
-// provided will be written to (ie in.p[in.len] = 0) to null terminate
+// provided will be written to (ie in[insz] = 0) to null terminate
 // the input.
 // This function services both JSON and protobuf request data by looking
 // at the data.
-int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int *outsz) {
+int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int outsz) {
 	proto_method_fn *fns = (proto_method_fn*)svc;
 	proto_method_fn fn = fns[method->offset];
 	
 	bool is_text = (insz && in[0] == '{');
 	char *objstart = obj->next;
+
+	if (outsz < 256) {
+		return 0;
+	}
 
 	// decode the input
 	void *inm;
@@ -47,36 +51,47 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 	if (!inm || !outm) {
 		// decoding the input failed
 		obj->next = objstart;
-		return 400; // bad request
+		return sprintf(out, "HTTP/1.1 400 Malformed Payload\r\nContent-Length:0\r\n\r\n");
 	}
 
-	int ret = fn(svc, obj, inm, outm);
-	if (!ret) {
-		ret = 200; // OK
-	} else if (ret < 0 || ret > 999) {
-		ret = 500; // internal server error
+	int sts = fn(svc, obj, inm, outm);
+	if (!sts) {
+		sts = 200; // OK
+	} else if (sts < 100 || sts > 999) {
+		sts = 500; // internal server error
 	}
+
+	int ret = sprintf(out, "HTTP/1.1 %d \r\nContent-Type:%s\r\nContent-Length:      \r\n\r\n",
+		sts, is_text ? "application/json" : "application/protobuf");
 
 	// encode the output
-	int outlen;
+	int sz;
 	if (is_text) {
-		outlen = pb_print(outm, method->output, out, *outsz);
+		sz = pb_print(outm, method->output, out + ret, outsz - ret);
 	} else {
-		outlen = pb_encoded_size(outm, method->output);
-		if (0 < outlen && outlen < *outsz) {
-			outlen = pb_encode(outm, method->output, out);
+		sz = pb_encoded_size(outm, method->output);
+		if (0 < sz && sz < (outsz - ret)) {
+			sz = pb_encode(outm, method->output, out + ret);
 		} else {
-			outlen = -1;
+			sz = -1;
 		}
 	}
 
 	obj->next = objstart;
 
-	if (outlen < 0) {
+	if (sz < 0 || sz > 999999) {
 		// encoding the output failed
-		return 500; // internal server error
+		return sprintf(out, "HTTP/1.1 500 Output Failure\r\nContent-Length:0\r\n\r\n");
 	}
 
-	*outsz = outlen;
+	// fill out Content-Length
+	// start at last digit and work backwards
+	char *slen = out + ret - strlen(" \r\n\r\n");
+	ret += sz;
+	do {
+		*slen-- = (sz % 10) + '0';
+		sz /= 10;
+	} while (sz);
+
 	return ret;
 }

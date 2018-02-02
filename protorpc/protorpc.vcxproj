@@ -33,7 +33,6 @@
     <ClInclude Include="ptr-array.h" />
     <ClInclude Include="ptr-vector.h" />
     <ClInclude Include="src\\common.h" />
-    <ClInclude Include="src\\rpc.h" />
     <ClInclude Include="src\\test.proto.h" />
     <ClInclude Include="str.h" />
   </ItemGroup>
