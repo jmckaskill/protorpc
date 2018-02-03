@@ -26,7 +26,7 @@
         },
         {
             "Name": "bin - rpc-file-compiler",
-            "File": "cmd/rpc-file-compiler/rpc-file-compiler.vcxproj",
+            "File": "rpc-file-compiler/rpc-file-compiler.vcxproj",
             "UUID": "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}",
             "Target": "bin/{TGT}/rpc-file-compiler.exe"
         },

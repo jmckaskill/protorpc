@@ -99,6 +99,8 @@ typedef struct proto_enum_value proto_enum_value;
 typedef struct proto_message proto_message;
 typedef struct proto_service proto_service;
 typedef struct proto_method proto_method;
+typedef struct proto_dir proto_dir;
+typedef struct proto_file proto_file;
 
 struct proto_enum_value {
 	// name needs to be first to allow the parse binary_search to work
@@ -143,6 +145,17 @@ struct proto_service {
 	const pb_string **by_path;
 };
 
+struct proto_file {
+	pb_string path;
+	const char *response;
+	int len;
+};
+
+struct proto_dir {
+	size_t num_files;
+	const pb_string **by_path;
+};
+
 void *pb_calloc(pb_allocator *obj, size_t num, size_t sz);
 void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const proto_message *type);
@@ -150,7 +163,8 @@ int pb_encode(void *obj, const proto_message *type, char *data);
 int pb_print(void *obj, const proto_message *type, char *buf, int sz);
 void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
 
-const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path);
+const char *pb_lookup_file(const proto_dir *d, const char *path, int len, int *resplen);
+const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path, int len);
 int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int outsz);
 
 static inline int pb_base64_size(int sz) {

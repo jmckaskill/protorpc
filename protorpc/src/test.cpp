@@ -611,7 +611,8 @@ TEST(protobuf, dispatch) {
 	TestService svc = { 0 };
 	svc.rpc1 = &test_rpc1;
 
-	EXPECT_EQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, "/twirp/TestService/rpc1"));	
+	const char *path = "/twirp/TestService/rpc1";
+	EXPECT_EQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, path, strlen(path)));
 
 	// Try with protobufs
 	int inlen = sizeof(test_proto);
@@ -679,7 +680,7 @@ static int set_non_blocking(int fd) {
 static const char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
 
 static void decide_on_dispatch(http_server *s, http_connection *c) {
-	c->method = pb_lookup_method(&s->svc, &proto_TestService, c->h.path.c_str);
+	c->method = pb_lookup_method(&s->svc, &proto_TestService, c->h.path.c_str, c->h.path.len);
 	if (!c->method) {
 		http_send_response(&c->h, not_found, sizeof(not_found) - 1);
 	} else {

@@ -2,8 +2,20 @@
 #include <string.h>
 #include <stdio.h>
 
-const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path) {
-	pb_string pathstr = { strlen(path), path };
+const char *pb_lookup_file(const proto_dir *d, const char *path, int len, int *respsz) {
+	pb_string pathstr = { len, path };
+	const pb_string *fname = binary_search(d->by_path, d->num_files, pathstr);
+	if (!fname) {
+		*respsz = 0;
+		return NULL;
+	}
+	const proto_file *f = (const proto_file*)fname;
+	*respsz = f->len;
+	return f->response;
+}
+
+const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path, int len) {
+	pb_string pathstr = { len, path };
 	const pb_string *mname = binary_search(type->by_path, type->num_methods, pathstr);
 	if (!mname) {
 		return NULL;

@@ -11,9 +11,11 @@ build $obj/protorpc/str.o: cc $SRC/protorpc/src/str.c
 build $obj/protorpc/protorpc.o: cc $SRC/protorpc/src/protorpc.c
 build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
 build $obj/protorpc/http.o: cc $SRC/protorpc/src/http.c
+build $obj/protorpc/flag.o: cc $SRC/protorpc/src/flag.c
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
+build $obj/protorpc/test_flag.o: cxx $SRC/protorpc/src/test_flag.cpp
 
 build $obj/protoc-gen-protorpc/exec.o: cc $SRC/protoc-gen-protorpc/exec.c
 build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc $SRC/protoc-gen-protorpc/protoc-gen-protorpc.c
@@ -32,11 +34,11 @@ build $obj/zlib/trees.o: cc $SRC/zlib/trees.c
 build $obj/zlib/uncompr.o: cc $SRC/zlib/uncompr.c
 build $obj/zlib/zutil.o: cc $SRC/zlib/zutil.c
 
-build $obj/rpc-file-compiler/rpc-file-compiler.o: cc $SRC/cmd/rpc-file-compiler/rpc-file-compiler.c
-build $obj/rpc-file-compiler/sha1.o: cc $SRC/cmd/rpc-file-compiler/sha1.c
+build $obj/rpc-file-compiler/rpc-file-compiler.o: cc $SRC/rpc-file-compiler/rpc-file-compiler.c
+build $obj/rpc-file-compiler/sha1.o: cc $SRC/rpc-file-compiler/sha1.c
 
-build $obj/rpc-test-data.o: cc $SRC/cmd/rpc-file-compiler/rpc-test-data.c
-build $obj/rpc-file-compiler_test.o: cxx $SRC/cmd/rpc-file-compiler/rpc-file-compiler_test.cpp
+build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
+build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compiler_test.cpp
 
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
@@ -64,6 +66,7 @@ build $lib/protorpc.lib: lib $
  $obj/protorpc/str.o $
  $obj/protorpc/service.o $
  $obj/protorpc/http.o $
+ $obj/protorpc/flag.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $lib/protorpc.lib $
@@ -73,19 +76,26 @@ build $bin/protoc-gen-protorpc.exe: clink $
  $obj/protoc-gen-protorpc/types.o $
 
 build $bin/rpc-file-compiler.exe: clink $
- $obj/perfect-hash.o $
- $obj/str.o $
  $obj/rpc-file-compiler/rpc-file-compiler.o $
  $obj/rpc-file-compiler/sha1.o $
+ $lib/protorpc.lib $
  $lib/zlib.lib $
 
 build $bin/protorpc_test.exe: cxxlink $
  $lib/protorpc.lib $
  $obj/protorpc/test.proto.o $
  $obj/protorpc/test.o $
+ $obj/protorpc/test_flag.o $
  $obj/gtest_main.o $
  $obj/gtest-all.o $
+ $obj/rpc-file-compiler_test.o $
+ $obj/rpc-test-data.o $
+ $lib/zlib.lib $
 
-build $SRC/$TGT: phony $bin/protorpc_test.exe
+build $SRC/$TGT: phony $
+ $bin/protorpc_test.exe $
+ $bin/rpc-file-compiler.exe $
+
+
 
 

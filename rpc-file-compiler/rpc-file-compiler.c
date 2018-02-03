@@ -1,38 +1,46 @@
-#include "../str.h"
-#include "../perfect-hash.h"
+#include <protorpc/str.h>
+#include <protorpc/flag.h>
 #include <stdio.h>
 #include <zlib/zlib.h>
 #include <stdlib.h>
 #include <string.h>
 #include "sha1.h"
 
-static const char *g_argv0;
 
-static void usage() {
-	fprintf(stderr, "usage: %s <input files...> -o <output.c>\n", g_argv0);
-	exit(2);
-}
+static void to_csymbol(str_t *o, const char *fn) {
+	str_clear(o);
 
-static void print_csymbol(FILE *f, const char *s) {
-    while (*s) {
-        if (('0' <= *s && *s <= '9') || ('a' <= *s && *s <= 'z') || ('A' <= *s && *s <= 'Z')) {
-            fputc(*s, f);
-        } else {
-            fputc('_', f);
-        }
-        s++;
-    }
+	// strip the extension
+	const char *ext = strrchr(fn, '.');
+	if (!ext) {
+		ext = fn + strlen(fn);
+	}
+
+	while (fn < ext) {
+		if (('0' <= *fn && *fn <= '9') || ('a' <= *fn && *fn <= 'z') || ('A' <= *fn && *fn <= 'Z')) {
+			str_addch(o, *fn);
+		} else {
+			str_addch(o, '_');
+		}
+		fn++;
+	}
 }
 
 static void print_hex(FILE *f, const uint8_t *str, int n) {
 	for (int j = 0; j < n; j += 16) {
 		fputc('\t', f);
-		for (int i = j; i < n && i < j + 16; i++) {
+		int i;
+		for (i = j; i < n && i < j + 16; i++) {
 			fprintf(f, "0x%02X,", str[i]);
 		}
 
-		fprintf(f, "/*");
-		for (int i = j; i < n && i < j + 16; i++) {
+		while (i < j + 16) {
+			fputs("     ", f);
+			i++;
+		}
+
+		fprintf(f, " /*");
+		for (i = j; i < n && i < j + 16; i++) {
 			char ch = (char)str[i];
 			if (' ' <= ch && ch < 0x7F && ch != '*') {
 				fputc(ch, f);
@@ -119,73 +127,80 @@ static void clean_slashes(char *str) {
     }
 }
 
-int main(int argc, char *argv[]) {
-	g_argv0 = argv[0];
-	if (argc < 4) {
-		usage();
-	}
-	argv++;
-	argc--;
+struct entry {
+	str_t path;
+	int idx;
+};
 
-	int i, filenum = argc;
-	for (i = 0; i < argc; i++) {
-		char *fn = argv[i];
-		if (!strcmp(fn, "-o")) {
-            filenum = i;
-			i++;
-			break;
-		}
-		
-		clean_slashes(fn);
+static int compare_entry(const void *a, const void *b) {
+	struct entry *ea = (struct entry*) a;
+	struct entry *eb = (struct entry*) b;
+	int diff = ea->path.len - eb->path.len;
+	if (!diff) {
+		diff = memcmp(ea->path.c_str, eb->path.c_str, ea->path.len);
+	}
+	return diff;
+}
+
+int main(int argc, const char *argv[]) {
+	const char *outfn = NULL;
+	flag_string(&outfn, 'o', "output", "Output filename");
+	flag_parse(&argc, argv, "rpc-file-compiler <input files...>", 1);
+	
+	for (int i = 0; i < argc; i++) {
+		clean_slashes((char*) argv[i]);
     }
 
-	char *outfn = argv[i];
-	clean_slashes(outfn);
-
-	FILE *cf = fopen(outfn, "w");
-	if (!cf) {
-		fprintf(stderr, "failed to open %s\n", outfn);
-		usage();
+	FILE *cf = stdout;
+	if (outfn) {
+		clean_slashes((char*)outfn);
+		cf = fopen(outfn, "w");
+		if (!cf) {
+			fprintf(stderr, "failed to open %s\n", outfn);
+			return 3;
+		}
 	}
 
-	// remove the extension from the output file name as this is used for the symbol name
-	char *outext = strrchr(outfn, '.');
-	if (outext) {
-		*outext = 0;
-	}
+	str_t outsym = STR_INIT;
+	str_set(&outsym, "proto_dir");
 
 	str_t dir = STR_INIT;
-	char *slash = strrchr(outfn, '/');
-	if (slash) {
-		str_add2(&dir, outfn, slash - outfn + 1);
+	if (outfn) {
+		char *slash = strrchr(outfn, '/');
+		if (slash) {
+			str_add2(&dir, outfn, slash - outfn + 1);
+		}
+		to_csymbol(&outsym, slash ? (slash+1) : outfn);
 	}
 
-	fprintf(cf, "#include <protorpc.h>\n");
+	fprintf(cf, "#include <protorpc/protorpc.h>\n");
 
-	struct hash_entry *entries = (struct hash_entry*) calloc(filenum, sizeof(struct hash_entry));
-	str_t *paths = (str_t*) calloc(filenum, sizeof(str_t));
+	struct entry *entries = (struct entry*)calloc(argc, sizeof(struct entry));
 
     str_t vout = STR_INIT;
 	z_stream stream;
 	memset(&stream, 0, sizeof(stream));
 	deflateInit2(&stream, Z_BEST_COMPRESSION, Z_DEFLATED, 15+GZIP_ENCODING, 9, Z_DEFAULT_STRATEGY);
 
-    for (i = 0; i < filenum; i++) {
-        char *fn = argv[i];
+    for (int i = 0; i < argc; i++) {
+        const char *fn = argv[i];
         FILE *in = fopen(fn, "rb");
         if (!in) {
             fprintf(stderr, "failed to open %s\n", fn);
             exit(1);
         }
 
+#if 0
 		str_t tempfn = STR_INIT;
 		str_add(&tempfn, fn);
 		str_add(&tempfn, ".out.gz");
+#endif
 
 		if (strlen(fn) < (size_t)dir.len || strncmp(dir.c_str, fn, dir.len)) {
-			fprintf(stderr, "different root dir for %s then previous %s\n", fn, dir.c_str);
+			fprintf(stderr, "different root dir for %s then output %s\n", fn, dir.c_str);
 			return 4;
 		}
+
 		fn += dir.len;
 
         char *ext = strrchr(fn, '.');
@@ -229,21 +244,24 @@ int main(int argc, char *argv[]) {
 			fwrite(vout.c_str, 1, vout.len, tf);
 			fclose(tf);
 		}
-#endif
 		str_destroy(&tempfn);
+#endif
 		
-		str_init(&paths[i]);
+		entries[i].idx = i;
+		str_t *path = &entries[i].path;
+
+		str_init(path);
 		if (is_index) {
-			str_addch(&paths[i], '/');
+			str_addch(path, '/');
 			if (fndir) {
-				str_add2(&paths[i], fn, fndir - fn);
+				str_add2(path, fn, fndir - fn);
 			}
 		} else {
-			str_addch(&paths[i], '/');
-			str_add2(&paths[i], fn, ext - fn);
-			str_addch(&paths[i], '.');
-			str_addf(&paths[i], "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
-			str_add(&paths[i], ext);
+			str_addch(path, '/');
+			str_add2(path, fn, ext - fn);
+			str_addch(path, '.');
+			str_addf(path, "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
+			str_add(path, ext);
 		}
 
 		char hdr[256];
@@ -257,49 +275,32 @@ int main(int argc, char *argv[]) {
 			meta,
 			is_index ? "" : "Cache-Control:max-age=31536000\r\n");
 
-        fprintf(cf, "static const uint8_t g_");
-        print_csymbol(cf, fn);
-        fprintf(cf, "[] = {\n");
-		print_hex(cf, (uint8_t*) hdr, hlen);
-        print_hex(cf, (uint8_t*) vout.c_str, vout.len);
-        fprintf(cf, "};\n\n");
-
-		entries[i].str = paths[i].c_str;
+		fprintf(cf, "\nstatic const uint8_t data_%d[] = {\n", i);
+		print_hex(cf, (uint8_t*)hdr, hlen);
+		print_hex(cf, (uint8_t*)vout.c_str, vout.len);
+		fprintf(cf, "};\n");
+        fprintf(cf, "static const proto_file file_%d = {\n", i);
+		fprintf(cf, "\t{%d, \"%s\"},\n", path->len, path->c_str);
+		fprintf(cf, "\t(const char*) data_%d,\n", i);
+		fprintf(cf, "\t%d\n", hlen + vout.len);
+		fprintf(cf, "};\n");
     }
 
-	uint32_t hashmul;
-	uint32_t hashsz;
-	calc_hash_values(entries, filenum, &hashmul, &hashsz);
+	qsort(entries, argc, sizeof(entries[0]), &compare_entry);
 
-	fprintf(cf, "static const char g_not_found[] = \"HTTP/1.1 404 Not Found\\r\\nContent-Length:0\\r\\n\\r\\n\";\n\n");
+	fprintf(cf, "\nstatic const pb_string *by_path[] = {\n");
+	for (int i = 0; i < argc; i++) {
+		fprintf(cf, "\t&file_%d.path,\n", entries[i].idx);
+	}
+	fprintf(cf, "};\n");
 
-	fprintf(cf, "extern int ");
-	print_csymbol(cf, outfn + dir.len);
-	fprintf(cf, "(const char *path, pb_allocator *out);\n\n");
+	fprintf(cf, "\nextern const proto_dir dir_%s;\n", outsym.c_str);
+	fprintf(cf, "\nconst proto_dir dir_%s = {%d, by_path};\n", outsym.c_str, argc);
 
-	fprintf(cf, "int ");
-	print_csymbol(cf, outfn + dir.len);
-	fprintf(cf, "(const char *path, pb_allocator *out) {\n");
-	fprintf(cf, "\tswitch (pr_hash(path, %u) %% %u) {\n", hashmul, hashsz);
-
-	for (i = 0; i < filenum; i++) {
-		fprintf(cf, "\tcase %u:\n", entries[i].off);
-		fprintf(cf, "\t\tif (strcmp(path, \"%s\")) {\n", entries[i].str);
-		fprintf(cf, "\t\t\tgoto unknown;\n");
-		fprintf(cf, "\t\t}\n");
-		fprintf(cf, "\t\treturn pb_append(out, (char*) g_");
-		print_csymbol(cf, argv[i] + dir.len);
-		fprintf(cf, ", sizeof(g_");
-		print_csymbol(cf, argv[i] + dir.len);
-		fprintf(cf, "));\n");
+	if (cf != stdout) {
+		fclose(cf);
 	}
 
-	fprintf(cf, "\tdefault:\n");
-	fprintf(cf, "\tunknown:\n");
-	fprintf(cf, "\t\treturn pb_append(out, g_not_found, sizeof(g_not_found)-1);\n");
-	fprintf(cf, "\t}\n");
-	fprintf(cf, "}\n");
-	fclose(cf);
 	return 0;
 }
 
