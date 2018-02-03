@@ -16,7 +16,7 @@
             "Name": "lib - protorpc",
             "File": "protorpc/protorpc.vcxproj",
             "UUID": "{5EB12FC8-F54C-4257-829B-41916333921A}",
-            "Target": "lib/{TGT}/protorpc.lib"
+            "Target": "bin/{TGT}/protorpc.lib"
         },
         {
             "Name": "bin - protoc-gen-protorpc",
@@ -36,6 +36,12 @@
             "UUID": "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}",
             "Target": "bin/{TGT}/protorpc_test.exe",
             "Empty": true
+        },
+        {
+            "Name": "bin - protorpc-example",
+            "File": "protorpc-example/protorpc-example.vcxproj",
+            "UUID": "{AD1C504F-D1BD-4D8E-9144-42FE04858827}",
+            "Target": "bin/{TGT}/protorpc-example.exe"
         }
     ]
 }

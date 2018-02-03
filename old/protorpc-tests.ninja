@@ -1,8 +1,0 @@
-
-subninja protorpc/tests/bin-to-json/bin-to-json.ninja
-subninja protorpc/tests/run-test/run-test.ninja
-
-build tests/$TGT/protorpc: phony $
- tests/$TGT/bin-to-json.log $
-
-

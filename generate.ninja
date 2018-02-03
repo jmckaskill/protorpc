@@ -7,4 +7,9 @@ build $SRC/rpc-file-compiler/rpc-test-data.c: run $bin/rpc-file-compiler.exe $
  $SRC/rpc-file-compiler/rpc-test-data/test.html $
  $SRC/rpc-file-compiler/rpc-test-data/test.js $
 
+build $SRC/protorpc-example/example.proto.h $SRC/protorpc-example/example.proto.c: run $
+ $bin/protoc-gen-protorpc.exe $bin/protoc.exe $SRC/protorpc-example/example.proto
+
+build $SRC/protorpc-example/www-data.c: run $bin/rpc-file-compiler.exe $
+ $SRC/protorpc-example/index.html $
 

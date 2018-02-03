@@ -7,8 +7,6 @@
 #define MAX_LINE_LENGTH 256
 
 #ifdef _MSC_VER
-#define strncasecmp _strnicmp
-#define strcasecmp _stricmp
 static void *memmem(const void *hay, size_t haysz, const void *needle, size_t needlesz) {
 	while (needlesz <= haysz) {
 		uint8_t *test = (uint8_t*)memchr(hay, *(uint8_t*)needle, haysz - needlesz + 1);
@@ -406,20 +404,23 @@ int http_received(http *h, int r) {
 static const char continue_response[] =
 	"HTTP/1.1 100 Continue\r\n\r\n";
 
-void http_send_continue(http *h) {
+int http_send_continue(http *h) {
 	if (h->state != HTTP_HEADERS_RECEIVED) {
-		// do nothing
+		// invalid usage
+		return -1;
 	} else if (h->expect_continue) {
 		h->txleft = sizeof(continue_response) - 1;
 		h->txnext = continue_response;
 		h->state = HTTP_SENDING_CONTINUE;
+		return 0;
 	} else {
 		h->state = HTTP_RECEIVING_DATA;
 		check_request_data(h);
+		return 0;
 	}
 }
 
-void http_send_response(http *h, const char *p, int len) {
+int http_send_response(http *h, const char *p, int len) {
 	h->txnext = p;
 	h->txleft = len;
 
@@ -434,14 +435,14 @@ void http_send_response(http *h, const char *p, int len) {
 		}
 		h->state = HTTP_RECEIVING_DATA;
 		check_request_data(h);
-		break;
+		return 0;
 	case HTTP_RECEIVING_DATA:
 		// we sent the continue, but have an early response
 		// check_request_data will set the state to HTTP_SENDING_RESPONSE
 		// once the rest of the request data has come in
 		h->dump_request_data = 1; // dump data yet to be received
 		h->rxused = 0; // dump what we've already got
-		break;
+		return 0;
 	case HTTP_DATA_RECEIVED: {
 		// we sent the continue and have received all of the request data
 		h->state = HTTP_SENDING_RESPONSE;
@@ -451,15 +452,15 @@ void http_send_response(http *h, const char *p, int len) {
 		}
 		memmove(h->rxbuf, h->rxbuf + todump, h->rxused - todump);
 		h->rxused -= todump;
-		break;
+		return 0;
 	}
 	case HTTP_RESPONSE_SENT:
 		// user wants to send some more data - used for streaming output
 		h->state = HTTP_SENDING_RESPONSE;
-		break;
+		return 0;
 	default:
 		// do nothing - invalid usage
-		break;
+		return -1;
 	}
 }
 

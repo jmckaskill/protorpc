@@ -1,8 +1,0 @@
-syntax = "proto3";
-message SubMessage {
-    uint32 u32 = 1;
-}
-
-message TestMessage {
-    SubMessage sub = 1;
-}

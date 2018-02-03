@@ -142,13 +142,13 @@ void http_consume_data(http *h, int used);
 // It must not be called at other times.
 // The provided payload is the raw data stream including response headers,
 // chunked encoding, etc.
-void http_send_response(http *h, const char *p, int len);
+int http_send_response(http *h, const char *p, int len);
 
 // http_send_continue is used to accept a request and send the 100-continue
 // message. It should only be called in the HTTP_HEADERS_RECEIVED state.
 // Note that the 100 continue is only actually sent if the client has
 // requested it, but the method should be called irrespectively.
-void http_send_continue(http *h);
+int http_send_continue(http *h);
 
 
 #ifdef __cplusplus

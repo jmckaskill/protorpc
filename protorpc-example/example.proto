@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package com.example;
+
+message EchoRequest {
+    string ping = 1;
+}
+
+service Example {
+    rpc ping(EchoRequest) returns (EchoRequest);
+}
+
+

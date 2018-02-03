@@ -12,4 +12,5 @@ struct ptr_vector {
 };
 
 void pv_append(ptr_vector *v, void *value);
+void pv_remove(ptr_vector *v, int idx);
 void pv_free(ptr_vector *v);

@@ -1,5 +1,4 @@
-obj = obj/$TGT
-lib = lib/$TGT
+obj = bin/obj/$TGT
 bin = bin/$TGT
 
 build $obj/protorpc/parse.o: cc $SRC/protorpc/src/parse.c
@@ -22,6 +21,10 @@ build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc $SRC/protoc-gen-protorp
 build $obj/protoc-gen-protorpc/types.o: cc $SRC/protoc-gen-protorpc/types.c
 build $obj/protoc-gen-protorpc/plugin.o: cc $SRC/protoc-gen-protorpc/plugin.c
 
+build $obj/protorpc-example/example.proto.o: cc $SRC/protorpc-example/example.proto.c
+build $obj/protorpc-example/www-data.o: cc $SRC/protorpc-example/www-data.c
+build $obj/protorpc-example/protorpc-example.o: cc $SRC/protorpc-example/protorpc-example.c || $SRC/protorpc-example/example.proto.h
+
 build $obj/zlib/adler32.o: cc $SRC/zlib/adler32.c
 build $obj/zlib/compress.o: cc $SRC/zlib/compress.c
 build $obj/zlib/crc32.o: cc $SRC/zlib/crc32.c
@@ -43,7 +46,7 @@ build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compile
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
 
-build $lib/zlib.lib: lib $
+build $bin/zlib.lib: lib $
  $obj/zlib/adler32.o $
  $obj/zlib/compress.o $
  $obj/zlib/crc32.o $
@@ -56,7 +59,7 @@ build $lib/zlib.lib: lib $
  $obj/zlib/uncompr.o $
  $obj/zlib/zutil.o $
 
-build $lib/protorpc.lib: lib $
+build $bin/protorpc.lib: lib $
  $obj/protorpc/decode.o $
  $obj/protorpc/encode.o $
  $obj/protorpc/print.o $
@@ -69,7 +72,7 @@ build $lib/protorpc.lib: lib $
  $obj/protorpc/flag.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
- $lib/protorpc.lib $
+ $bin/protorpc.lib $
  $obj/protoc-gen-protorpc/plugin.o $
  $obj/protoc-gen-protorpc/exec.o $
  $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
@@ -78,11 +81,11 @@ build $bin/protoc-gen-protorpc.exe: clink $
 build $bin/rpc-file-compiler.exe: clink $
  $obj/rpc-file-compiler/rpc-file-compiler.o $
  $obj/rpc-file-compiler/sha1.o $
- $lib/protorpc.lib $
- $lib/zlib.lib $
+ $bin/protorpc.lib $
+ $bin/zlib.lib $
 
 build $bin/protorpc_test.exe: cxxlink $
- $lib/protorpc.lib $
+ $bin/protorpc.lib $
  $obj/protorpc/test.proto.o $
  $obj/protorpc/test.o $
  $obj/protorpc/test_flag.o $
@@ -90,11 +93,20 @@ build $bin/protorpc_test.exe: cxxlink $
  $obj/gtest-all.o $
  $obj/rpc-file-compiler_test.o $
  $obj/rpc-test-data.o $
- $lib/zlib.lib $
+ $bin/zlib.lib $
+
+build $bin/protorpc-example.exe: clink $
+ $bin/protorpc.lib $
+ $obj/protorpc-example/protorpc-example.o $
+ $obj/protorpc-example/example.proto.o $
+ $obj/protorpc-example/www-data.o $
+
 
 build $SRC/$TGT: phony $
  $bin/protorpc_test.exe $
  $bin/rpc-file-compiler.exe $
+ $bin/protorpc-example.exe $
+
 
 
 

@@ -5,6 +5,11 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#ifdef _WIN32
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
+
 #if !defined __GLIBC__
 static inline void *memrchr(const void *s, int c, size_t n) {
 	unsigned char *b = (unsigned char*) s;

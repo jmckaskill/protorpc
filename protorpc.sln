@@ -14,6 +14,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc_test", "protorpc_test.vcxproj", "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc-example", "protorpc-example\protorpc-example.vcxproj", "{AD1C504F-D1BD-4D8E-9144-42FE04858827}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ALL = Debug|ALL
@@ -28,6 +30,8 @@ Global
 		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Release|ALL.ActiveCfg = Release|Win32
 		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Debug|ALL.ActiveCfg = Debug|Win32
 		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Release|ALL.ActiveCfg = Release|Win32
+		{AD1C504F-D1BD-4D8E-9144-42FE04858827}.Debug|ALL.ActiveCfg = Debug|Win32
+		{AD1C504F-D1BD-4D8E-9144-42FE04858827}.Release|ALL.ActiveCfg = Release|Win32
 		{29C53322-7C20-431A-93B3-42D84826FE11}.Debug|ALL.ActiveCfg = Debug|Win32
 		{29C53322-7C20-431A-93B3-42D84826FE11}.Release|ALL.ActiveCfg = Release|Win32
 		{1E69E38F-001D-4219-9835-20D636CE1927}.Debug|ALL.ActiveCfg = Debug|Win32
