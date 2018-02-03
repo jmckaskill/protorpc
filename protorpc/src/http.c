@@ -1,6 +1,10 @@
 #include <protorpc/http.h>
 #include <protorpc/char-array.h>
 
+#ifndef min
+#define min(a,b) ((a) < (b) ? (a) : (b))
+#endif
+
 #define ERROR -1
 #define DONE 0
 #define MORE 1
@@ -222,12 +226,12 @@ static int process_headers(http *h, slice *data) {
 static void dump_request_data(http *h) {
 	assert(h->state == HTTP_RECEIVING_DATA || h->state == HTTP_DATA_RECEIVED);
 	h->dump_request_data = 1;
-	int todump = h->rxused;
-	if ((int64_t)todump > h->length_remaining) {
-		todump = (int)h->length_remaining;
-	}
+	int todump = (int)min((int64_t)h->rxused, h->length_remaining);
 	memmove(h->rxbuf, h->rxbuf + todump, h->rxused - todump);
-	h->rxused -= todump;	
+	h->rxused -= todump;
+	if (h->content_length >= 0) {
+		h->length_remaining -= todump;
+	}
 }
 
 static void all_data_received(http *h) {
@@ -480,18 +484,14 @@ char *http_request_data(const http *h, int *plen) {
 		*plen = 0;
 		return NULL;
 	}
-	if ((int64_t) h->rxused > h->length_remaining) {
-		*plen = (int) h->length_remaining;
-	} else {
-		*plen = h->rxused;
-	}
+	*plen = (int)min((int64_t)h->rxused, h->length_remaining);
 	return h->rxbuf;
 }
 
 int http_consume_data(http *h, int used) {
 	if ((h->state != HTTP_DATA_RECEIVED && h->state != HTTP_RECEIVING_DATA)
-		|| used > h->rxused 
-		|| (int64_t) used > h->length_remaining) {
+		|| (int64_t)used > min((int64_t)h->rxused, h->length_remaining)) {
+		// invalid usage
 		return -1;
 	}
 	if (h->content_length >= 0) {

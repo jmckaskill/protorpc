@@ -986,8 +986,8 @@ TEST(protorpc, http) {
 	EXPECT_EQ(3, h.content_length);
 
 	// dump the request payload
-	static const char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
-	EXPECT_EQ(0, http_send_response(&h, not_found, strlen(not_found)));
+	static const char resp404[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
+	EXPECT_EQ(0, http_send_response(&h, resp404, strlen(resp404)));
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
 
 	// we shouldn't be getting any payload as we've dumped it
@@ -995,8 +995,8 @@ TEST(protorpc, http) {
 	EXPECT_EQ(0, len);
 
 	tx = http_send_buffer(&h, &len);
-	EXPECT_EQ(not_found, tx);
-	EXPECT_EQ(strlen(not_found), len);
+	EXPECT_EQ(resp404, tx);
+	EXPECT_EQ(strlen(resp404), len);
 
 	EXPECT_EQ(0, http_sent(&h, len));
 	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
