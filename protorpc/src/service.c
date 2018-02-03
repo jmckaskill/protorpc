@@ -14,6 +14,7 @@ const proto_method *pb_lookup_method(void *svc, const proto_service *type, const
 	if (!fn) {
 		return NULL;
 	}
+	
 	return method;
 }
 

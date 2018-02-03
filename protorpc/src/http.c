@@ -269,6 +269,8 @@ static int process_request(http *h) {
 
 		h->state = HTTP_HEADERS_RECEIVED;
 		break;
+	default:
+		break;
 	}
 
 	if (h->dump_request_data) {

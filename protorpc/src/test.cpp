@@ -3,6 +3,8 @@
 #else
 #include <poll.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <fcntl.h>
 #endif
 
 #include <gtest/gtest.h>
@@ -500,7 +502,7 @@ TEST(protobuf, encode_base64) {
 }
 
 TEST(protobuf, parse) {
-	char objbuf[4096];
+	char objbuf[65536];
 	pb_allocator obj = PB_INIT_ALLOCATOR(objbuf);
 	char *json_in = strdup(test_json);
 	struct TestMessage *m = (struct TestMessage*) pb_parse(&obj, &proto_TestMessage, json_in);
@@ -580,7 +582,7 @@ TEST(protobuf, encode) {
 }
 
 TEST(protobuf, decode) {
-	char obuf[4096];
+	char obuf[65536];
 	pb_allocator obj = PB_INIT_ALLOCATOR(obuf);
 
 	char *buf = (char*) malloc(sizeof(test_proto) + 1);
@@ -599,10 +601,10 @@ static int test_rpc1(TestService *s, pb_allocator *a, const TestMessage *in, Tes
 }
 
 TEST(protobuf, dispatch) {
+	char abuf[65536];
 	char ibuf[4096];
 	char obuf[4096];
 	char tbuf[4096];
-	char abuf[4096];
 
 	pb_allocator obj = PB_INIT_ALLOCATOR(abuf);
 
@@ -650,6 +652,7 @@ struct http_server {
 
 #ifdef _WIN32
 typedef WSAPOLLFD pollfd;
+typedef int socklen_t;
 #define poll WSAPoll
 #pragma comment(lib,"ws2_32")
 #else
@@ -669,7 +672,7 @@ static int set_non_blocking(int fd) {
 	u_long nonblock = 1;
 	return ioctlsocket(fd, FIONBIO, &nonblock);
 #else
-	fcntl(...)
+	return fcntl(fd, F_SETFL, O_NONBLOCK);
 #endif
 }
 
@@ -753,7 +756,7 @@ void poll_http_server(http_server *s) {
 		}
 
 		if (c->h.state == HTTP_DATA_RECEIVED && c->method) {
-			char obj[4096];
+			char obj[65536];
 			pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
 			int rxlen;
 			char *req = http_request_data(&c->h, &rxlen);
@@ -806,7 +809,7 @@ TEST(protobuf, http) {
 	EXPECT_EQ(0, listen(s.lfd, 0));
 	EXPECT_EQ(0, set_non_blocking(s.lfd));
 
-	int sasz = sizeof(sa);
+	socklen_t sasz = sizeof(sa);
 	EXPECT_EQ(0, getsockname(s.lfd, (struct sockaddr*) &sa, &sasz));
 
 	int cfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
