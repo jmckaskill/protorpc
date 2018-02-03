@@ -175,7 +175,6 @@ static int process_headers(http *h, slice *data) {
 
 		if (str_itest(key, "content-length")) {
 			h->content_length = 0;
-			h->have_content_length = 1;
 			char *p = value.c_str;
 			while (*p) {
 				// include check for overflow
@@ -220,16 +219,32 @@ static int process_headers(http *h, slice *data) {
 	}
 }
 
-static void check_request_data(http *h) {
-	if (h->have_content_length && h->rxused >= h->length_remaining) {
-		h->state = HTTP_DATA_RECEIVED;
-		if (!h->have_nextch && h->rxused > h->length_remaining) {
+static void dump_request_data(http *h) {
+	assert(h->state == HTTP_RECEIVING_DATA || h->state == HTTP_DATA_RECEIVED);
+	h->dump_request_data = 1;
+	int todump = h->rxused;
+	if ((int64_t)todump > h->length_remaining) {
+		todump = (int)h->length_remaining;
+	}
+	memmove(h->rxbuf, h->rxbuf + todump, h->rxused - todump);
+	h->rxused -= todump;	
+}
+
+static void all_data_received(http *h) {
+	h->state = HTTP_DATA_RECEIVED;
+	if (h->txnext) {
+		dump_request_data(h);
+		h->state = HTTP_SENDING_RESPONSE;
+	}
+}
+
+static void check_data_received(http *h) {
+	if ((int64_t) h->rxused >= h->length_remaining) {
+		if (!h->have_nextch && (int64_t) h->rxused > h->length_remaining) {
 			h->have_nextch = 1;
 			h->nextch = h->rxbuf[h->length_remaining];
 		}
-		if (h->txnext) {
-			h->state = HTTP_SENDING_RESPONSE;
-		}
+		all_data_received(h);
 	}
 }
 
@@ -259,34 +274,27 @@ static int process_request(http *h) {
 			return 0;
 		}
 
-		if (!h->have_content_length && !h->connection_close) {
-			h->have_content_length = 1;
+		if (h->content_length < 0 && !h->connection_close) {
 			h->length_remaining = 0;
 			h->content_length = 0;
 		}
 
 		h->state = HTTP_HEADERS_RECEIVED;
+		
+		// remove the headers from the rxbuffer
+		h->rxused = data.len;
+		memmove(h->rxbuf, data.c_str, h->rxused);
 		break;
 	default:
 		break;
 	}
 
 	if (h->dump_request_data) {
-		int todump = data.len;
-		if (h->have_content_length && (int64_t)todump > h->length_remaining) {
-			todump = (int)h->length_remaining;
-		}
-		data.c_str += todump;
-		data.len -= todump;
-	}
-
-	if (data.c_str > h->rxbuf) {
-		h->rxused = data.len;
-		memmove(h->rxbuf, data.c_str, h->rxused);
+		dump_request_data(h);
 	}
 
 	if (h->state == HTTP_RECEIVING_DATA) {
-		check_request_data(h);
+		check_data_received(h);
 	}
 
 	return 0;
@@ -315,8 +323,9 @@ int http_next_request(http *h) {
 		h->have_nextch = 0;
 	}
 
+	h->content_length = -1;
+	h->length_remaining = INT64_MAX;
 	h->expect_continue = 0;
-	h->have_content_length = 0;
 	h->dump_request_data = 0;
 
 	ca_setlen(&h->method, 0);
@@ -368,11 +377,12 @@ int http_sent(http *h, int w) {
 		return 0;
 	}
 
+	// we've finished the current send, where to next?
 	h->txnext = NULL;
 
 	if (h->state == HTTP_SENDING_CONTINUE) {
 		h->state = HTTP_RECEIVING_DATA;
-		check_request_data(h);
+		check_data_received(h);
 	} else {
 		h->state = HTTP_RESPONSE_SENT;
 	}
@@ -389,7 +399,8 @@ int http_received(http *h, int r) {
 
 	if (!r) {
 		if (h->state == HTTP_RECEIVING_DATA && h->connection_close) {
-			h->state = HTTP_DATA_RECEIVED;
+			h->length_remaining = h->rxused;
+			all_data_received(h);
 			return 0;
 		} else if (h->state == HTTP_IDLE) {
 			return 1;
@@ -415,12 +426,17 @@ int http_send_continue(http *h) {
 		return 0;
 	} else {
 		h->state = HTTP_RECEIVING_DATA;
-		check_request_data(h);
+		check_data_received(h);
 		return 0;
 	}
 }
 
 int http_send_response(http *h, const char *p, int len) {
+	if (h->txnext || h->txleft) {
+		// invalid usage - can't send when a response is still active
+		return -1;
+	}
+
 	h->txnext = p;
 	h->txleft = len;
 
@@ -428,32 +444,27 @@ int http_send_response(http *h, const char *p, int len) {
 	case HTTP_HEADERS_RECEIVED:
 		// we've elected not to send the continue
 		if (h->expect_continue) {
+			// The client's specified content-length is only applicable
+			// if we accept and send a 100-continue. If we don't it's as
+			// if the client had send a Content-Length:0.
 			h->expect_continue = 0;
 			h->length_remaining = 0;
-		} else {
-			h->dump_request_data = 1;
 		}
 		h->state = HTTP_RECEIVING_DATA;
-		check_request_data(h);
+		dump_request_data(h);
+		check_data_received(h);
 		return 0;
 	case HTTP_RECEIVING_DATA:
 		// we sent the continue, but have an early response
-		// check_request_data will set the state to HTTP_SENDING_RESPONSE
+		// check_data_received will set the state to HTTP_SENDING_RESPONSE
 		// once the rest of the request data has come in
-		h->dump_request_data = 1; // dump data yet to be received
-		h->rxused = 0; // dump what we've already got
+		dump_request_data(h);
 		return 0;
-	case HTTP_DATA_RECEIVED: {
+	case HTTP_DATA_RECEIVED:
 		// we sent the continue and have received all of the request data
+		dump_request_data(h);
 		h->state = HTTP_SENDING_RESPONSE;
-		int todump = h->rxused;
-		if (h->have_content_length && (int64_t)todump > h->length_remaining) {
-			todump = (int)h->length_remaining;
-		}
-		memmove(h->rxbuf, h->rxbuf + todump, h->rxused - todump);
-		h->rxused -= todump;
 		return 0;
-	}
 	case HTTP_RESPONSE_SENT:
 		// user wants to send some more data - used for streaming output
 		h->state = HTTP_SENDING_RESPONSE;
@@ -469,7 +480,7 @@ char *http_request_data(const http *h, int *plen) {
 		*plen = 0;
 		return NULL;
 	}
-	if (h->have_content_length && h->rxused > h->length_remaining) {
+	if ((int64_t) h->rxused > h->length_remaining) {
 		*plen = (int) h->length_remaining;
 	} else {
 		*plen = h->rxused;
@@ -477,15 +488,16 @@ char *http_request_data(const http *h, int *plen) {
 	return h->rxbuf;
 }
 
-void http_consume_data(http *h, int used) {
+int http_consume_data(http *h, int used) {
 	if ((h->state != HTTP_DATA_RECEIVED && h->state != HTTP_RECEIVING_DATA)
 		|| used > h->rxused 
-		|| (h->have_content_length && used > h->length_remaining)) {
-		return;
+		|| (int64_t) used > h->length_remaining) {
+		return -1;
 	}
-	if (h->have_content_length) {
+	if (h->content_length >= 0) {
 		h->length_remaining -= used;
 	}
 	memmove(h->rxbuf, h->rxbuf + used, h->rxused - used);
 	h->rxused -= used;
+	return 0;
 }

@@ -72,7 +72,6 @@ struct http {
 	unsigned expect_continue : 1;
 	unsigned connection_close : 1;
 	unsigned have_nextch : 1;
-	unsigned have_content_length : 1;
 	unsigned dump_request_data : 1;
 
 	struct {int len; char c_str[12];} method;
@@ -133,7 +132,7 @@ char *http_request_data(const http *h, int *plen);
 // only be called in the HTTP_RECEIVING_DATA or HTTP_DATA_RECEIVED states.
 // The used parameter should not exceed the size returned by the last
 // http_request_data call.
-void http_consume_data(http *h, int used);
+int http_consume_data(http *h, int used);
 
 // http_send_response sends another response chunk. It's used in a few states:
 // HTTP_HEADERS_RECEIVED - to reject the request

@@ -790,7 +790,7 @@ static void recv_string(int fd, char *buf, int bufsz) {
 	buf[r > 0 ? r : 0] = 0;
 }
 
-TEST(protobuf, http) {
+TEST(protobuf, http_sock) {
 #ifdef _WIN32
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
@@ -915,4 +915,100 @@ TEST(protobuf, http) {
 	poll_http_server(&s);
 	EXPECT_EQ(0, (int) s.conns.size());
 	closesocket(s.lfd);
+}
+
+TEST(protorpc, http) {
+	http h;
+	char rxbuf[4096];
+	http_reset(&h, rxbuf, sizeof(rxbuf), NULL); 
+
+	// test normal one off request
+	int len;
+	char *rx = http_recv_buffer(&h, &len);
+	EXPECT_EQ(rxbuf, rx);
+	EXPECT_EQ(sizeof(rxbuf), len);
+	EXPECT_EQ(HTTP_IDLE, h.state);
+
+	len = sprintf(rxbuf, "POST / HTTP/1.1\r\nContent-Length:3\r\n\r\nabc");
+	EXPECT_EQ(0, http_received(&h, len));
+	EXPECT_EQ(HTTP_HEADERS_RECEIVED, h.state);
+	EXPECT_EQ(3, h.content_length);
+
+	// we haven't accepted the request so we shouldn't be getting
+	// any data yet
+	EXPECT_EQ(3, h.length_remaining);
+	EXPECT_EQ(NULL, http_request_data(&h, &len));
+	EXPECT_EQ(0, len);
+
+	// now accept it
+	EXPECT_EQ(0, http_send_continue(&h));
+	EXPECT_EQ(HTTP_DATA_RECEIVED, h.state);
+	rx = http_request_data(&h, &len);
+	rx[len] = 0;
+	EXPECT_EQ(3, len);
+	EXPECT_STREQ("abc", rx);
+
+	// queue the response
+	static const char ok[] = "HTTP/1.1 200 OK\r\nContent-Length:0\r\n\r\n";
+	EXPECT_EQ(0, http_send_response(&h, ok, strlen(ok)));
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
+
+	// send the response
+	const char *tx = http_send_buffer(&h, &len);
+	EXPECT_EQ(ok, tx);
+	EXPECT_EQ(strlen(ok), len);
+
+	// complete the send
+	EXPECT_EQ(0, http_sent(&h, len));
+	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
+	EXPECT_EQ(NULL, h.txnext);
+
+	// test that there's no more
+	tx = http_send_buffer(&h, &len);
+	EXPECT_EQ(NULL, tx);
+	EXPECT_EQ(0, len);
+
+
+
+
+	// test pipelining whilst skipping the request payload
+	// start the next request
+	EXPECT_EQ(0, http_next_request(&h));
+	EXPECT_EQ(HTTP_IDLE, h.state);
+
+	rx = http_recv_buffer(&h, &len);
+	len = sprintf(rx, "POST /foo HTTP/1.1\r\nContent-Length:3\r\n\r\ndefGET /bar HTTP/1.1\r\n\r\n");
+
+	EXPECT_EQ(0, http_received(&h, len));
+	EXPECT_EQ(HTTP_HEADERS_RECEIVED, h.state);
+	EXPECT_STREQ("POST", h.method.c_str);
+	EXPECT_STREQ("/foo", h.path.c_str);
+	EXPECT_EQ(3, h.content_length);
+
+	// dump the request payload
+	static const char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
+	EXPECT_EQ(0, http_send_response(&h, not_found, strlen(not_found)));
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
+
+	// we shouldn't be getting any payload as we've dumped it
+	EXPECT_EQ(NULL, http_request_data(&h, &len));
+	EXPECT_EQ(0, len);
+
+	tx = http_send_buffer(&h, &len);
+	EXPECT_EQ(not_found, tx);
+	EXPECT_EQ(strlen(not_found), len);
+
+	EXPECT_EQ(0, http_sent(&h, len));
+	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
+	// the header settings shouldn't have been cleared yet
+	EXPECT_STREQ("POST", h.method.c_str);
+
+	// continue on with parsing the next request
+	EXPECT_EQ(0, http_next_request(&h));
+	EXPECT_EQ(HTTP_HEADERS_RECEIVED, h.state);
+	EXPECT_STREQ("GET", h.method.c_str);
+	EXPECT_STREQ("/bar", h.path.c_str);
+
+	EXPECT_EQ(0, http_send_response(&h, ok, strlen(ok)));
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
 }
