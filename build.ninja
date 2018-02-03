@@ -8,3 +8,5 @@ build bin/$HOST/protoc.exe: copy /usr/local/bin/protoc
 
 subninja generate.ninja
 subninja toolchain/target-gcc.ninja
+
+default host

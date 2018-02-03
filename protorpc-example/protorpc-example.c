@@ -9,6 +9,10 @@ typedef WSAPOLLFD pollfd;
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <fcntl.h>
+#include <netdb.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
 #define closesocket(fd) close(fd)
 #endif
 
@@ -135,7 +139,7 @@ static void disconnect(client *c) {
 	free(c);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 #ifdef _WIN32
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
