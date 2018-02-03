@@ -163,6 +163,9 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE 19
 #endif
 
+// to get reproducibility, we don't want the OS_CODE to leak through in the gzip header
+#undef OS_CODE
+
 #if defined(_BEOS_) || defined(RISCOS)
 #  define fdopen(fd,mode) NULL /* No fdopen() */
 #endif
