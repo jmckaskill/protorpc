@@ -485,6 +485,7 @@ char *http_request_data(const http *h, int *plen) {
 		return NULL;
 	}
 	*plen = (int)min((int64_t)h->rxused, h->length_remaining);
+	h->rxbuf[*plen] = 0;
 	return h->rxbuf;
 }
 
