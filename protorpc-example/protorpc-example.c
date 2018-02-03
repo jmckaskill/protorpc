@@ -216,46 +216,48 @@ int main(int argc, const char *argv[]) {
 			client *c = clients.v[i];
 			heap_remove(&client_heap, &c->hn, &compare_client);
 
-			if (fds[i].revents & (POLLIN | POLLHUP)) {
-				int r;
-				char *buf = http_recv_buffer(&c->h, &r);
-				r = recv(c->fd, buf, r, 0);
-				if (r < 0 && would_block()) {
-					continue;
-				} else if (http_received(&c->h, r)) {
-					goto do_close;
-				}
-
-			} else if (fds[i].revents & POLLOUT) {
+			for (;;) {
 				int w;
-				const char *buf = http_send_buffer(&c->h, &w);
-				w = send(c->fd, buf, w, 0);
-				if (w < 0 && would_block()) {
-					continue;
-				} else if (http_sent(&c->h, w)) {
-					goto do_close;
+				const char *wbuf = http_send_buffer(&c->h, &w);
+				if (w) {
+					w = send(c->fd, wbuf, w, 0);
+					if (w < 0 && would_block()) {
+						goto do_wait;
+					} else if (http_sent(&c->h, w)) {
+						goto do_close;
+					}
+				} else {
+					int r;
+					char *rbuf = http_recv_buffer(&c->h, &r);
+					r = recv(c->fd, rbuf, r, 0);
+					if (r < 0 && would_block()) {
+						goto do_wait;
+					} else if (http_received(&c->h, r)) {
+						goto do_close;
+					}
+				}
+
+				if (c->h.state == HTTP_RESPONSE_SENT) {
+					if (http_next_request(&c->h)) {
+						goto do_close;
+					}
+				}
+
+				if (c->h.state == HTTP_HEADERS_RECEIVED) {
+					decide_on_dispatch(&s, c);
+				}
+
+				if (c->h.state == HTTP_DATA_RECEIVED && c->method) {
+					char obj[65536];
+					pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
+					int rxlen;
+					char *req = http_request_data(&c->h, &rxlen);
+					int txlen = pb_dispatch(&s, c->method, &alloc, req, rxlen, c->tx, sizeof(c->tx));
+					http_send_response(&c->h, c->tx, txlen);
 				}
 			}
 
-			if (c->h.state == HTTP_RESPONSE_SENT) {
-				if (http_next_request(&c->h)) {
-					goto do_close;
-				}
-			}
-
-			if (c->h.state == HTTP_HEADERS_RECEIVED) {
-				decide_on_dispatch(&s, c);
-			}
-
-			if (c->h.state == HTTP_DATA_RECEIVED && c->method) {
-				char obj[65536];
-				pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
-				int rxlen;
-				char *req = http_request_data(&c->h, &rxlen);
-				int txlen = pb_dispatch(&s, c->method, &alloc, req, rxlen, c->tx, sizeof(c->tx));
-				http_send_response(&c->h, c->tx, txlen);
-			}
-
+		do_wait:
 			c->timeout = now + IDLE_TIMEOUT_SECONDS;
 			heap_insert(&client_heap, &c->hn, &compare_client);
 			continue;
