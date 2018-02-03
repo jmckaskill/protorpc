@@ -41,7 +41,7 @@ TEST(protorpc, compiler) {
 
 	*z.next_out = 0;
 	EXPECT_STREQ(test_js_data, decoded);
-	EXPECT_EQ(sizeof(test_js_data) - 1, (char*) z.next_out - decoded);
+	EXPECT_EQ((int) sizeof(test_js_data) - 1, (char*) z.next_out - decoded);
 
 	// Test 404 response
 	path = "/rpc-test-data/test.js";

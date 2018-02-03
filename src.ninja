@@ -72,11 +72,11 @@ build $bin/protorpc.lib: lib $
  $obj/protorpc/flag.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
- $bin/protorpc.lib $
+ $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
  $obj/protoc-gen-protorpc/plugin.o $
  $obj/protoc-gen-protorpc/exec.o $
- $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
  $obj/protoc-gen-protorpc/types.o $
+ $bin/protorpc.lib $
 
 build $bin/rpc-file-compiler.exe: clink $
  $obj/rpc-file-compiler/rpc-file-compiler.o $
@@ -85,21 +85,21 @@ build $bin/rpc-file-compiler.exe: clink $
  $bin/zlib.lib $
 
 build $bin/protorpc_test.exe: cxxlink $
- $bin/protorpc.lib $
- $obj/protorpc/test.proto.o $
  $obj/protorpc/test.o $
+ $obj/protorpc/test.proto.o $
  $obj/protorpc/test_flag.o $
- $obj/gtest_main.o $
- $obj/gtest-all.o $
  $obj/rpc-file-compiler_test.o $
  $obj/rpc-test-data.o $
+ $bin/protorpc.lib $
  $bin/zlib.lib $
+ $obj/gtest_main.o $
+ $obj/gtest-all.o $
 
 build $bin/protorpc-example.exe: clink $
- $bin/protorpc.lib $
  $obj/protorpc-example/protorpc-example.o $
  $obj/protorpc-example/example.proto.o $
  $obj/protorpc-example/www-data.o $
+ $bin/protorpc.lib $
 
 
 build $SRC/$TGT: phony $

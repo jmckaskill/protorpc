@@ -818,7 +818,7 @@ TEST(protobuf, http) {
 
 	poll_http_server(&s);
 
-	ASSERT_EQ(1, s.conns.size());
+	ASSERT_EQ(1, (int) s.conns.size());
 	http_connection *c = s.conns[0];
 	EXPECT_EQ(HTTP_IDLE, c->h.state);
 
@@ -858,7 +858,7 @@ TEST(protobuf, http) {
 	poll_http_server(&s);
 	EXPECT_EQ(HTTP_IDLE, c->h.state);
 
-	int tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+	sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
 		(int)strlen(test_pod_json), test_pod_json);
 	recv_string(cfd, buf, sizeof(buf));
 	EXPECT_STREQ(tbuf, buf);
@@ -883,7 +883,7 @@ TEST(protobuf, http) {
 	poll_http_server(&s);
 	EXPECT_EQ(HTTP_IDLE, c->h.state);
 
-	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+	sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
 		(int)strlen(test_pod_json), test_pod_json);
 	recv_string(cfd, buf, sizeof(buf));
 	EXPECT_STREQ(tbuf, buf);
@@ -899,7 +899,7 @@ TEST(protobuf, http) {
 	poll_http_server(&s); // send the first response
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, c->h.state);
 
-	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
+	sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json\r\nContent-Length:%6d\r\n\r\n%s",
 		(int)strlen(test_pod_json), test_pod_json);
 	recv_string(cfd, buf, sizeof(buf));
 	EXPECT_STREQ(tbuf, buf);
@@ -913,6 +913,6 @@ TEST(protobuf, http) {
 	// close the connection
 	closesocket(cfd);
 	poll_http_server(&s);
-	EXPECT_EQ(0, s.conns.size());
+	EXPECT_EQ(0, (int) s.conns.size());
 	closesocket(s.lfd);
 }
