@@ -10,11 +10,24 @@ build $obj/protorpc/str.o: cc $SRC/protorpc/src/str.c
 build $obj/protorpc/protorpc.o: cc $SRC/protorpc/src/protorpc.c
 build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
 build $obj/protorpc/http.o: cc $SRC/protorpc/src/http.c
+build $obj/protorpc/http-sockets.o: cc $SRC/protorpc/src/http-sockets.c
 build $obj/protorpc/flag.o: cc $SRC/protorpc/src/flag.c
+build $bin/protorpc.lib: lib $
+ $obj/protorpc/decode.o $
+ $obj/protorpc/encode.o $
+ $obj/protorpc/print.o $
+ $obj/protorpc/parse.o $
+ $obj/protorpc/protorpc.o $
+ $obj/protorpc/ptr-vector.o $
+ $obj/protorpc/str.o $
+ $obj/protorpc/service.o $
+ $obj/protorpc/http.o $
+ $obj/protorpc/http-sockets.o $
+ $obj/protorpc/flag.o $
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
-build $obj/protorpc/test_flag.o: cxx $SRC/protorpc/src/test_flag.cpp
+build $obj/protorpc/flag_test.o: cxx $SRC/protorpc/src/flag_test.cpp
 
 build $obj/protoc-gen-protorpc/exec.o: cc $SRC/protoc-gen-protorpc/exec.c
 build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc $SRC/protoc-gen-protorpc/protoc-gen-protorpc.c
@@ -59,17 +72,6 @@ build $bin/zlib.lib: lib $
  $obj/zlib/uncompr.o $
  $obj/zlib/zutil.o $
 
-build $bin/protorpc.lib: lib $
- $obj/protorpc/decode.o $
- $obj/protorpc/encode.o $
- $obj/protorpc/print.o $
- $obj/protorpc/parse.o $
- $obj/protorpc/protorpc.o $
- $obj/protorpc/ptr-vector.o $
- $obj/protorpc/str.o $
- $obj/protorpc/service.o $
- $obj/protorpc/http.o $
- $obj/protorpc/flag.o $
 
 build $bin/protoc-gen-protorpc.exe: clink $
  $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
@@ -87,7 +89,7 @@ build $bin/rpc-file-compiler.exe: clink $
 build $bin/protorpc_test.exe: cxxlink $
  $obj/protorpc/test.o $
  $obj/protorpc/test.proto.o $
- $obj/protorpc/test_flag.o $
+ $obj/protorpc/flag_test.o $
  $obj/rpc-file-compiler_test.o $
  $obj/rpc-test-data.o $
  $bin/protorpc.lib $

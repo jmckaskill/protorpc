@@ -1,4 +1,4 @@
-#include "protorpc-example/example.proto.h"
+#include "protorpc/protorpc-example/example.proto.h"
 
 const proto_method proto_Example_ping = {
 	{31, "/twirp/com.example.Example/ping"},

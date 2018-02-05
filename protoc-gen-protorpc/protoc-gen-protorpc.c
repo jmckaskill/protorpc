@@ -8,6 +8,25 @@
 
 #define ALLOC_SIZE (1*1024*1024)
 
+static void define_enum(str_t *o, proto_type *t) {
+	if (t->defined) {
+		return;
+	}
+
+	str_add(o, EOL);
+	str_addf(o, "enum %s {" EOL, t->c_type.c_str);
+	for (int i = 0; i < t->en->value.len; i++) {
+		EnumValueDescriptorProto *v = t->en->value.v[i];
+		if (i) {
+			str_add(o, "," EOL);
+		}
+		str_addf(o, "\t%s = %d", v->name.c_str, v->number);
+	}
+	str_add(o, EOL "};" EOL);
+	str_addf(o, "typedef enum %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
+	t->defined = true;
+}
+
 static void add_upper(str_t *o, const char *str) {
 	while (*str) {
 		if ('a' <= *str && *str <= 'z') {
@@ -67,11 +86,17 @@ static void append_field(str_t *o, const FieldDescriptorProto *f) {
 }
 
 static void define_message(str_t *o, proto_type *t) {
+	if (t->defined) {
+		return;
+	}
+
 	for (int i = 0; i < t->msg->field.len; i++) {
 		FieldDescriptorProto *f = t->msg->field.v[i];
 		proto_type *ft = get_field_type(f);
-		if (f->label != LABEL_REPEATED && ft->is_pod && !ft->defined) {
+		if (f->label != LABEL_REPEATED && ft->is_pod&& ft->file == t->file) {
 			define_message(o, ft);
+		} else if (f->type == TYPE_ENUM&& ft->file == t->file) {
+			define_enum(o, ft);
 		}
 	}
 
@@ -83,6 +108,8 @@ static void define_message(str_t *o, proto_type *t) {
 	str_addf(o, "struct %s {" EOL, t->c_type.c_str);
 	if (!t->is_pod) {
 		str_add(o, "\tpb_msg _pbhdr;" EOL);
+	} else if (!t->msg->field.len) {
+		str_add(o, "\tchar _pbempty;" EOL);
 	}
 	for (int i = 0; i < t->msg->field.len;) {
 		FieldDescriptorProto *f = t->msg->field.v[i];
@@ -111,20 +138,6 @@ static void define_message(str_t *o, proto_type *t) {
 	}
 	str_add(o, "};" EOL);
 	t->defined = true;
-}
-
-static void define_enum(str_t *o, const proto_type *t) {
-	str_add(o, EOL);
-	str_addf(o, "enum %s {" EOL, t->c_type.c_str);
-	for (int i = 0; i < t->en->value.len; i++) {
-		EnumValueDescriptorProto *v = t->en->value.v[i];
-		if (i) {
-			str_add(o, "," EOL);
-		}
-		str_addf(o, "\t%s = %d", v->name.c_str, v->number);
-	}
-	str_add(o, EOL "};" EOL);
-	str_addf(o, "typedef enum %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
 }
 
 static void define_service(str_t *o, const proto_type *t) {
@@ -259,6 +272,9 @@ static void do_fields_by_number(str_t *o, const proto_type *t) {
 			str_add(o, " -1}");
 		}
 	}
+	if (!t->msg->field.len) {
+		str_addf(o, "\t{0}");
+	}
 	str_addf(o, EOL "};" EOL);
 }
 
@@ -270,6 +286,9 @@ static void do_fields_by_name(str_t *o, const proto_type *t) {
 			str_addf(o, "," EOL);
 		}
 		str_addf(o, "\t&fields_%s[%d].json_name", t->c_type.c_str, f->by_number_index);
+	}
+	if (!t->msg->field.len) {
+		str_addf(o, "\tNULL");
 	}
 	str_addf(o, EOL "};" EOL);
 }

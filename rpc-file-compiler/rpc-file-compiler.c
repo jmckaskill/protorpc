@@ -142,7 +142,7 @@ static int compare_entry(const void *a, const void *b) {
 	return diff;
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
 	const char *outfn = NULL;
 	flag_string(&outfn, 'o', "output", "Output filename");
 	flag_parse(&argc, argv, "rpc-file-compiler <input files...>", 1);

@@ -139,7 +139,7 @@ static void disconnect(client *c) {
 	free(c);
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, char *argv[]) {
 #ifdef _WIN32
 	WSADATA wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);

@@ -149,6 +149,12 @@ int http_send_response(http *h, const char *p, int len);
 // requested it, but the method should be called irrespectively.
 int http_send_continue(http *h);
 
+// http_pump pumps data through BSD sockets send/recv calls
+// returns
+// 1 - data moved
+// 0 - wait for more
+// -1 - error
+int http_pump(http *h, int fd);
 
 #ifdef __cplusplus
 }

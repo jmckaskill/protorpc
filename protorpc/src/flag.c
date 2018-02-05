@@ -59,19 +59,20 @@ static void print_usage(str_t *o) {
 				str_addf(o, "    ");
 			}
 
+			int pad = 24;
+
 			if (f->longopt) {
-				str_addf(o, "%c --%s", f->shopt ? ',' : ' ', f->longopt);
-				int pad = 20 - strlen(f->longopt);
+				pad -= str_addf(o, "%c --%s", f->shopt ? ',' : ' ', f->longopt);
 
 				switch (f->type) {
 				case FLAG_INT:
+					pad -= str_addf(o, "=%d", f->pval->i);
+					break;
 				case FLAG_DOUBLE:
-					str_add(o, "=NUMBER");
-					pad -= 7;
+					pad -= str_addf(o, "=%g", f->pval->d);
 					break;
 				case FLAG_STRING:
-					str_add(o, "=STRING");
-					pad -= 7;
+					pad -= str_addf(o, "=%s", f->pval->s);
 					break;
 				case FLAG_BOOL:
 					break;
@@ -79,17 +80,15 @@ static void print_usage(str_t *o) {
 
 				print_spaces(o, pad);
 			} else {
-				int pad = 24;
-
 				switch (f->type) {
 				case FLAG_INT:
+					pad -= str_addf(o, " %d", f->pval->i);
+					break;
 				case FLAG_DOUBLE:
-					str_add(o, " NUMBER");
-					pad -= 7;
+					pad -= str_addf(o, " %g", f->pval->d);
 					break;
 				case FLAG_STRING:
-					str_add(o, " STRING");
-					pad -= 7;
+					pad -= str_addf(o, " %s", f->pval->s);
 					break;
 				case FLAG_BOOL:
 					break;
@@ -153,7 +152,7 @@ static struct flag *find_short(char name) {
 	return NULL;
 }
 
-static int process_flag(struct flag *f, const char *arg, const char *value) {
+static int process_flag(struct flag *f, char *arg, char *value) {
 	if (!value && f->type != FLAG_BOOL) {
 		str_t o = STR_INIT;
 		str_addf(&o, "expected value for %s\n", arg);
@@ -179,21 +178,21 @@ static int process_flag(struct flag *f, const char *arg, const char *value) {
 	return 0;
 }
 
-static const char *remove_argument(int i, int *pargc, const char **argv) {
-	const char *ret = argv[i];
+static char *remove_argument(int i, int *pargc, char **argv) {
+	char *ret = argv[i];
 	memmove((void*) &argv[i], (void*) &argv[i + 1], (*pargc - (i + 1)) * sizeof(argv[i]));
 	(*pargc)--;
 	return ret;
 }
 
-static int unknown_flag(const char *arg) {
+static int unknown_flag(char *arg) {
 	str_t o = STR_INIT;
 	str_addf(&o, "unknown flag %s\n", arg);
 	print_usage(&o);
 	return flag_exit(2, str_release(&o));
 }
 
-int flag_parse(int *pargc, const char **argv, const char *usage, int minargs) {
+int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
 	g_usage = usage;
 	remove_argument(0, pargc, argv);
 	for (int i = 0; i < *pargc;) {
@@ -202,12 +201,14 @@ int flag_parse(int *pargc, const char **argv, const char *usage, int minargs) {
 			continue;
 		}
 
-		const char *arg = remove_argument(i, pargc, argv);
+		char *arg = remove_argument(i, pargc, argv);
 
 		if (!strcmp(arg, "--help") || !strcmp(arg, "-h")) {
 			str_t o = STR_INIT;
 			print_usage(&o);
 			return flag_exit(1, str_release(&o));
+		} else if (!strcmp(arg, "--")) {
+			break;
 		}
 
 		int err;
@@ -215,7 +216,7 @@ int flag_parse(int *pargc, const char **argv, const char *usage, int minargs) {
 		if (arg[1] == '-') {
 			// long form
 			int len = strlen(arg);
-			const char *value = memchr(arg, '=', len);
+			char *value = memchr(arg, '=', len);
 			if (value) {
 				len = value - arg;
 			}
@@ -234,7 +235,7 @@ int flag_parse(int *pargc, const char **argv, const char *usage, int minargs) {
 				return unknown_flag(arg);
 			}
 
-			const char *value = NULL;
+			char *value = NULL;
 			if (f->type != FLAG_BOOL && i < *pargc) {
 				value = remove_argument(i, pargc, argv);
 			}
@@ -255,6 +256,9 @@ int flag_parse(int *pargc, const char **argv, const char *usage, int minargs) {
 		print_usage(&o);
 		return flag_exit(2, str_release(&o));
 	}
+	
+	// re null-terminate the argument list
+	argv[*pargc] = NULL;
 
 	free(g_flags);
 	g_num = 0;

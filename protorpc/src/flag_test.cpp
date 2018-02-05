@@ -9,10 +9,16 @@ static int my_exit(int code, char *msg) {
 	return code;
 }
 
+static void free_all(char **v, int num) {
+	for (int i = 0; i < num; i++) {
+		free(v[i]);
+	}
+}
+
 TEST(protorpc, flag) {
 	bool b = false;
-	int i = 0;
-	const char *str = "";
+	int i = 34;
+	const char *str = "default";
 
 	flag_exit = &my_exit;
 
@@ -21,23 +27,23 @@ TEST(protorpc, flag) {
 	flag_int(&i, 0, "int", "int usage");
 	flag_string(&str, 's', NULL, "string usage");
 
-	const char *args1[] = { "foo", "-h" };
+	char *args1[] = { strdup("foo"), strdup("-h") };
 	int argc1 = 2;
 	EXPECT_EQ(1, flag_parse(&argc1, args1, "foo [arguments]", 0));
 	EXPECT_STREQ(g_lastmsg,
 		"Usage: foo [arguments]\n"
 		"\nMandatory arguments to long options are mandatory for short options too.\n"
 		"  -b, --bool                bool usage\n"
-		"      --int=NUMBER          int usage\n"
-		"  -s STRING                 string usage\n");
-
+		"      --int=34              int usage\n"
+		"  -s default                string usage\n");
+	free_all(args1, sizeof(args1)/sizeof(args1[0]));
 
 	// test the parsing
 	flag_bool(&b, 'b', "bool", "bool usage");
 	flag_int(&i, 0, "int", "int usage");
 	flag_string(&str, 's', NULL, "string usage");
 
-	const char *args2[] = { "foo", "-b", "--int=3", "argument", "-s", "foobar" };
+	char *args2[] = { strdup("foo"), strdup("-b"), strdup("--int=3"), strdup("argument"), strdup("-s"), strdup("foobar") };
 	int argc2 = 6;
 	EXPECT_EQ(0, flag_parse(&argc2, args2, "foo [arguments]", 0));
 	EXPECT_EQ(1, argc2);
@@ -45,4 +51,5 @@ TEST(protorpc, flag) {
 	EXPECT_EQ(true, b);
 	EXPECT_EQ(i, 3);
 	EXPECT_STREQ(str, "foobar");
+	free_all(args2, sizeof(args2)/sizeof(args2[0]));
 }

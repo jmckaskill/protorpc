@@ -1,4 +1,4 @@
-#include "protorpc/src/test.proto.h"
+#include "protorpc/protorpc/src/test.proto.h"
 
 static const struct proto_field fields_TestPod[] = {
 	{{1, "u"}, PROTO_U32, offsetof(TestPod, foo), 8, NULL, offsetof(TestPod, foo_type)},
