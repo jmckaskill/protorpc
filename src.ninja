@@ -58,6 +58,9 @@ build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compile
 
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
+build $bin/gtest.lib: lib $
+ $obj/gtest_main.o $
+ $obj/gtest-all.o $
 
 build $bin/zlib.lib: lib $
  $obj/zlib/adler32.o $
@@ -94,8 +97,7 @@ build $bin/protorpc_test.exe: cxxlink $
  $obj/rpc-test-data.o $
  $bin/protorpc.lib $
  $bin/zlib.lib $
- $obj/gtest_main.o $
- $obj/gtest-all.o $
+ $bin/gtest.lib $
 
 build $bin/protorpc-example.exe: clink $
  $obj/protorpc-example/protorpc-example.o $
