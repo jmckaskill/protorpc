@@ -1,4 +1,7 @@
-#include "protoc-gen-protorpc.h"
+#include "exec.h"
+#include <protorpc/str.h>
+#include <string.h>
+#include <stdlib.h>
 
 #ifdef WIN32
 #include <windows.h>

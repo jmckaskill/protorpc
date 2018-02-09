@@ -1,10 +1,6 @@
 #include "protoc-gen-protorpc.h"
+#include "exec.h"
 #include <protorpc/ptr-array.h>
-
-#ifdef _WIN32
-#include <io.h>
-#include <fcntl.h>
-#endif
 
 #define ALLOC_SIZE (1*1024*1024)
 
@@ -446,12 +442,9 @@ int main(int argc, char *argv[]) {
 		// call protoc with the arguments which will then call the backend back
 		return exec_protoc(argv[0], argv[1], argv[2]);
 	}
-#ifdef _WIN32
-	_setmode(_fileno(stdin), _O_BINARY);
-#endif
 
 	str_t in = STR_INIT;
-	str_fread_all(&in, stdin);
+	str_fread_all(&in, stdin, STR_BINARY);
 
 	pb_allocator alloc;
 	alloc.next = malloc(ALLOC_SIZE);

@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 char str_initbuf[] = {0};
 
 void str_destroy(str_t *s) {
@@ -82,7 +87,12 @@ int str_vaddf(str_t *s, const char *fmt, va_list ap) {
     }
 }
 
-void str_fread_all(str_t *s, FILE *f) {
+void str_fread_all(str_t *s, FILE *f, enum str_read_type type) {
+#ifdef _WIN32
+    if (type == STR_BINARY) {
+	    _setmode(_fileno(f), _O_BINARY);
+    }
+#endif
 	for (;;) {
         str_grow(s, s->len + 4096);
         int r = (int) fread(s->c_str + s->len, 1, s->cap - s->len, f);
@@ -94,12 +104,12 @@ void str_fread_all(str_t *s, FILE *f) {
     }
 }
 
-void str_read_file(str_t *s, const char *fn) {
+void str_read_file(str_t *s, const char *fn, enum str_read_type type) {
 	FILE *f;
 	if (!strcmp(fn, "-")) {
-		str_fread_all(s, stdin);
+		str_fread_all(s, stdin, type);
 	} else if ((f = fopen(fn, "rb")) != NULL) {
-		str_fread_all(s, f);
+		str_fread_all(s, f, type);
 		fclose(f);
 	}
 }

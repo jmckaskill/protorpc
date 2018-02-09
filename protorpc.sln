@@ -8,7 +8,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_GENERATE PROJECTS", "_GENE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc", "protorpc\protorpc.vcxproj", "{5EB12FC8-F54C-4257-829B-41916333921A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc-gen-protorpc\protoc-gen-protorpc.vcxproj", "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc\protoc-gen-protorpc.vcxproj", "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler", "rpc-file-compiler\rpc-file-compiler.vcxproj", "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}"
 EndProject

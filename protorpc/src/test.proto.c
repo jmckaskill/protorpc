@@ -1,4 +1,4 @@
-#include "protorpc/protorpc/src/test.proto.h"
+#include "protorpc/src/test.proto.h"
 
 static const struct proto_field fields_TestPod[] = {
 	{{1, "u"}, PROTO_U32, offsetof(TestPod, foo), 8, NULL, offsetof(TestPod, foo_type)},
@@ -151,13 +151,13 @@ const proto_message proto_TestMessage = {
 };
 
 const proto_method proto_TestService_rpc2 = {
-	{23, "/twirp/TestService/rpc2"},
+	{35, "/twirp/com.example.TestService/rpc2"},
 	0,
 	&proto_TestPod,
 	&proto_TestMessage
 };
 const proto_method proto_TestService_rpc1 = {
-	{23, "/twirp/TestService/rpc1"},
+	{35, "/twirp/com.example.TestService/rpc1"},
 	1,
 	&proto_TestMessage,
 	&proto_TestPod

@@ -9,13 +9,6 @@ static int my_exit(int code, char *msg) {
 	return code;
 }
 
-static void free_all(char **v) {
-	while (*v) {
-		free(*v);
-		v++;
-	}
-}
-
 TEST(protorpc, flag) {
 	bool b = false;
 	int i = 34;

@@ -29,10 +29,10 @@ build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
 build $obj/protorpc/flag_test.o: cxx $SRC/protorpc/src/flag_test.cpp
 
-build $obj/protoc-gen-protorpc/exec.o: cc $SRC/protoc-gen-protorpc/exec.c
-build $obj/protoc-gen-protorpc/protoc-gen-protorpc.o: cc $SRC/protoc-gen-protorpc/protoc-gen-protorpc.c
-build $obj/protoc-gen-protorpc/types.o: cc $SRC/protoc-gen-protorpc/types.c
-build $obj/protoc-gen-protorpc/plugin.o: cc $SRC/protoc-gen-protorpc/plugin.c
+build $obj/protoc/exec.o: cc $SRC/protoc/exec.c
+build $obj/protoc/protoc-gen-protorpc.o: cc $SRC/protoc/protoc-gen-protorpc.c
+build $obj/protoc/types.o: cc $SRC/protoc/types.c
+build $obj/protoc/plugin.o: cc $SRC/protoc/plugin.c
 
 build $obj/protorpc-example/example.proto.o: cc $SRC/protorpc-example/example.proto.c
 build $obj/protorpc-example/www-data.o: cc $SRC/protorpc-example/www-data.c
@@ -58,9 +58,7 @@ build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compile
 
 build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
 build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
-build $bin/gtest.lib: lib $
- $obj/gtest_main.o $
- $obj/gtest-all.o $
+
 
 build $bin/zlib.lib: lib $
  $obj/zlib/adler32.o $
@@ -77,10 +75,10 @@ build $bin/zlib.lib: lib $
 
 
 build $bin/protoc-gen-protorpc.exe: clink $
- $obj/protoc-gen-protorpc/protoc-gen-protorpc.o $
- $obj/protoc-gen-protorpc/plugin.o $
- $obj/protoc-gen-protorpc/exec.o $
- $obj/protoc-gen-protorpc/types.o $
+ $obj/protoc/protoc-gen-protorpc.o $
+ $obj/protoc/plugin.o $
+ $obj/protoc/exec.o $
+ $obj/protoc/types.o $
  $bin/protorpc.lib $
 
 build $bin/rpc-file-compiler.exe: clink $
@@ -97,7 +95,8 @@ build $bin/protorpc_test.exe: cxxlink $
  $obj/rpc-test-data.o $
  $bin/protorpc.lib $
  $bin/zlib.lib $
- $bin/gtest.lib $
+ $obj/gtest_main.o $
+ $obj/gtest-all.o $
 
 build $bin/protorpc-example.exe: clink $
  $obj/protorpc-example/protorpc-example.o $

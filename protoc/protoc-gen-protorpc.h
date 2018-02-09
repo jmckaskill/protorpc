@@ -23,8 +23,6 @@ struct proto_type {
 #define EOL "\n"
 #endif
 
-int exec_protoc(char *my_exe, char *protoc_exe, char *file);
-
 int compare_string(const char *sa, int salen, const char *sb, int sblen);
 proto_type **get_all_types(int *pnum);
 proto_type *get_type(pb_string type_name);

@@ -1,15 +1,23 @@
 {
     "Solution": "protorpc.sln",
     "DefaultUUID": "{1E69E38F-001D-4219-9835-20D636CE1927}",
-    "GenerateUUID":  "{29C53322-7C20-431A-93B3-42D84826FE11}",
+    "GenerateUUID": "{29C53322-7C20-431A-93B3-42D84826FE11}",
     "Includes": [
         "gtest/googletest/include",
         "gtest/googletest",
         ""
     ],
     "Targets": [
-        {"VS": "Debug", "Ninja": "win32-debug", "Defines": "WIN32;DEBUG"},
-        {"VS": "Release", "Ninja": "win32-release", "Defines": "WIN32;NDEBUG"}
+        {
+            "VS": "Debug",
+            "Ninja": "win32-debug",
+            "Defines": "WIN32;DEBUG"
+        },
+        {
+            "VS": "Release",
+            "Ninja": "win32-release",
+            "Defines": "WIN32;NDEBUG"
+        }
     ],
     "Projects": [
         {
@@ -20,7 +28,7 @@
         },
         {
             "Name": "bin - protoc-gen-protorpc",
-            "File": "protoc-gen-protorpc/protoc-gen-protorpc.vcxproj",
+            "File": "protoc/protoc-gen-protorpc.vcxproj",
             "UUID": "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}",
             "Target": "bin/{TGT}/protoc-gen-protorpc.exe"
         },

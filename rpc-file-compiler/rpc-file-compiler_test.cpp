@@ -7,7 +7,7 @@ extern "C" const proto_dir dir_rpc_test_data;
 static const char test_js_header[] =
 "HTTP/1.1 200 OK\r\n"
 "Content-Length:39\r\n"
-"Content-Type:application/javascript\r\n"
+"Content-Type:application/javascript;charset=utf-8\r\n"
 "Content-Encoding:gzip\r\n"
 "Cache-Control:max-age=31536000\r\n"
 "\r\n";

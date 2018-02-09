@@ -14,9 +14,11 @@
     <ClCompile Include="exec.c" />
     <ClCompile Include="plugin.c" />
     <ClCompile Include="protoc-gen-protorpc.c" />
+    <ClCompile Include="protoc-gen-twirp-js.c" />
     <ClCompile Include="types.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="exec.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="protoc-gen-protorpc.h" />
   </ItemGroup>

@@ -75,7 +75,7 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 	}
 
 	int ret = sprintf(out, "HTTP/1.1 %d \r\nContent-Type:%s\r\nContent-Length:      \r\n\r\n",
-		sts, is_text ? "application/json" : "application/protobuf");
+		sts, is_text ? "application/json;charset=utf-8" : "application/protobuf");
 
 	// encode the output
 	int sz;

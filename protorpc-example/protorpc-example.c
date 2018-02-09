@@ -112,7 +112,10 @@ static int open_server(const char *host, const char *port) {
 			continue;
 		}
 
-		if (!bind(sfd, rp->ai_addr, rp->ai_addrlen) && !listen(sfd, 4)) {
+		unsigned long reuse = 1;
+		if (!setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))
+		&& !bind(sfd, rp->ai_addr, rp->ai_addrlen)
+		&& !listen(sfd, SOMAXCONN)) {
 			break;                  /* Success */
 		}
 
@@ -216,31 +219,13 @@ int main(int argc, char *argv[]) {
 			client *c = clients.v[i];
 			heap_remove(&client_heap, &c->hn, &compare_client);
 
-			for (;;) {
-				int w;
-				const char *wbuf = http_send_buffer(&c->h, &w);
-				if (w) {
-					w = send(c->fd, wbuf, w, 0);
-					if (w < 0 && would_block()) {
-						goto do_wait;
-					} else if (http_sent(&c->h, w)) {
-						goto do_close;
-					}
-				} else {
-					int r;
-					char *rbuf = http_recv_buffer(&c->h, &r);
-					r = recv(c->fd, rbuf, r, 0);
-					if (r < 0 && would_block()) {
-						goto do_wait;
-					} else if (http_received(&c->h, r)) {
-						goto do_close;
-					}
-				}
-
+			int err;
+			while ((err = http_pump(&c->h, c->fd)) > 0) {
 				if (c->h.state == HTTP_RESPONSE_SENT) {
-					if (http_next_request(&c->h)) {
-						goto do_close;
+					if ((err = http_next_request(&c->h)) != 0) {
+						break;
 					}
+					c->method = NULL;
 				}
 
 				if (c->h.state == HTTP_HEADERS_RECEIVED) {
@@ -252,20 +237,19 @@ int main(int argc, char *argv[]) {
 					pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
 					int rxlen;
 					char *req = http_request_data(&c->h, &rxlen);
-					int txlen = pb_dispatch(&s, c->method, &alloc, req, rxlen, c->tx, sizeof(c->tx));
+					int txlen = pb_dispatch(&s.svc, c->method, &alloc, req, rxlen, c->tx, sizeof(c->tx));
 					http_send_response(&c->h, c->tx, txlen);
 				}
 			}
 
-		do_wait:
-			c->timeout = now + IDLE_TIMEOUT_SECONDS;
-			heap_insert(&client_heap, &c->hn, &compare_client);
-			continue;
-
-		do_close:
-			pa_remove(&clients, i);
-			disconnect(c);
-			i--;
+			if (err) {
+				pa_remove(&clients, i);
+				disconnect(c);
+				i--;
+			} else {
+				c->timeout = now + IDLE_TIMEOUT_SECONDS;
+				heap_insert(&client_heap, &c->hn, &compare_client);
+			}
 		}
 
 		if (fds[clients.len].revents & POLLIN) {

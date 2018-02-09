@@ -79,7 +79,7 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
     str_clear(&comp);
 
     if (type == TEXT) {
-        str_fread_all(&read, in);
+        str_fread_all(&read, in, STR_TEXT);
         char *p = read.c_str;
 
         for (;;) {
@@ -97,7 +97,7 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
 			p = nl + 1;
         }
     } else {
-        str_fread_all(&comp, in);
+        str_fread_all(&comp, in, STR_BINARY);
     }
 
     stream->next_in = (uint8_t*) comp.c_str;
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < argc; i++) {
         const char *fn = argv[i];
-        FILE *in = fopen(fn, "rb");
+        FILE *in = fopen(fn, "r");
         if (!in) {
             fprintf(stderr, "failed to open %s\n", fn);
             exit(1);
@@ -216,13 +216,13 @@ int main(int argc, char *argv[]) {
 		int is_index = fndir ? !strcmp(fndir, "/index.html") : !strcmp(fn, "index.html");
 
 		if (!strcmp(ext, ".html")) {
-            meta = "text/html";
+            meta = "text/html;charset=utf-8";
         } else if (!strcmp(ext, ".js")) {
-            meta = "application/javascript";
+            meta = "application/javascript;charset=utf-8";
         } else if (!strcmp(ext, ".css")) {
-            meta = "text/css";
+            meta = "text/css;charset=utf-8";
         } else if (!strcmp(ext, ".svg")) {
-            meta = "image/svg+xml";
+            meta = "image/svg+xml;charset=utf-8";
         } else if (!strcmp(ext, ".ttf")) {
             meta = "font/opentype";
             type = BINARY;
