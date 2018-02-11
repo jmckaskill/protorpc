@@ -9,13 +9,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_GENERATE PROJECTS", "_GENE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc", "protorpc\protorpc.vcxproj", "{5EB12FC8-F54C-4257-829B-41916333921A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc_test", "protorpc_test.vcxproj", "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc\protoc-gen-protorpc.vcxproj", "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-twirp-js", "protoc\protoc-gen-twirp-js.vcxproj", "{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler", "rpc-file-compiler\rpc-file-compiler.vcxproj", "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc_test", "protorpc_test.vcxproj", "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler_test", "rpc-file-compiler\rpc-file-compiler_test.vcxproj", "{FC88B55B-1658-491C-8712-F8E59DE2DC80}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc-example", "protorpc-example\protorpc-example.vcxproj", "{AD1C504F-D1BD-4D8E-9144-42FE04858827}"
 EndProject
@@ -27,14 +29,16 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{5EB12FC8-F54C-4257-829B-41916333921A}.Debug|ALL.ActiveCfg = Debug|Win32
 		{5EB12FC8-F54C-4257-829B-41916333921A}.Release|ALL.ActiveCfg = Release|Win32
+		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Debug|ALL.ActiveCfg = Debug|Win32
+		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Release|ALL.ActiveCfg = Release|Win32
 		{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}.Debug|ALL.ActiveCfg = Debug|Win32
 		{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}.Release|ALL.ActiveCfg = Release|Win32
 		{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}.Debug|ALL.ActiveCfg = Debug|Win32
 		{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}.Release|ALL.ActiveCfg = Release|Win32
 		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Debug|ALL.ActiveCfg = Debug|Win32
 		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Release|ALL.ActiveCfg = Release|Win32
-		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Debug|ALL.ActiveCfg = Debug|Win32
-		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Release|ALL.ActiveCfg = Release|Win32
+		{FC88B55B-1658-491C-8712-F8E59DE2DC80}.Debug|ALL.ActiveCfg = Debug|Win32
+		{FC88B55B-1658-491C-8712-F8E59DE2DC80}.Release|ALL.ActiveCfg = Release|Win32
 		{AD1C504F-D1BD-4D8E-9144-42FE04858827}.Debug|ALL.ActiveCfg = Debug|Win32
 		{AD1C504F-D1BD-4D8E-9144-42FE04858827}.Release|ALL.ActiveCfg = Release|Win32
 		{29C53322-7C20-431A-93B3-42D84826FE11}.Debug|ALL.ActiveCfg = Debug|Win32

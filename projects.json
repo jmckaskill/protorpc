@@ -27,6 +27,13 @@
             "Target": "bin/{TGT}/protorpc.lib"
         },
         {
+            "Name": "bin - protorpc_test",
+            "File": "protorpc_test.vcxproj",
+            "UUID": "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}",
+            "Target": "bin/{TGT}/protorpc_test.exe",
+            "Empty": true
+        },
+        {
             "Name": "bin - protoc-gen-protorpc",
             "File": "protoc/protoc-gen-protorpc.vcxproj",
             "UUID": "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}",
@@ -46,10 +53,10 @@
             "Target": "bin/{TGT}/rpc-file-compiler.exe"
         },
         {
-            "Name": "bin - protorpc_test",
-            "File": "protorpc_test.vcxproj",
-            "UUID": "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}",
-            "Target": "bin/{TGT}/protorpc_test.exe",
+            "Name": "bin - rpc-file-compiler_test",
+            "File": "rpc-file-compiler/rpc-file-compiler_test.vcxproj",
+            "UUID": "{FC88B55B-1658-491C-8712-F8E59DE2DC80}",
+            "Target": "bin/{TGT}/rpc-file-compiler_test.exe",
             "Empty": true
         },
         {
