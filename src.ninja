@@ -29,15 +29,38 @@ build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
 build $obj/protorpc/flag_test.o: cxx $SRC/protorpc/src/flag_test.cpp
 build $obj/protorpc/str_test.o: cxx $SRC/protorpc/src/str_test.cpp
+build $bin/protorpc_test.lib: lib $
+ $obj/protorpc/str_test.o $
+ $obj/protorpc/flag_test.o $
+ $obj/protorpc/test.o $
+ $obj/protorpc/test.proto.o $
 
 build $obj/protoc/exec.o: cc $SRC/protoc/exec.c
 build $obj/protoc/protoc-gen-protorpc.o: cc $SRC/protoc/protoc-gen-protorpc.c
+build $obj/protoc/protoc-gen-twirp-js.o: cc $SRC/protoc/protoc-gen-twirp-js.c
 build $obj/protoc/types.o: cc $SRC/protoc/types.c
 build $obj/protoc/plugin.o: cc $SRC/protoc/plugin.c
+build $bin/protoc-gen-protorpc.exe: clink $
+ $obj/protoc/protoc-gen-protorpc.o $
+ $obj/protoc/plugin.o $
+ $obj/protoc/exec.o $
+ $obj/protoc/types.o $
+ $bin/protorpc.lib $
+
+build $bin/protoc-gen-twirp-js.exe: clink $
+ $obj/protoc/protoc-gen-twirp-js.o $
+ $obj/protoc/plugin.o $
+ $obj/protoc/exec.o $
+ $bin/protorpc.lib $
 
 build $obj/protorpc-example/example.proto.o: cc $SRC/protorpc-example/example.proto.c
 build $obj/protorpc-example/www-data.o: cc $SRC/protorpc-example/www-data.c
 build $obj/protorpc-example/protorpc-example.o: cc $SRC/protorpc-example/protorpc-example.c || $SRC/protorpc-example/example.proto.h
+build $bin/protorpc-example.exe: clink $
+ $obj/protorpc-example/protorpc-example.o $
+ $obj/protorpc-example/example.proto.o $
+ $obj/protorpc-example/www-data.o $
+ $bin/protorpc.lib $
 
 build $obj/zlib/adler32.o: cc $SRC/zlib/adler32.c
 build $obj/zlib/compress.o: cc $SRC/zlib/compress.c
@@ -50,17 +73,6 @@ build $obj/zlib/inftrees.o: cc $SRC/zlib/inftrees.c
 build $obj/zlib/trees.o: cc $SRC/zlib/trees.c
 build $obj/zlib/uncompr.o: cc $SRC/zlib/uncompr.c
 build $obj/zlib/zutil.o: cc $SRC/zlib/zutil.c
-
-build $obj/rpc-file-compiler/rpc-file-compiler.o: cc $SRC/rpc-file-compiler/rpc-file-compiler.c
-build $obj/rpc-file-compiler/sha1.o: cc $SRC/rpc-file-compiler/sha1.c
-
-build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
-build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compiler_test.cpp
-
-build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
-build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
-
-
 build $bin/zlib.lib: lib $
  $obj/zlib/adler32.o $
  $obj/zlib/compress.o $
@@ -74,43 +86,40 @@ build $bin/zlib.lib: lib $
  $obj/zlib/uncompr.o $
  $obj/zlib/zutil.o $
 
-
-build $bin/protoc-gen-protorpc.exe: clink $
- $obj/protoc/protoc-gen-protorpc.o $
- $obj/protoc/plugin.o $
- $obj/protoc/exec.o $
- $obj/protoc/types.o $
- $bin/protorpc.lib $
-
+build $obj/rpc-file-compiler/rpc-file-compiler.o: cc $SRC/rpc-file-compiler/rpc-file-compiler.c
+build $obj/rpc-file-compiler/sha1.o: cc $SRC/rpc-file-compiler/sha1.c
 build $bin/rpc-file-compiler.exe: clink $
  $obj/rpc-file-compiler/rpc-file-compiler.o $
  $obj/rpc-file-compiler/sha1.o $
  $bin/protorpc.lib $
  $bin/zlib.lib $
 
-build $bin/protorpc_test.exe: cxxlink $
- $obj/protorpc/test.o $
- $obj/protorpc/test.proto.o $
- $obj/protorpc/flag_test.o $
- $obj/protorpc/str_test.o $
- $obj/rpc-file-compiler_test.o $
+build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
+build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compiler_test.cpp
+build $bin/rpc_test.lib: lib $
  $obj/rpc-test-data.o $
+ $obj/rpc-file-compiler_test.o $
+
+build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
+build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
+build $bin/protorpc_test.exe: cxxlink $
+ $bin/protorpc_test.lib $
  $bin/protorpc.lib $
+ $bin/rpc_test.lib $
  $bin/zlib.lib $
  $obj/gtest_main.o $
  $obj/gtest-all.o $
 
-build $bin/protorpc-example.exe: clink $
- $obj/protorpc-example/protorpc-example.o $
- $obj/protorpc-example/example.proto.o $
- $obj/protorpc-example/www-data.o $
- $bin/protorpc.lib $
+
+
 
 
 build $SRC/$TGT: phony $
  $bin/protorpc_test.exe $
  $bin/rpc-file-compiler.exe $
  $bin/protorpc-example.exe $
+ $bin/protoc-gen-protorpc.exe $
+ $bin/protoc-gen-twirp-js.exe $
 
 
 

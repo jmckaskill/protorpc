@@ -339,7 +339,8 @@ var proto = (function () {
 				fidx += (type & 32) ? 2 : 1;
 				continue;
 			} else if (have < want) {
-				skip(v, r, have);
+			    skip(v, r, have);
+			    fidx -= 2;
 				continue;
 			}
 
@@ -643,9 +644,9 @@ var proto = (function () {
 	var call = function (method, timeout, msg) {
 		// returns Promise
 		return new Promise(function (resolve, reject) {
-			var path = method[0];
-			var itype = method[1];
-			var otype = method[2];
+			var itype = method[0];
+			var otype = method[1];
+			var path = method[2];
 			var encmsg = encode(itype, msg);
 			var req = new XMLHttpRequest();
 			req.open("POST", path);
@@ -664,7 +665,7 @@ var proto = (function () {
 		});
 	};
 	var types = {};
-	var add_types = function (pkgstr, msgs, enums) {
+	var register = function (pkgstr, enums, msgs, svcs) {
 		// setup series of objects so that proto.types.com.example.TestMessage works
 		var pkg = types;
 		var parts = pkgstr.split(".");
@@ -683,6 +684,22 @@ var proto = (function () {
 		for (var name in enums) {
 			pkg[name] = enums[name];
 		}
+		for (var name in svcs) {
+		    var svc = svcs[name];
+		    for (var mname in svc) {
+		        var method = svc[mname];
+		        var url = "/twirp/";
+		        url += pkgstr;
+		        if (pkgstr.length) {
+		            url += ".";
+		        }
+		        url += name;
+		        url += "/";
+		        url += mname;
+		        method.push(url);
+		    }
+		    pkg[name] = svc;
+		}
 	};
 	return {
 		decode: function (fields, buf) {
@@ -697,7 +714,7 @@ var proto = (function () {
 		},
 		encode: encode,
 		call: call,
-		add: add_types,
+		register: register,
 		types: types,
 		utf8to16: utf8to16,
 	};

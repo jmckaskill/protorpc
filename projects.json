@@ -33,6 +33,13 @@
             "Target": "bin/{TGT}/protoc-gen-protorpc.exe"
         },
         {
+            "Name": "bin - protoc-gen-twirp-js",
+            "File": "protoc/protoc-gen-twirp-js.vcxproj",
+            "UUID": "{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}",
+            "Target": "bin/{TGT}/protoc-gen-twirp-js.exe",
+            "Empty": true
+        },
+        {
             "Name": "bin - rpc-file-compiler",
             "File": "rpc-file-compiler/rpc-file-compiler.vcxproj",
             "UUID": "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}",

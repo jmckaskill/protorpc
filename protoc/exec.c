@@ -10,7 +10,7 @@
 #include <unistd.h>
 #endif
 
-int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
+int exec_protoc(char *my_exe, char *protoc_exe, char **files, int num) {
     // add our directory to the path
     char *slash = strrchr(my_exe, '/');
 	char *bslash = strrchr(my_exe, '\\');
@@ -27,13 +27,24 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
         // putenv doesn't copy the input, so don't free the string
 		putenv(path.c_str);
     }
+
+	str_t outarg = STR_INIT;
+	str_add(&outarg, "--");
+	if (bslash) {
+		str_add(&outarg, bslash + strlen("\\protoc-gen-"));
+	} else if (slash) {
+		str_add(&outarg, slash + strlen("/protoc-gen-"));
+	} else {
+		str_add(&outarg, my_exe + strlen("protoc-gen-"));
+	}
+	str_add(&outarg, "_out=.");
+
 #ifdef WIN32
     str_t cmdline = STR_INIT;
-	str_addch(&cmdline, '"');
-	str_add(&cmdline, protoc_exe);
-    str_add(&cmdline, "\" -I. -Iprotorpc --protorpc_out=. --error_format=msvs \"");
-    str_add(&cmdline, file);
-	str_addch(&cmdline, '"');
+	str_addf(&cmdline, "\"%s\" -I. -Iprotorpc --error_format=msvs %s", protoc_exe, outarg.c_str);
+	for (int i = 0; i < num; i++) {
+		str_addf(&cmdline, " \"%s\"", files[i]);
+	}
 
     PROCESS_INFORMATION pi;
     STARTUPINFO si = {0};
@@ -42,10 +53,18 @@ int exec_protoc(char *my_exe, char *protoc_exe, char *file) {
     WaitForSingleObject(pi.hProcess, INFINITE);
     DWORD code;
     GetExitCodeProcess(pi.hProcess, &code);
-    // don't bother cleaning up as this function isn't guaranteed to return
     return (int) code;
 #else
-    execlp(protoc_exe, protoc_exe, "-I.", "-Iprotorpc", "--protorpc.exe_out=.", file, NULL);
+	const char **args = (const char*)calloc(5 + num, sizeof(char*));
+	args[0] = protoc_exe;
+	args[1] = "-I.";
+	args[2] = "-Iprotorpc";
+	args[3] = outarg.c_str;
+	for (int i = 0; i < num; i++) {
+		args[i + 4] = files[i];
+	}
+	args[num + 4] = NULL;
+	execvp(protoc_exe, args);
     perror("exec protoc");
     return 1;
 #endif

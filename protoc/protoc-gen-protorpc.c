@@ -438,9 +438,15 @@ static void write_file(const char *fn, const char *data, int len) {
 
 int main(int argc, char *argv[]) {
 	if (argc >= 3) {
-		// we've been called directly
+		char *my_exe = argv[0];
+		char *protoc_exe = argv[1];
+		char **files = argv + 2;
+		int num = 0;
+		while (files[num] && strcmp("-o", files[num])) {
+			num++;
+		}
 		// call protoc with the arguments which will then call the backend back
-		return exec_protoc(argv[0], argv[1], argv[2]);
+		return exec_protoc(my_exe, protoc_exe, files, num);
 	}
 
 	str_t in = STR_INIT;

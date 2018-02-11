@@ -1,74 +1,9 @@
 <html>
 
 <head>
-    <script src="/proto.js"></script>
+    <script src="/proto.min.js"></script>
+    <script src="/example.proto.min.js"></script>
     <script>
-        (function (proto) {
-            var TestEnum = {
-                [0]: "ENUM_A",
-                [1]: "ENUM_B",
-                [2]: "ENUM_C",
-            };
-            var EchoRequest = [
-                10, 14, "ping",
-            ];
-            var Example = {
-                ping: ["/twirp/com.example.Example/ping", EchoRequest, EchoRequest],
-            };
-            var TestPod = [
-                8, 1, "u",
-                16, 3, "i",
-            ];
-            var TestMessage = [
-                8, 0, "b",    // 2
-                16, 2, "i32",  // 5
-                24, 3, "s32",  // 8
-                37, 9, "sf32", // 11
-                40, 1, "u32",  // 14
-                53, 8, "f32",  // 17
-                56, 6, "i64",  // 20
-                65, 11, "sf64", // 23
-                72, 7, "s64",  // 26
-                80, 5, "u64",  // 29
-                89, 10, "f64",  // 32
-                101, 12, "f",   // 35
-                105, 13, "d",   // 38
-                114, 15, "by", // 41
-                122, 14, "str",// 44
-                128, 36, "en", TestEnum, // 48
-                138, 47, "msg", null, // 52
-                146, 47, "pod", TestPod, // 56
-                170, 16, "rb", // 59
-                178, 18, "ri32", // 62
-                186, 19, "rs32", // 65
-                194, 25, "rsf32", // 68
-                202, 17, "ru32", // 71
-                210, 24, "rf32", // 74
-                218, 22, "ri64", // 77
-                226, 27, "rsf64", // 80
-                234, 23, "rs64", // 83
-                1682, 21, "ru64", // 86
-                1690, 26, "rf64", // 89
-                1698, 28, "rf", // 92
-                1706, 29, "rd", // 95
-                1714, 31, "rby", // 98
-                1722, 30, "rstr", // 101
-                1730, 52, "ren", TestEnum, // 105
-                1738, 63, "rmsg", null, // 109
-                1746, 63, "rpod", TestPod, // 113
-            ];
-            TestMessage[52] = TestMessage;
-            TestMessage[109] = TestMessage;
-            var msgs = {
-                TestMessage: TestMessage,
-                TestPod: TestPod,
-                EchoRequest: EchoRequest,
-                Example: Example,
-            };
-            var enums = { TestEnum: TestEnum };
-            proto.add("com.example", msgs, enums);
-        })(proto);
-
         var test_proto = new Uint8Array([
             // b = true
             0x08, 1,
@@ -105,6 +40,7 @@
 
             // f = 314 = 0x439d0000
             0x65, 0, 0, 0x9D, 0x43,
+            // 64
 
             // d = 3.141 = 0x4009 20C4 9BA5 E354
             0x69, 0x54, 0xE3, 0xA5, 0x9B, 0xC4, 0x20, 0x09, 0x40,
@@ -302,10 +238,12 @@
         }
         console.log("test encoder - finished");
 
-        var prom = proto.call(proto.types.com.example.Example.ping, 100, {
+        var prom = proto.call(proto.types.com.example.Example.ping, 10000, {
             ping: "hello world",
         }).then(resp => {
             console.log("response", resp)
+        }).catch(err => {
+            console.log("error", err);
         });
 
     </script>

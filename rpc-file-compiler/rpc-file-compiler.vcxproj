@@ -20,8 +20,6 @@
     <ClInclude Include="sha1.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="rpc-test-data\\test.html" />
-    <None Include="rpc-test-data\\test.js" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}</ProjectGuid>

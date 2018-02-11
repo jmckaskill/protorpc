@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_DEFAULT", "_DEFAULT.vcxproj", "{1E69E38F-001D-4219-9835-20D636CE1927}"
 EndProject
@@ -9,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc", "protorpc\protorpc.vcxproj", "{5EB12FC8-F54C-4257-829B-41916333921A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc\protoc-gen-protorpc.vcxproj", "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-twirp-js", "protoc\protoc-gen-twirp-js.vcxproj", "{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler", "rpc-file-compiler\rpc-file-compiler.vcxproj", "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}"
 EndProject
@@ -26,6 +29,8 @@ Global
 		{5EB12FC8-F54C-4257-829B-41916333921A}.Release|ALL.ActiveCfg = Release|Win32
 		{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}.Debug|ALL.ActiveCfg = Debug|Win32
 		{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}.Release|ALL.ActiveCfg = Release|Win32
+		{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}.Debug|ALL.ActiveCfg = Debug|Win32
+		{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}.Release|ALL.ActiveCfg = Release|Win32
 		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Debug|ALL.ActiveCfg = Debug|Win32
 		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Release|ALL.ActiveCfg = Release|Win32
 		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Debug|ALL.ActiveCfg = Debug|Win32

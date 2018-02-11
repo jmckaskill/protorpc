@@ -113,7 +113,7 @@ static int open_server(const char *host, const char *port) {
 		}
 
 		unsigned long reuse = 1;
-		if (!setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse))
+		if (!setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, (char*) &reuse, sizeof(reuse))
 		&& !bind(sfd, rp->ai_addr, rp->ai_addrlen)
 		&& !listen(sfd, SOMAXCONN)) {
 			break;                  /* Success */

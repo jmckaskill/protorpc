@@ -11,20 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\\decode.c" />
-    <ClCompile Include="src\\encode.c" />
-    <ClCompile Include="src\\flag.c" />
-    <ClCompile Include="src\\flag_test.cpp" />
-    <ClCompile Include="src\\http-sockets.c" />
-    <ClCompile Include="src\\http.c" />
-    <ClCompile Include="src\\parse.c" />
-    <ClCompile Include="src\\print.c" />
-    <ClCompile Include="src\\protorpc.c" />
-    <ClCompile Include="src\\ptr-vector.c" />
-    <ClCompile Include="src\\service.c" />
-    <ClCompile Include="src\\str.c" />
-    <ClCompile Include="src\\test.cpp" />
-    <ClCompile Include="src\\test.proto.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="char-array.h" />
@@ -34,13 +20,9 @@
     <ClInclude Include="protorpc.h" />
     <ClInclude Include="ptr-array.h" />
     <ClInclude Include="ptr-vector.h" />
-    <ClInclude Include="src\\common.h" />
-    <ClInclude Include="src\\test.proto.h" />
     <ClInclude Include="str.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\\test.proto" />
-    <None Include="src\\test.proto.js" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5EB12FC8-F54C-4257-829B-41916333921A}</ProjectGuid>
