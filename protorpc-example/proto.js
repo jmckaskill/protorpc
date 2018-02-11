@@ -632,6 +632,37 @@ var proto = (function () {
 		}
 		return idx;
 	};
+	var encode = function (fields, m) {
+		// returns arraybuffer
+		var save = [1]; // save[0] is the index used by encode_*
+		var len = message_length(fields, m, save);
+		var ab = new ArrayBuffer(len);
+		encode_message(new DataView(ab), 0, m, fields, save);
+		return ab;
+	};
+	var call = function (method, timeout, msg) {
+		// returns Promise
+		return new Promise(function (resolve, reject) {
+			var path = method[0];
+			var itype = method[1];
+			var otype = method[2];
+			var encmsg = encode(itype, msg);
+			var req = new XMLHttpRequest();
+			req.open("POST", path);
+			req.setRequestHeader("Content-Type", "application/protobuf");
+			req.responseType = "arraybuffer";
+			req.timeout = timeout;
+			req.onload = function (ev) {
+				var ab = req.response;
+				var resp = decode_message(otype, new DataView(ab), [0, ab.byteLength]);
+				resolve(resp);
+			};
+			req.onerror = function (ev) {
+				reject();
+			};
+			req.send(encmsg);
+		});
+	};
 	var types = {};
 	var add_types = function (pkgstr, msgs, enums) {
 		// setup series of objects so that proto.types.com.example.TestMessage works
@@ -655,6 +686,7 @@ var proto = (function () {
 	};
 	return {
 		decode: function (fields, buf) {
+			// returns decoded object
 			if (buf.buffer) {
 				// buf is a typed view or data view
 				return decode_message(fields, new DataView(buf.buffer), [buf.byteOffset, buf.byteOffset + buf.byteLength]);
@@ -663,13 +695,8 @@ var proto = (function () {
 				return decode_message(fields, new DataView(buf), [0, buf.byteLength]);
 			}
 		},
-		encode: function (fields, m) {
-			var save = [1]; // save[0] is the index used by encode_*
-			var len = message_length(fields, m, save);
-			var ab = new ArrayBuffer(len);
-			encode_message(new DataView(ab), 0, m, fields, save);
-			return ab;
-		},
+		encode: encode,
+		call: call,
 		add: add_types,
 		types: types,
 		utf8to16: utf8to16,
