@@ -45,6 +45,18 @@ static int set_non_blocking(int fd) {
 #endif
 }
 
+static int non_blocking_accept(int sfd) {
+#ifdef __linux__
+	return accept4(sfd, NULL, NULL, O_NONBLOCK);
+#else
+	int fd = accept(sfd, NULL, NULL);
+	if (fd >= 0) {
+		set_non_blocking(fd);
+	}
+	return fd;
+#endif
+}
+
 typedef struct client client;
 typedef struct server server;
 
@@ -255,10 +267,9 @@ int main(int argc, char *argv[]) {
 
 		if (fds[clients.len].revents & POLLIN) {
 			int fd;
-			while (clients.len < MAX_CLIENTS && (fd = accept(sfd, NULL, NULL)) >= 0) {
+			while (clients.len < MAX_CLIENTS && (fd = non_blocking_accept(sfd)) >= 0) {
 				client *c = (client*)calloc(1, sizeof(client));
 				http_reset(&c->h, c->rx, sizeof(c->rx), NULL);
-				set_non_blocking(fd);
 				c->fd = fd;
 				c->timeout = now + IDLE_TIMEOUT_SECONDS;
 				pa_append(&clients, c);
