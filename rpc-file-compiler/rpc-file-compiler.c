@@ -6,6 +6,12 @@
 #include <string.h>
 #include "sha1.h"
 
+struct entry {
+	str_t http;
+	str_t replace;
+	int idx;
+	int datalen;
+};
 
 static void to_csymbol(str_t *o, const char *fn) {
 	str_clear(o);
@@ -72,9 +78,10 @@ enum FileType {
 	TEXT,
 };
 
-static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in, enum FileType type) {
+static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in, enum FileType type, const struct entry *ev, int ec) {
     static str_t read = STR_INIT;
     static str_t comp = STR_INIT;
+	static str_t http_url = STR_INIT;
     str_clear(&read);
     str_clear(&comp);
 
@@ -96,6 +103,15 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
             }
 			p = nl + 1;
         }
+
+		for (int i = 0; i < ec; i++) {
+			const struct entry *e = &ev[i];
+			str_clear(&http_url);
+			str_addch(&http_url, '"');
+			str_addstr(&http_url, e->http);
+			str_addch(&http_url, '"');
+			str_replace_all(&comp, e->replace.c_str, http_url.c_str);
+		}
     } else {
         str_fread_all(&comp, in, STR_BINARY);
     }
@@ -127,17 +143,12 @@ static void clean_slashes(char *str) {
     }
 }
 
-struct entry {
-	str_t path;
-	int idx;
-};
-
 static int compare_entry(const void *a, const void *b) {
 	struct entry *ea = (struct entry*) a;
 	struct entry *eb = (struct entry*) b;
-	int diff = ea->path.len - eb->path.len;
+	int diff = ea->http.len - eb->http.len;
 	if (!diff) {
-		diff = memcmp(ea->path.c_str, eb->path.c_str, ea->path.len);
+		diff = memcmp(ea->http.c_str, eb->http.c_str, ea->http.len);
 	}
 	return diff;
 }
@@ -235,7 +246,7 @@ int main(int argc, char *argv[]) {
         deflateReset(&stream);
 
         uint8_t hash[20];
-        deflate_file(&vout, hash, &stream, in, type);
+        deflate_file(&vout, hash, &stream, in, type, entries, i);
 		fclose(in);
 
 #if 0
@@ -247,22 +258,27 @@ int main(int argc, char *argv[]) {
 		str_destroy(&tempfn);
 #endif
 		
-		entries[i].idx = i;
-		str_t *path = &entries[i].path;
+		struct entry *e = &entries[i];
+		e->idx = i;
 
-		str_init(path);
+		str_init(&e->http);
 		if (is_index) {
-			str_addch(path, '/');
+			str_addch(&e->http, '/');
 			if (fndir) {
-				str_add2(path, fn, fndir - fn);
+				str_add2(&e->http, fn, fndir - fn);
 			}
 		} else {
-			str_addch(path, '/');
-			str_add2(path, fn, ext - fn);
-			str_addch(path, '.');
-			str_addf(path, "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
-			str_add(path, ext);
+			str_addch(&e->http, '/');
+			str_add2(&e->http, fn, ext - fn);
+			str_addch(&e->http, '.');
+			str_addf(&e->http, "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
+			str_add(&e->http, ext);
 		}
+
+		str_init(&e->replace);
+		str_add(&e->replace, "\"/");
+		str_add(&e->replace, fn);
+		str_add(&e->replace, "\"");
 
 		char hdr[256];
 		int hlen = sprintf(hdr,
@@ -279,12 +295,18 @@ int main(int argc, char *argv[]) {
 		print_hex(cf, (uint8_t*)hdr, hlen);
 		print_hex(cf, (uint8_t*)vout.c_str, vout.len);
 		fprintf(cf, "};\n");
-        fprintf(cf, "static const proto_file file_%d = {\n", i);
-		fprintf(cf, "\t{%d, \"%s\"},\n", path->len, path->c_str);
-		fprintf(cf, "\t(const char*) data_%d,\n", i);
-		fprintf(cf, "\t%d\n", hlen + vout.len);
-		fprintf(cf, "};\n");
+		e->datalen = hlen + vout.len;
     }
+
+	for (int i = 0; i < argc; i++) {
+		struct entry *e = &entries[i];
+		fprintf(cf, "\n// Source URL %s\n", e->replace.c_str);
+		fprintf(cf, "static const proto_file file_%d = {\n", i);
+		fprintf(cf, "\t{%d, \"%s\"},\n", e->http.len, e->http.c_str);
+		fprintf(cf, "\t(const char*) data_%d,\n", i);
+		fprintf(cf, "\t%d\n", e->datalen);
+		fprintf(cf, "};\n");
+	}
 
 	qsort(entries, argc, sizeof(entries[0]), &compare_entry);
 

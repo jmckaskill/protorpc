@@ -10,23 +10,6 @@
 #define MORE 1
 #define MAX_LINE_LENGTH 256
 
-#ifdef _MSC_VER
-static void *memmem(const void *hay, size_t haysz, const void *needle, size_t needlesz) {
-	while (needlesz <= haysz) {
-		uint8_t *test = (uint8_t*)memchr(hay, *(uint8_t*)needle, haysz - needlesz + 1);
-		if (!test) {
-			return NULL;
-		}
-		if (!memcmp(test, needle, needlesz)) {
-			return test;
-		}
-		test++;
-		haysz = (uint8_t*)hay + haysz - test;
-		hay = test;
-	}
-	return NULL;
-}
-#endif
 
 typedef struct {
 	int len;

@@ -113,3 +113,29 @@ void str_read_file(str_t *s, const char *fn, enum str_read_type type) {
 		fclose(f);
 	}
 }
+
+void str_replace_all(str_t *s, const char *find, const char *replacement) {
+    size_t flen = strlen(find);
+    size_t rlen = strlen(replacement);
+    int off = 0;
+    for (;;) {
+        char *f = (char*) memmem(s->c_str + off, s->len - off, find, flen);
+        if (!f) {
+            break;
+        }
+        off = f - s->c_str;
+        int expand = rlen - flen;
+        if (expand == 0) {
+            memcpy(f, replacement, rlen);
+        } else {
+            if (expand > 0) {
+                str_grow(s, s->len + expand);
+                f = s->c_str + off;
+            }
+            memmove(f + rlen, f + flen, s->len - (off + flen));
+            memcpy(f, replacement, rlen);
+            str_setlen(s, s->len + expand);
+        }
+        off += rlen;
+    }    
+}

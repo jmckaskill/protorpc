@@ -28,6 +28,7 @@ build $bin/protorpc.lib: lib $
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
 build $obj/protorpc/flag_test.o: cxx $SRC/protorpc/src/flag_test.cpp
+build $obj/protorpc/str_test.o: cxx $SRC/protorpc/src/str_test.cpp
 
 build $obj/protoc/exec.o: cc $SRC/protoc/exec.c
 build $obj/protoc/protoc-gen-protorpc.o: cc $SRC/protoc/protoc-gen-protorpc.c
@@ -91,6 +92,7 @@ build $bin/protorpc_test.exe: cxxlink $
  $obj/protorpc/test.o $
  $obj/protorpc/test.proto.o $
  $obj/protorpc/flag_test.o $
+ $obj/protorpc/str_test.o $
  $obj/rpc-file-compiler_test.o $
  $obj/rpc-test-data.o $
  $bin/protorpc.lib $

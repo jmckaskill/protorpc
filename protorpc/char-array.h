@@ -23,6 +23,23 @@ static inline void *memrchr(const void *s, int c, size_t n) {
 	return NULL;
 }
 #endif
+#ifdef _MSC_VER
+static inline void *memmem(const void *hay, size_t haysz, const void *needle, size_t needlesz) {
+	while (needlesz <= haysz) {
+		char *test = (char*)memchr(hay, *(unsigned char*)needle, haysz - needlesz + 1);
+		if (!test) {
+			return NULL;
+		}
+		if (!memcmp(test, needle, needlesz)) {
+			return test;
+		}
+		test++;
+		haysz = (char*)hay + haysz - test;
+		hay = test;
+	}
+	return NULL;
+}
+#endif
 
 // P should point to a structure of the form
 // struct {

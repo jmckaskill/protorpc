@@ -1,5 +1,9 @@
 bin = bin/$HOST
 
+rule closure
+ command = java -jar $TOOLCHAIN_DIR/closure-compiler.jar --js_output_file $out $in
+ description = CLOSURE
+
 build $SRC/protorpc/src/test.proto.h $SRC/protorpc/src/test.proto.c: run $
  $bin/protoc-gen-protorpc.exe $bin/protoc.exe $SRC/protorpc/src/test.proto
 
@@ -10,7 +14,11 @@ build $SRC/rpc-file-compiler/rpc-test-data.c: run $bin/rpc-file-compiler.exe $
 build $SRC/protorpc-example/example.proto.h $SRC/protorpc-example/example.proto.c: run $
  $bin/protoc-gen-protorpc.exe $bin/protoc.exe $SRC/protorpc-example/example.proto
 
+build $SRC/protorpc-example/proto.min.js: closure $SRC/protorpc-example/proto.js
+
 build $SRC/protorpc-example/www-data.c: run $bin/rpc-file-compiler.exe $
+ $SRC/protorpc-example/proto.js $
+ $SRC/protorpc-example/proto.min.js $
  $SRC/protorpc-example/index.html $
 
 

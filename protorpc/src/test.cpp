@@ -566,7 +566,6 @@ TEST(protorpc, encode) {
 	pb_bytes have = { sz, (uint8_t*)buf };
 	pb_bytes test = {sizeof(test_proto), test_proto};
 	EXPECT_EQ(test, have);
-	std::cerr << have << std::endl;
 }
 
 TEST(protorpc, decode) {

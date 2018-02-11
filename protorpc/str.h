@@ -7,6 +7,10 @@
 #include <string.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // see char-array.h for string comparison functions
 
 typedef struct {
@@ -56,6 +60,7 @@ void str_read_file(str_t *s, const char *fn, enum str_read_type type);
 void str_fread_all(str_t *s, FILE *f, enum str_read_type type);
 void str_grow(str_t *s, int cap);
 void str_add2(str_t *s, const char *a, int len);
+void str_replace_all(str_t *s, const char *find, const char *replacement);
 
 #ifdef __GNUC__
 __attribute__((format (printf,2,3)))
@@ -96,3 +101,8 @@ static inline void str_swap(str_t *a, str_t *b) {
 	*a = *b;
 	*b = c;
 }
+
+#ifdef __cplusplus
+}
+#endif
+
