@@ -55,10 +55,10 @@ int exec_protoc(char *my_exe, char *protoc_exe, char **files, int num) {
     GetExitCodeProcess(pi.hProcess, &code);
     return (int) code;
 #else
-	const char **args = (const char*)calloc(5 + num, sizeof(char*));
+	char **args = (char**)calloc(5 + num, sizeof(char*));
 	args[0] = protoc_exe;
-	args[1] = "-I.";
-	args[2] = "-Iprotorpc";
+	args[1] = strdup("-I.");
+	args[2] = strdup("-Iprotorpc");
 	args[3] = outarg.c_str;
 	for (int i = 0; i < num; i++) {
 		args[i + 4] = files[i];
