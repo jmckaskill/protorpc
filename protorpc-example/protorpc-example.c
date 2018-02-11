@@ -138,6 +138,7 @@ static int compare_client(const struct heap_node *a, const struct heap_node *b) 
 }
 
 static void disconnect(client *c) {
+	shutdown(c->fd, SHUT_WR);
 	closesocket(c->fd);
 	free(c);
 }
@@ -166,23 +167,7 @@ int main(int argc, char *argv[]) {
 	struct heap client_heap = { 0 };
 	time_t now = time(NULL);
 
-	for (;;) {
-		struct pollfd fds[MAX_CLIENTS + 1];
-
-		for (int i = 0; i < clients.len; i++) {
-			client *c = clients.v[i];
-			int wlen;
-			http_send_buffer(&c->h, &wlen);
-
-			fds[i].fd = c->fd;
-			fds[i].events = wlen ? POLLOUT : POLLIN;
-			fds[i].revents = 0;
-		}
-
-		fds[clients.len].events = POLLIN;
-		fds[clients.len].revents = 0;
-		fds[clients.len].fd = sfd;
-		
+	for (;;) {		
 		int timeoutms;
 		for (;;) {
 			client *c = (client*)heap_min(&client_heap);
@@ -203,6 +188,22 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 		}
+
+		struct pollfd fds[MAX_CLIENTS + 1];
+
+		for (int i = 0; i < clients.len; i++) {
+			client *c = clients.v[i];
+			int wlen;
+			http_send_buffer(&c->h, &wlen);
+
+			fds[i].fd = c->fd;
+			fds[i].events = wlen ? POLLOUT : POLLIN;
+			fds[i].revents = 0;
+		}
+
+		fds[clients.len].events = POLLIN;
+		fds[clients.len].revents = 0;
+		fds[clients.len].fd = sfd;
 
 		int ret = poll(&fds[0], clients.len + ((clients.len < MAX_CLIENTS) ? 1 : 0), timeoutms);
 		now = time(NULL);
