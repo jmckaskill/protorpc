@@ -1,4 +1,4 @@
-#include "protorpc-example/example.proto.h"
+#include "example.proto.h"
 
 static const struct proto_field fields_Empty[] = {
 	{0}
