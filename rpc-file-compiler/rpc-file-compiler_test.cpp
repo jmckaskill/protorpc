@@ -19,7 +19,7 @@ static const char test_js_data[] =
 
 TEST(protorpc, compiler) {
 	int respsz;
-	const char *path = "/rpc-test-data/test.4CDDE84B7A.js";
+	const char *path = "/test.4CDDE84B7A.js";
 	const char *resp = pb_lookup_file(&dir_rpc_test_data, path, strlen(path), &respsz);
 	char buf[4096];
 	memcpy(buf, resp, respsz);
@@ -44,7 +44,7 @@ TEST(protorpc, compiler) {
 	EXPECT_EQ((int) sizeof(test_js_data) - 1, (char*) z.next_out - decoded);
 
 	// Test 404 response
-	path = "/rpc-test-data/test.js";
+	path = "/test.js";
 	resp = pb_lookup_file(&dir_rpc_test_data, path, strlen(path), &respsz);
 	EXPECT_EQ(NULL, resp);
 }

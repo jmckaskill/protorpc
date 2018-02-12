@@ -366,9 +366,10 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 	int num;
 	proto_type **types = get_all_types(&num);
 
-	// includes
+	// include - don't include the directory name
 	str_add(o, "#include \"");
-	str_addstr(o, f->name);
+	char *slash = str_rfind_char(f->name, '/');
+	str_add(o, slash ? (slash + 1) : f->name.c_str);
 	str_add(o, ".h\"" EOL);
 
 	// typeinfo
