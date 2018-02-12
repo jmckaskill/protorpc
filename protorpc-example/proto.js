@@ -677,12 +677,11 @@ var proto = (function () {
 			var smeta = svcs[name];
 			var svc = {};
 			for (var i = 0; i < smeta.length; i += 3) {
-				var mname = smeta[i];
-				var itype = smeta[i + 1];
-				var otype = smeta[i + 2];
-				svc[mname] = function (request) {
-					return call(base + mname, itype, otype, this._timeout || 10000, request);
-				}
+                (function(svc, base, mname, itype, otype) {
+                    svc[mname] = function (request) {
+                        return call(base + mname, itype, otype, this._timeout || 10000, request);
+                    }
+                })(svc, base, smeta[i], smeta[i+1], smeta[i+2]);
 			}
 			all_clients[sname] = svc;
 		}

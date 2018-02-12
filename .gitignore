@@ -4,6 +4,7 @@
 .ninja_log
 .ninja_deps
 /bin
+/obj
 /.vs
 /Debug
 /TestResults
