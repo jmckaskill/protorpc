@@ -339,8 +339,8 @@ var proto = (function () {
 				fidx += (type & 32) ? 2 : 1;
 				continue;
 			} else if (have < want) {
-			    skip(v, r, have);
-			    fidx -= 2;
+				skip(v, r, have);
+				fidx -= 2;
 				continue;
 			}
 
@@ -641,12 +641,9 @@ var proto = (function () {
 		encode_message(new DataView(ab), 0, m, fields, save);
 		return ab;
 	};
-	var call = function (method, timeout, msg) {
+	var call = function (path, itype, otype, timeout, msg) {
 		// returns Promise
 		return new Promise(function (resolve, reject) {
-			var itype = method[0];
-			var otype = method[1];
-			var path = method[2];
 			var encmsg = encode(itype, msg);
 			var req = new XMLHttpRequest();
 			req.open("POST", path);
@@ -654,56 +651,46 @@ var proto = (function () {
 			req.responseType = "arraybuffer";
 			req.timeout = timeout;
 			req.onload = function (ev) {
-				var ab = req.response;
-				var resp = decode_message(otype, new DataView(ab), [0, ab.byteLength]);
-				resolve(resp);
+				if (200 <= req.status && req.status < 300) {
+					var ab = req.response;
+					var resp = decode_message(otype, new DataView(ab), [0, ab.byteLength]);
+					resolve(resp);
+				} else {
+					reject(req.status);
+				}
 			};
-			req.onerror = function (ev) {
-				reject();
-			};
+			req.ontimeout = () => reject("timeout");
+			req.onerror = (ev) => reject(ev);
 			req.send(encmsg);
 		});
 	};
-	var types = {};
-	var register = function (pkgstr, enums, msgs, svcs) {
-		// setup series of objects so that proto.types.com.example.TestMessage works
-		var pkg = types;
-		var parts = pkgstr.split(".");
-		for (var i in parts) {
-			var part = parts[i];
-			var child = pkg[part];
-			if (!child) {
-				child = {};
-				pkg[part] = child;
-			}
-			pkg = child;
-		}
+	var all_msgs = {};
+	var all_clients = {};
+	var register = function (pkgstr, msgs, svcs) {
 		for (var name in msgs) {
-			pkg[name] = msgs[name];
-		}
-		for (var name in enums) {
-			pkg[name] = enums[name];
+			var fullName = pkgstr + name;
+			all_msgs[fullName] = msgs[name];
 		}
 		for (var name in svcs) {
-		    var svc = svcs[name];
-		    for (var mname in svc) {
-		        var method = svc[mname];
-		        var url = "/twirp/";
-		        url += pkgstr;
-		        if (pkgstr.length) {
-		            url += ".";
-		        }
-		        url += name;
-		        url += "/";
-		        url += mname;
-		        method.push(url);
-		    }
-		    pkg[name] = svc;
+			var sname = pkgstr + name;
+			var base = "/twirp/" + sname + "/";
+			var smeta = svcs[name];
+			var svc = {};
+			for (var i = 0; i < smeta.length; i += 3) {
+				var mname = smeta[i];
+				var itype = smeta[i + 1];
+				var otype = smeta[i + 2];
+				svc[mname] = function (request) {
+					return call(base + mname, itype, otype, this._timeout || 10000, request);
+				}
+			}
+			all_clients[sname] = svc;
 		}
 	};
 	return {
-		decode: function (fields, buf) {
+		decode: function (msgname, buf) {
 			// returns decoded object
+			var fields = all_msgs[msgname];
 			if (buf.buffer) {
 				// buf is a typed view or data view
 				return decode_message(fields, new DataView(buf.buffer), [buf.byteOffset, buf.byteOffset + buf.byteLength]);
@@ -712,10 +699,21 @@ var proto = (function () {
 				return decode_message(fields, new DataView(buf), [0, buf.byteLength]);
 			}
 		},
-		encode: encode,
-		call: call,
+		new_client: function (svcname, timeout) {
+			var svc = all_clients[svcname];
+			var c = Object.create(svc);
+			if (timeout) {
+				c._timeout = timeout;
+			}
+			return c;
+		},
+		encode: function (msgname, data) {
+			var fields = all_msgs[msgname];
+			return encode(fields, data);
+		},
 		register: register,
-		types: types,
+		messages: all_msgs,
+		clients: all_clients,
 		utf8to16: utf8to16,
 	};
 })();

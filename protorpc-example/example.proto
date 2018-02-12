@@ -2,12 +2,15 @@ syntax = "proto3";
 
 package com.example;
 
+message Empty {}
+
 message EchoRequest {
     string ping = 1;
 }
 
 service Example {
     rpc ping(EchoRequest) returns (EchoRequest);
+    rpc error(Empty) returns (Empty);
 }
 
 

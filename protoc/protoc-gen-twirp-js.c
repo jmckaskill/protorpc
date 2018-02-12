@@ -49,12 +49,6 @@ static void define_nested_enum(str_t *o, str_t *ns, const DescriptorProto *m) {
 	str_setlen(ns, nslen);
 }
 
-static void register_enum(str_t *o, str_t *ns, const EnumDescriptorProto *en) {
-	str_addf(o, "\t\t%s: ", en->name.c_str);
-	write_variable(o, ns->c_str, en->name.c_str);
-	str_add(o, ",\n");
-}
-
 #define FIELD_REPEATED 16
 #define FIELD_EXTRA 32
 #define FIELD_BOOL 0
@@ -212,30 +206,30 @@ static void link_message(str_t *o, str_t *ns, const DescriptorProto *m) {
 	str_setlen(ns, nslen);
 }
 
-static void register_message(str_t *o, str_t *ns, const DescriptorProto *m) {
+static void register_message(str_t *o, const char *ns, const DescriptorProto *m) {
 	str_addf(o, "\t\t%s: ", m->name.c_str);
-	write_variable(o, ns->c_str, m->name.c_str);
+	write_variable(o, ns, m->name.c_str);
 	str_add(o, ",\n");
 }
 
 static void define_service(str_t *o, str_t *ns, const ServiceDescriptorProto *s) {
 	str_add(o, "\tvar ");
 	write_variable(o, ns->c_str, s->name.c_str);
-	str_add(o, " = {\n");
+	str_add(o, " = [\n");
 	for (int i = 0; i < s->method.len; i++) {
 		const MethodDescriptorProto *m = s->method.v[i];
-		str_addf(o, "\t\t%s: [", m->name.c_str);
+		str_addf(o, "\t\t\"%s\",", m->name.c_str);
 		write_variable(o, NULL, m->input_type.c_str+1);
 		str_add(o, ",");
 		write_variable(o, NULL, m->output_type.c_str+1);
-		str_add(o, "],\n");
+		str_add(o, ",\n");
 	}
-	str_add(o, "\t};\n");
+	str_add(o, "\t];\n");
 }
 
-static void register_service(str_t *o, str_t *ns, const ServiceDescriptorProto *s) {
+static void register_service(str_t *o, const char *ns, const ServiceDescriptorProto *s) {
 	str_addf(o, "\t\t%s: ", s->name.c_str);
-	write_variable(o, ns->c_str, s->name.c_str);
+	write_variable(o, ns, s->name.c_str);
 	str_add(o, ",\n");
 }
 
@@ -318,17 +312,16 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < r->proto_file.len; i++) {
 		FileDescriptorProto *f = r->proto_file.v[i];
 		str_setstr(&ns, f->package);
-		str_addf(&o, "\tproto.register(\"%s\", {\n", f->package.c_str);
-		for (int j = 0; j < f->enum_type.len; j++) {
-			register_enum(&o, &ns, f->enum_type.v[j]);
+		if (ns.len) {
+			str_addch(&ns, '.');
 		}
-		str_add(&o, "\t},{\n");
+		str_addf(&o, "\tproto.register(\"%s\", {\n", ns.c_str);
 		for (int j = 0; j < f->message_type.len; j++) {
-			register_message(&o, &ns, f->message_type.v[j]);
+			register_message(&o, f->package.c_str, f->message_type.v[j]);
 		}
 		str_add(&o, "\t},{\n");
 		for (int j = 0; j < f->service.len; j++) {
-			register_service(&o, &ns, f->service.v[j]);
+			register_service(&o, f->package.c_str, f->service.v[j]);
 		}
 		str_add(&o, "\t});\n");
 	}

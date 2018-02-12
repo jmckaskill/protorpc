@@ -1,8 +1,8 @@
 <html>
 
 <head>
-    <script src="/proto.min.js"></script>
-    <script src="/example.proto.min.js"></script>
+    <script src="/proto.js"></script>
+    <script src="/example.proto.js"></script>
     <script>
         var test_proto = new Uint8Array([
             // b = true
@@ -224,12 +224,12 @@
             expect(-1, m.rpod[1].i);
         }
 
-        var decoded = proto.decode(proto.types.com.example.TestMessage, test_proto);
+        var decoded = proto.decode("com.example.TestMessage", test_proto);
         console.log("test decoder", decoded);
         test_message(decoded);
         console.log("test decoder - finished");
 
-        var encoded = proto.encode(proto.types.com.example.TestMessage, decoded);
+        var encoded = proto.encode("com.example.TestMessage", decoded);
         console.log("test encoder", encoded);
         expect(encoded.byteLength, test_proto.byteLength);
         for (var i = 0; i < encoded.byteLength; i++) {
@@ -238,12 +238,18 @@
         }
         console.log("test encoder - finished");
 
-        var prom = proto.call(proto.types.com.example.Example.ping, 10000, {
-            ping: "hello world",
-        }).then(resp => {
-            console.log("response", resp)
-        }).catch(err => {
-            console.log("error", err);
+        var svc = proto.new_client("com.example.Example");
+
+        //svc.ping({
+        //    ping: "hello world",
+        //}).then(resp => {
+        //    console.log("response", resp)
+        //}).catch(err => {
+        //    console.log("error", err);
+        //});
+
+        svc.error({}).catch(err => {
+            console.log("expected error", err);
         });
 
     </script>

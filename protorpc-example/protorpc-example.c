@@ -79,6 +79,10 @@ static int example_ping(Example *svc, pb_allocator *obj, const EchoRequest *in, 
 	return 0;
 }
 
+static int example_error(Example *svc, pb_allocator *obj, const Empty *in, Empty *out) {
+	return 500;
+}
+
 extern const proto_dir dir_www_data;
 
 static const char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
@@ -170,6 +174,7 @@ int main(int argc, char *argv[]) {
 
 	server s = { 0 };
 	s.svc.ping = &example_ping;
+	s.svc.error = &example_error;
 
 	struct {
 		int len;

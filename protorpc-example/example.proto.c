@@ -1,16 +1,36 @@
 #include "protorpc-example/example.proto.h"
 
+static const struct proto_field fields_Empty[] = {
+	{0}
+};
+static const pb_string *by_name_Empty[] = {
+	NULL
+};
+const proto_message proto_Empty = {
+	sizeof(Empty),
+	0,
+	fields_Empty,
+	by_name_Empty
+};
+
 const proto_method proto_Example_ping = {
 	{31, "/twirp/com.example.Example/ping"},
 	0,
 	&proto_EchoRequest,
 	&proto_EchoRequest
 };
+const proto_method proto_Example_error = {
+	{32, "/twirp/com.example.Example/error"},
+	1,
+	&proto_Empty,
+	&proto_Empty
+};
 static const pb_string *by_name_Example[] = {
 	&proto_Example_ping.path,
+	&proto_Example_error.path,
 };
 const proto_service proto_Example = {
-	1,
+	2,
 	by_name_Example
 };
 

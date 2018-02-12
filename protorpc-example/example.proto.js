@@ -4,6 +4,8 @@
 		[1]: "ENUM_B",
 		[2]: "ENUM_C",
 	};
+	var com_example_Empty = [
+	];
 	var com_example_EchoRequest = [
 		10,14,"ping",
 	];
@@ -163,22 +165,21 @@
 	com_example_TestMessage[185] = com_example_TestMessage_MpodEntry;
 	com_example_TestMessage_MmsgEntry[6] = com_example_TestMessage;
 	com_example_TestMessage_MpodEntry[6] = com_example_TestPod;
-	var com_example_Example = {
-		ping: [com_example_EchoRequest,com_example_EchoRequest],
-	};
-	var com_example_TestService = {
-		rpc2: [com_example_TestPod,com_example_TestMessage],
-		rpc1: [com_example_TestMessage,com_example_TestPod],
-	};
-	proto.register("com.example", {
-	},{
+	var com_example_Example = [
+		"ping",com_example_EchoRequest,com_example_EchoRequest,
+		"error",com_example_Empty,com_example_Empty,
+	];
+	var com_example_TestService = [
+		"rpc2",com_example_TestPod,com_example_TestMessage,
+		"rpc1",com_example_TestMessage,com_example_TestPod,
+	];
+	proto.register("com.example.", {
+		Empty: com_example_Empty,
 		EchoRequest: com_example_EchoRequest,
 	},{
 		Example: com_example_Example,
 	});
-	proto.register("com.example", {
-		TestEnum: com_example_TestEnum,
-	},{
+	proto.register("com.example.", {
 		TestMessage: com_example_TestMessage,
 		TestPod: com_example_TestPod,
 	},{

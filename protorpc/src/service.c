@@ -83,7 +83,7 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 		sz = pb_print(outm, method->output, out + ret, outsz - ret);
 	} else {
 		sz = pb_encoded_size(outm, method->output);
-		if (0 < sz && sz < (outsz - ret)) {
+		if (0 <= sz && sz < (outsz - ret)) {
 			sz = pb_encode(outm, method->output, out + ret);
 		} else {
 			sz = -1;
