@@ -4,6 +4,7 @@
 typedef WSAPOLLFD pollfd;
 #define poll WSAPoll
 #pragma comment(lib,"ws2_32")
+#define SHUT_WR SD_SEND
 #else
 #include <poll.h>
 #include <sys/socket.h>
