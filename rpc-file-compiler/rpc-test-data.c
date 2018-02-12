@@ -29,16 +29,16 @@ static const uint8_t data_1[] = {
 	0x59,0x8F,0xBC,0x15,0x00,0x00,0x00,                                              /*Y......*/
 };
 
-// Source URL "/rpc-test-data/test.html"
+// Source URL "/test.html"
 static const proto_file file_0 = {
-	{35, "/rpc-test-data/test.B9C6107A36.html"},
+	{21, "/test.B9C6107A36.html"},
 	(const char*) data_0,
 	161
 };
 
-// Source URL "/rpc-test-data/test.js"
+// Source URL "/test.js"
 static const proto_file file_1 = {
-	{33, "/rpc-test-data/test.4CDDE84B7A.js"},
+	{19, "/test.4CDDE84B7A.js"},
 	(const char*) data_1,
 	183
 };

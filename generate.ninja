@@ -1,7 +1,11 @@
 bin = bin/$HOST
 
-rule jsc
- command = java -jar $TOOLCHAIN_DIR/closure-compiler.jar --rewrite_polyfills=false --js_output_file $out $in
+rule js-bundle
+ command = java -jar $TOOLCHAIN_DIR/closure-compiler.jar -O BUNDLE --rewrite_polyfills=false --js_output_file $out $in
+ description = JS-BUNDLE $out
+
+rule js-compile
+ command = java -jar $TOOLCHAIN_DIR/closure-compiler.jar -O ADVANCED --rewrite_polyfills=false --js_output_file $out $in
  description = JS-COMPILE $out
 
 build $SRC/protorpc/src/test.proto.h $SRC/protorpc/src/test.proto.c: run $
@@ -17,15 +21,6 @@ build $SRC/protorpc-example/example.proto.h $SRC/protorpc-example/example.proto.
 build $SRC/protorpc-example/example.proto.js: run $bin/protoc-gen-twirp-js.exe $bin/protoc.exe $
  $SRC/protorpc-example/example.proto $
  $SRC/protorpc/src/test.proto $
-
-build $SRC/protorpc-example/proto.min.js: jsc $SRC/protorpc-example/proto.js
-build $SRC/protorpc-example/example.proto.min.js: jsc $SRC/protorpc-example/example.proto.js
-
-build $SRC/protorpc-example/www-data.c: run $bin/rpc-file-compiler.exe $
- $SRC/protorpc-example/proto.js $
- $SRC/protorpc-example/proto.min.js $
- $SRC/protorpc-example/example.proto.js $
- $SRC/protorpc-example/example.proto.min.js $
- $SRC/protorpc-example/index.html $
+ 
 
 

@@ -15,7 +15,7 @@ build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
 build $obj/protorpc/http.o: cc $SRC/protorpc/src/http.c
 build $obj/protorpc/http-sockets.o: cc $SRC/protorpc/src/http-sockets.c
 build $obj/protorpc/flag.o: cc $SRC/protorpc/src/flag.c
-build $bin/protorpc.lib: lib $
+build $obj/protorpc.lib: lib $
  $obj/protorpc/decode.o $
  $obj/protorpc/encode.o $
  $obj/protorpc/print.o $
@@ -37,7 +37,7 @@ build $bin/protorpc_test.exe: cxxlink $
  $obj/protorpc/flag_test.o $
  $obj/protorpc/test.o $
  $obj/protorpc/test.proto.o $
- $bin/protorpc.lib $
+ $obj/protorpc.lib $
  $obj/gtest_main.o $
  $obj/gtest-all.o $
 
@@ -51,22 +51,30 @@ build $bin/protoc-gen-protorpc.exe: clink $
  $obj/protoc/plugin.o $
  $obj/protoc/exec.o $
  $obj/protoc/types.o $
- $bin/protorpc.lib $
+ $obj/protorpc.lib $
 
 build $bin/protoc-gen-twirp-js.exe: clink $
  $obj/protoc/protoc-gen-twirp-js.o $
  $obj/protoc/plugin.o $
  $obj/protoc/exec.o $
- $bin/protorpc.lib $
+ $obj/protorpc.lib $
 
+build $obj/protorpc-example/lib.js: js-compile $
+ $SRC/protorpc-example/proto.js $
+ $SRC/protorpc-example/example.proto.js $
+
+build $obj/protorpc-example/www-data.c: run $bin/rpc-file-compiler.exe $
+ $obj/protorpc-example/lib.js $
+ $SRC/protorpc-example/index.html $
+
+build $obj/protorpc-example/www-data.o: cc $obj/protorpc-example/www-data.c
 build $obj/protorpc-example/example.proto.o: cc $SRC/protorpc-example/example.proto.c
-build $obj/protorpc-example/www-data.o: cc $SRC/protorpc-example/www-data.c
 build $obj/protorpc-example/protorpc-example.o: cc $SRC/protorpc-example/protorpc-example.c || $SRC/protorpc-example/example.proto.h
 build $bin/protorpc-example.exe: clink $
  $obj/protorpc-example/protorpc-example.o $
  $obj/protorpc-example/example.proto.o $
  $obj/protorpc-example/www-data.o $
- $bin/protorpc.lib $
+ $obj/protorpc.lib $
 
 build $obj/zlib/adler32.o: cc $SRC/zlib/adler32.c
 build $obj/zlib/compress.o: cc $SRC/zlib/compress.c
@@ -79,7 +87,7 @@ build $obj/zlib/inftrees.o: cc $SRC/zlib/inftrees.c
 build $obj/zlib/trees.o: cc $SRC/zlib/trees.c
 build $obj/zlib/uncompr.o: cc $SRC/zlib/uncompr.c
 build $obj/zlib/zutil.o: cc $SRC/zlib/zutil.c
-build $bin/zlib.lib: lib $
+build $obj/zlib.lib: lib $
  $obj/zlib/adler32.o $
  $obj/zlib/compress.o $
  $obj/zlib/crc32.o $
@@ -97,16 +105,16 @@ build $obj/rpc-file-compiler/sha1.o: cc $SRC/rpc-file-compiler/sha1.c
 build $bin/rpc-file-compiler.exe: clink $
  $obj/rpc-file-compiler/rpc-file-compiler.o $
  $obj/rpc-file-compiler/sha1.o $
- $bin/protorpc.lib $
- $bin/zlib.lib $
+ $obj/protorpc.lib $
+ $obj/zlib.lib $
 
 build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
 build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compiler_test.cpp
 build $bin/rpc-file-compiler_test.exe: cxxlink $
  $obj/rpc-test-data.o $
  $obj/rpc-file-compiler_test.o $
- $bin/protorpc.lib $
- $bin/zlib.lib $
+ $obj/protorpc.lib $
+ $obj/zlib.lib $
  $obj/gtest_main.o $
  $obj/gtest-all.o $
 

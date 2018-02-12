@@ -26,8 +26,8 @@
 		114,15,"by",
 		122,14,"str",
 		128,36,"en",com_example_TestEnum,
-		138,47,"msg",null,
-		146,47,"pod",null,
+		138,47,"msg",0,
+		146,47,"pod",0,
 		170,16,"rb",
 		178,18,"ri32",
 		186,19,"rs32",
@@ -44,26 +44,26 @@
 		1714,31,"rby",
 		1722,30,"rstr",
 		1730,52,"ren",com_example_TestEnum,
-		1738,63,"rmsg",null,
-		1746,63,"rpod",null,
-		1770,63,"mb",null,
-		1778,63,"mi32",null,
-		1786,63,"ms32",null,
-		1794,63,"msf32",null,
-		1802,63,"mu32",null,
-		1810,63,"mf32",null,
-		1818,63,"mi64",null,
-		1826,63,"msf64",null,
-		1834,63,"ms64",null,
-		17682,63,"mu64",null,
-		17690,63,"mf64",null,
-		17698,63,"mf",null,
-		17706,63,"md",null,
-		17714,63,"mby",null,
-		17722,63,"mstr",null,
-		17730,63,"men",null,
-		17738,63,"mmsg",null,
-		17746,63,"mpod",null,
+		1738,63,"rmsg",0,
+		1746,63,"rpod",0,
+		1770,63,"mb",0,
+		1778,63,"mi32",0,
+		1786,63,"ms32",0,
+		1794,63,"msf32",0,
+		1802,63,"mu32",0,
+		1810,63,"mf32",0,
+		1818,63,"mi64",0,
+		1826,63,"msf64",0,
+		1834,63,"ms64",0,
+		17682,63,"mu64",0,
+		17690,63,"mf64",0,
+		17698,63,"mf",0,
+		17706,63,"md",0,
+		17714,63,"mby",0,
+		17722,63,"mstr",0,
+		17730,63,"men",0,
+		17738,63,"mmsg",0,
+		17746,63,"mpod",0,
 	];
 	var com_example_TestMessage_MbEntry = [
 		8,1,"key",
@@ -131,11 +131,11 @@
 	];
 	var com_example_TestMessage_MmsgEntry = [
 		8,1,"key",
-		18,47,"value",null,
+		18,47,"value",0,
 	];
 	var com_example_TestMessage_MpodEntry = [
 		8,1,"key",
-		18,47,"value",null,
+		18,47,"value",0,
 	];
 	var com_example_TestPod = [
 		8,1,"u",
@@ -174,16 +174,16 @@
 		"rpc1",com_example_TestMessage,com_example_TestPod,
 	];
 	proto.register("com.example.", {
-		Empty: com_example_Empty,
-		EchoRequest: com_example_EchoRequest,
+		["Empty"]: com_example_Empty,
+		["EchoRequest"]: com_example_EchoRequest,
 	},{
-		Example: com_example_Example,
+		["Example"]: com_example_Example,
 	});
 	proto.register("com.example.", {
-		TestMessage: com_example_TestMessage,
-		TestPod: com_example_TestPod,
+		["TestMessage"]: com_example_TestMessage,
+		["TestPod"]: com_example_TestPod,
 	},{
-		TestService: com_example_TestService,
+		["TestService"]: com_example_TestService,
 	});
 })(proto);
 

@@ -163,7 +163,7 @@ static void define_message(str_t *o, str_t *ns, const DescriptorProto *m) {
 			write_variable(o, NULL, f->type_name.c_str + 1);
 			str_add(o, ",");
 		} else if (type & FIELD_EXTRA) {
-			str_add(o, "null,");
+			str_add(o, "0,");
 		}
 		str_add(o, "\n");
 	}
@@ -207,7 +207,7 @@ static void link_message(str_t *o, str_t *ns, const DescriptorProto *m) {
 }
 
 static void register_message(str_t *o, const char *ns, const DescriptorProto *m) {
-	str_addf(o, "\t\t%s: ", m->name.c_str);
+	str_addf(o, "\t\t[\"%s\"]: ", m->name.c_str);
 	write_variable(o, ns, m->name.c_str);
 	str_add(o, ",\n");
 }
@@ -228,7 +228,7 @@ static void define_service(str_t *o, str_t *ns, const ServiceDescriptorProto *s)
 }
 
 static void register_service(str_t *o, const char *ns, const ServiceDescriptorProto *s) {
-	str_addf(o, "\t\t%s: ", s->name.c_str);
+	str_addf(o, "\t\t[\"%s\"]: ", s->name.c_str);
 	write_variable(o, ns, s->name.c_str);
 	str_add(o, ",\n");
 }

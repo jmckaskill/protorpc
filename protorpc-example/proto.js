@@ -362,7 +362,7 @@ var proto = (function () {
 		var dec = {};
 		for (var i in enc) {
 			var name = enc[i];
-			dec[name] = parseInt(i);
+			dec[name] = parseInt(i, 10);
 		}
 		enc._decoder = dec;
 		return dec;
@@ -403,7 +403,7 @@ var proto = (function () {
 		} else {
 			// we have at least 32 bits
 			high >>>= 3;
-			ret = 5;
+			var ret = 5;
 			while (high) {
 				ret += 1;
 				high >>>= 7;
@@ -515,7 +515,7 @@ var proto = (function () {
 				v.setUint32(idx + 4, lh[1], true);
 				return idx + 8;
 			case 11: // sfixed64
-				var lh = encode_i64(val, 0);
+				var lh = encode_i64(val);
 				v.setUint32(idx, lh[0], true);
 				v.setUint32(idx + 4, lh[1], true);
 				return idx + 8;
@@ -652,7 +652,7 @@ var proto = (function () {
 			req.timeout = timeout;
 			req.onload = function (ev) {
 				if (200 <= req.status && req.status < 300) {
-					var ab = req.response;
+					var ab = /** @type {!ArrayBuffer}*/ (req.response);
 					var resp = decode_message(otype, new DataView(ab), [0, ab.byteLength]);
 					resolve(resp);
 				} else {
@@ -688,7 +688,7 @@ var proto = (function () {
 		}
 	};
 	return {
-		decode: function (msgname, buf) {
+		["decode"]: function (msgname, buf) {
 			// returns decoded object
 			var fields = all_msgs[msgname];
 			if (buf.buffer) {
@@ -699,7 +699,7 @@ var proto = (function () {
 				return decode_message(fields, new DataView(buf), [0, buf.byteLength]);
 			}
 		},
-		new_client: function (svcname, timeout) {
+		["new_client"]: function (svcname, timeout) {
 			var svc = all_clients[svcname];
 			var c = Object.create(svc);
 			if (timeout) {
@@ -707,13 +707,15 @@ var proto = (function () {
 			}
 			return c;
 		},
-		encode: function (msgname, data) {
+		["encode"]: function (msgname, data) {
 			var fields = all_msgs[msgname];
 			return encode(fields, data);
 		},
-		register: register,
-		messages: all_msgs,
-		clients: all_clients,
-		utf8to16: utf8to16,
+		["register"]: register,
+		["messages"]: all_msgs,
+		["clients"]: all_clients,
+		["utf8to16"]: utf8to16,
 	};
 })();
+
+window['proto'] = proto;

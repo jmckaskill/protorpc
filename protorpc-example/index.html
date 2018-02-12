@@ -1,8 +1,7 @@
 <html>
 
 <head>
-    <script src="/proto.js"></script>
-    <script src="/example.proto.js"></script>
+    <script src="/lib.js"></script>
     <script>
         var test_proto = new Uint8Array([
             // b = true
@@ -240,13 +239,13 @@
 
         var svc = proto.new_client("com.example.Example");
 
-        //svc.ping({
-        //    ping: "hello world",
-        //}).then(resp => {
-        //    console.log("response", resp)
-        //}).catch(err => {
-        //    console.log("error", err);
-        //});
+        svc.ping({
+            ping: "hello world",
+        }).then(resp => {
+            console.log("response", resp)
+        }).catch(err => {
+            console.log("error", err);
+        });
 
         svc.error({}).catch(err => {
             console.log("expected error", err);

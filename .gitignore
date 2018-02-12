@@ -4,12 +4,9 @@
 .ninja_log
 .ninja_deps
 /bin
-/obj
-/lib
 /.vs
 /Debug
 /TestResults
 /Release
 /Debug
-/cmd/rpc-file-compiler/rpc-test-data.c
 .vscode

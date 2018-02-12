@@ -72,7 +72,9 @@ static void print_usage(str_t *o) {
 					pad -= str_addf(o, "=%g", f->pval->d);
 					break;
 				case FLAG_STRING:
-					pad -= str_addf(o, "=%s", f->pval->s);
+					if (f->pval->s) {
+						pad -= str_addf(o, "=%s", f->pval->s);
+					}
 					break;
 				case FLAG_BOOL:
 					break;
@@ -88,7 +90,9 @@ static void print_usage(str_t *o) {
 					pad -= str_addf(o, " %g", f->pval->d);
 					break;
 				case FLAG_STRING:
-					pad -= str_addf(o, " %s", f->pval->s);
+					if (f->pval->s) {
+						pad -= str_addf(o, " %s", f->pval->s);
+					}
 					break;
 				case FLAG_BOOL:
 					break;

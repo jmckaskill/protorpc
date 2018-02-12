@@ -153,18 +153,23 @@ static int compare_entry(const void *a, const void *b) {
 	return diff;
 }
 
+static const char *filename(const char *path) {
+	const char *slash = strrchr(path, '/');
+	return slash ? slash + 1 : path;
+}
+
 int main(int argc, char *argv[]) {
 	const char *outfn = NULL;
 	flag_string(&outfn, 'o', "output", "Output filename");
 	flag_parse(&argc, argv, "rpc-file-compiler <input files...>", 1);
 	
 	for (int i = 0; i < argc; i++) {
-		clean_slashes((char*) argv[i]);
+		clean_slashes(argv[i]);
     }
 
 	FILE *cf = stdout;
 	if (outfn) {
-		clean_slashes((char*)outfn);
+		clean_slashes((char*) outfn);
 		cf = fopen(outfn, "w");
 		if (!cf) {
 			fprintf(stderr, "failed to open %s\n", outfn);
@@ -175,13 +180,8 @@ int main(int argc, char *argv[]) {
 	str_t outsym = STR_INIT;
 	str_set(&outsym, "proto_dir");
 
-	str_t dir = STR_INIT;
 	if (outfn) {
-		char *slash = strrchr(outfn, '/');
-		if (slash) {
-			str_add2(&dir, outfn, slash - outfn + 1);
-		}
-		to_csymbol(&outsym, slash ? (slash+1) : outfn);
+		to_csymbol(&outsym, filename(outfn));
 	}
 
 	fprintf(cf, "#include <protorpc/protorpc.h>\n");
@@ -207,12 +207,8 @@ int main(int argc, char *argv[]) {
 		str_add(&tempfn, ".out.gz");
 #endif
 
-		if (strlen(fn) < (size_t)dir.len || strncmp(dir.c_str, fn, dir.len)) {
-			fprintf(stderr, "different root dir for %s then output %s\n", fn, dir.c_str);
-			return 4;
-		}
-
-		fn += dir.len;
+		// strip the directory from the name
+		fn = filename(fn);
 
         char *ext = strrchr(fn, '.');
         if (!ext) {
@@ -220,11 +216,9 @@ int main(int argc, char *argv[]) {
             exit(2);
         }
 
-		char *fndir = strrchr(fn, '/');
-
         enum FileType type = TEXT;
         const char *meta = NULL;
-		int is_index = fndir ? !strcmp(fndir, "/index.html") : !strcmp(fn, "index.html");
+		int is_index = !strcmp(fn, "index.html");
 
 		if (!strcmp(ext, ".html")) {
             meta = "text/html;charset=utf-8";
@@ -262,13 +256,8 @@ int main(int argc, char *argv[]) {
 		e->idx = i;
 
 		str_init(&e->http);
-		if (is_index) {
-			str_addch(&e->http, '/');
-			if (fndir) {
-				str_add2(&e->http, fn, fndir - fn);
-			}
-		} else {
-			str_addch(&e->http, '/');
+		str_addch(&e->http, '/');
+		if (!is_index) {
 			str_add2(&e->http, fn, ext - fn);
 			str_addch(&e->http, '.');
 			str_addf(&e->http, "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
