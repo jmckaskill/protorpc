@@ -225,7 +225,7 @@ static void define_service(str_t *o, const char *ns, const ServiceDescriptorProt
 }
 
 static void write_file(const char *fn, const char *data, int len) {
-	FILE *f = fopen(fn, "w");
+	FILE *f = fopen(fn, "wb");
 	if (!f) {
 		fprintf(stderr, "failed to open %s\n", fn);
 		exit(2);

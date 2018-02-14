@@ -73,53 +73,26 @@ static int do_deflate(str_t *v, z_stream *stream, int flush) {
 	return err;
 }
 
-enum FileType {
-	BINARY,
-	TEXT,
-};
-
-static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in, enum FileType type, const struct entry *ev, int ec) {
-    static str_t read = STR_INIT;
-    static str_t comp = STR_INIT;
+static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in, const struct entry *ev, int ec) {
+    static str_t file = STR_INIT;
 	static str_t http_url = STR_INIT;
-    str_clear(&read);
-    str_clear(&comp);
+    str_clear(&file);
 
-    if (type == TEXT) {
-        str_fread_all(&read, in, STR_TEXT);
-        char *p = read.c_str;
+	str_fread_all(&file, in, STR_BINARY);
 
-        for (;;) {
-            size_t left = read.c_str + read.len - p;
-            char *nl = (char*) memchr(p, '\n', left);
-            if (!nl) {
-                str_add2(&comp, p, left);
-                break;
-            } else if (nl > p && nl[-1] == '\r') {
-                str_add2(&comp, p, nl - 1 - p);
-				str_addch(&comp, '\n');
-            } else {
-                str_add2(&comp, p, nl + 1 - p);
-            }
-			p = nl + 1;
-        }
-
-		for (int i = 0; i < ec; i++) {
-			const struct entry *e = &ev[i];
-			str_clear(&http_url);
-			str_addch(&http_url, '"');
-			str_addstr(&http_url, e->http);
-			str_addch(&http_url, '"');
-			if (!str_equals(http_url, e->replace)) {
-				str_replace_all(&comp, e->replace.c_str, http_url.c_str);
-			}
+	for (int i = 0; i < ec; i++) {
+		const struct entry *e = &ev[i];
+		str_clear(&http_url);
+		str_addch(&http_url, '"');
+		str_addstr(&http_url, e->http);
+		str_addch(&http_url, '"');
+		if (!str_equals(http_url, e->replace)) {
+			str_replace_all(&file, e->replace.c_str, http_url.c_str);
 		}
-    } else {
-        str_fread_all(&comp, in, STR_BINARY);
-    }
+	}
 
-    stream->next_in = (uint8_t*) comp.c_str;
-    stream->avail_in = comp.len;
+    stream->next_in = (uint8_t*)file.c_str;
+    stream->avail_in = file.len;
 
     while (stream->avail_in) {
         do_deflate(vout, stream, Z_NO_FLUSH);
@@ -130,7 +103,7 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
 
 	SHA1_CTX ctx;
 	SHA1Init(&ctx);
-	SHA1Update(&ctx, (uint8_t*) comp.c_str, comp.len);
+	SHA1Update(&ctx, (uint8_t*)file.c_str, file.len);
 	SHA1Final(hash, &ctx);
 }
 
@@ -197,7 +170,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < argc; i++) {
         const char *fn = argv[i];
-        FILE *in = fopen(fn, "r");
+        FILE *in = fopen(fn, "rb");
         if (!in) {
             fprintf(stderr, "failed to open %s\n", fn);
             exit(1);
@@ -218,7 +191,6 @@ int main(int argc, char *argv[]) {
             exit(2);
         }
 
-        enum FileType type = TEXT;
         const char *meta = NULL;
 		int is_index = !strcmp(fn, "index.html");
 		bool cache = true;
@@ -229,8 +201,8 @@ int main(int argc, char *argv[]) {
 #endif
 
 		if (!strcmp(ext, ".html")) {
-			// caching is disabled on html as these are root files
-			// and should have sensible URLs which can be refreshed
+			// Caching is disabled on html. These are root files
+			// and should have sensible URLs which can be refreshed.
 			cache = false;
             meta = "text/html;charset=utf-8";
         } else if (!strcmp(ext, ".js")) {
@@ -241,7 +213,6 @@ int main(int argc, char *argv[]) {
             meta = "image/svg+xml;charset=utf-8";
         } else if (!strcmp(ext, ".ttf")) {
             meta = "font/opentype";
-            type = BINARY;
         } else {
             fprintf(stderr, "unknown file type for %s\n", fn);
             exit(2);
@@ -251,7 +222,7 @@ int main(int argc, char *argv[]) {
         deflateReset(&stream);
 
         uint8_t hash[20];
-        deflate_file(&vout, hash, &stream, in, type, entries, i);
+        deflate_file(&vout, hash, &stream, in, entries, i);
 		fclose(in);
 
 #if 0

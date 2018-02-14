@@ -1,4 +1,4 @@
-bin = bin/${HOST_BASE}-debug
+bin = bin/${HOST_BASE}-release
 protoc = toolchain/host/bin/protoc.exe
 
 build $SRC/protorpc/src/test.proto.h $SRC/protorpc/src/test.proto.c: run $

@@ -17,12 +17,6 @@ struct proto_type {
 	const FileDescriptorProto *file;
 };
 
-#ifdef WIN32
-#define EOL "\r\n"
-#else
-#define EOL "\n"
-#endif
-
 int compare_string(const char *sa, int salen, const char *sb, int sblen);
 proto_type **get_all_types(int *pnum);
 proto_type *get_type(pb_string type_name);

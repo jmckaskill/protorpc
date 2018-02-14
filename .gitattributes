@@ -1,2 +1,3 @@
-*.vcxproj -crlf
-*.slv -crlf
+; Disable auto-CRLF. Everything should use LF where possible.
+; Windows editors are perfectly capable of dealing with this.
+* text=off

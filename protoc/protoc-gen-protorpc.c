@@ -9,17 +9,17 @@ static void define_enum(str_t *o, proto_type *t) {
 		return;
 	}
 
-	str_add(o, EOL);
-	str_addf(o, "enum %s {" EOL, t->c_type.c_str);
+	str_add(o, "\n");
+	str_addf(o, "enum %s {\n", t->c_type.c_str);
 	for (int i = 0; i < t->en->value.len; i++) {
 		EnumValueDescriptorProto *v = t->en->value.v[i];
 		if (i) {
-			str_add(o, "," EOL);
+			str_add(o, ",\n");
 		}
 		str_addf(o, "\t%s = %d", v->name.c_str, v->number);
 	}
-	str_add(o, EOL "};" EOL);
-	str_addf(o, "typedef enum %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
+	str_add(o, "\n};\n");
+	str_addf(o, "typedef enum %s %s;\n", t->c_type.c_str, t->c_type.c_str);
 	t->defined = true;
 }
 
@@ -37,15 +37,15 @@ static void add_upper(str_t *o, const char *str) {
 static void declare_oneof(str_t *o, const proto_type *t, unsigned oneof_idx) {
 	OneofDescriptorProto *oneof = t->msg->oneof_decl.v[oneof_idx];
 
-	str_add(o, EOL);
-	str_addf(o, "enum %s_%s {" EOL, t->c_type.c_str, oneof->name.c_str);
+	str_add(o, "\n");
+	str_addf(o, "enum %s_%s {\n", t->c_type.c_str, oneof->name.c_str);
 	bool first = true;
 
 	for (int i = 0; i < t->msg->field.len; i++) {
 		FieldDescriptorProto *f = t->msg->field.v[i];
 		if (f->oneof_index.set && f->oneof_index.val == oneof_idx) {
 			if (!first) {
-				str_add(o, "," EOL);
+				str_add(o, ",\n");
 			}
 			first = false;
 			str_addch(o, '\t');
@@ -56,27 +56,27 @@ static void declare_oneof(str_t *o, const proto_type *t, unsigned oneof_idx) {
 		}
 	}
 
-	str_add(o, EOL "};" EOL);
+	str_add(o, "\n};\n");
 }
 
 static void append_field(str_t *o, const FieldDescriptorProto *f) {
 	proto_type *ft = get_field_type(f);
 	if (f->label == LABEL_REPEATED) {
 		if (ft->is_pod) {
-			str_addf(o, "\tstruct {int len; %s *v;} %s;" EOL, ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\tstruct {int len; %s *v;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else if (ft->msg) {
-			str_addf(o, "\tstruct {int len; %s **v;} %s;" EOL, ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\tstruct {int len; %s **v;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else if (ft->en) {
-			str_addf(o, "\tstruct {int len; %s *v; int _encoded;} %s;" EOL, ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\tstruct {int len; %s *v; int _encoded;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else {
-			str_addf(o, "\t%s %s;" EOL, ft->list_type.c_str, f->name.c_str);
+			str_addf(o, "\t%s %s;\n", ft->list_type.c_str, f->name.c_str);
 		}
 	} else {
 		if (ft->msg && !ft->is_pod) {
-			str_addf(o, "\t%s *%s;" EOL, ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\t%s *%s;\n", ft->c_type.c_str, f->name.c_str);
 		} else {
 			// including enums & pods
-			str_addf(o, "\t%s %s;" EOL, ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\t%s %s;\n", ft->c_type.c_str, f->name.c_str);
 		}
 	}
 }
@@ -100,12 +100,12 @@ static void define_message(str_t *o, proto_type *t) {
 		declare_oneof(o, t, i);
 	}
 
-	str_add(o, EOL);
-	str_addf(o, "struct %s {" EOL, t->c_type.c_str);
+	str_add(o, "\n");
+	str_addf(o, "struct %s {\n", t->c_type.c_str);
 	if (!t->is_pod) {
-		str_add(o, "\tpb_msg _pbhdr;" EOL);
+		str_add(o, "\tpb_msg _pbhdr;\n");
 	} else if (!t->msg->field.len) {
-		str_add(o, "\tchar _pbempty;" EOL);
+		str_add(o, "\tchar _pbempty;\n");
 	}
 	for (int i = 0; i < t->msg->field.len;) {
 		FieldDescriptorProto *f = t->msg->field.v[i];
@@ -113,8 +113,8 @@ static void define_message(str_t *o, proto_type *t) {
 		if (f->oneof_index.set) {
 			unsigned oneof = f->oneof_index.val;
 			const char *oneof_name = t->msg->oneof_decl.v[oneof]->name.c_str;
-			str_addf(o, "\tenum %s_%s %s_type;" EOL, t->c_type.c_str, oneof_name, oneof_name);
-			str_add(o, "\tunion {" EOL);
+			str_addf(o, "\tenum %s_%s %s_type;\n", t->c_type.c_str, oneof_name, oneof_name);
+			str_add(o, "\tunion {\n");
 
 			while (i < t->msg->field.len) {
 				f = t->msg->field.v[i];
@@ -126,27 +126,27 @@ static void define_message(str_t *o, proto_type *t) {
 				i++;
 			}
 
-			str_addf(o, "\t} %s;" EOL, oneof_name);
+			str_addf(o, "\t} %s;\n", oneof_name);
 		} else {
 			append_field(o, f);
 			i++;
 		}
 	}
-	str_add(o, "};" EOL);
+	str_add(o, "};\n");
 	t->defined = true;
 }
 
 static void define_service(str_t *o, const proto_type *t) {
-	str_add(o, EOL);
-	str_addf(o, "struct %s {" EOL, t->c_type.c_str);
+	str_add(o, "\n");
+	str_addf(o, "struct %s {\n", t->c_type.c_str);
 	for (int i = 0; i < t->svc->method.len; i++) {
 		MethodDescriptorProto *m = t->svc->method.v[i];
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
-		str_addf(o, "\tint (*%s)(%s *svc, pb_allocator *obj, const %s *in, %s *out);" EOL,
+		str_addf(o, "\tint (*%s)(%s *svc, pb_allocator *obj, const %s *in, %s *out);\n",
 			m->name.c_str, t->c_type.c_str, it->c_type.c_str, ot->c_type.c_str);
 	}
-	str_add(o, "};" EOL);
+	str_add(o, "};\n");
 }
 
 static void write_header(str_t *o, const FileDescriptorProto *f) {
@@ -154,41 +154,41 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 	proto_type **types = get_all_types(&num);
 
 	// includes
-	str_add(o, "#pragma once" EOL);
-	str_add(o, "#include <protorpc/protorpc.h>" EOL);
+	str_add(o, "#pragma once\n");
+	str_add(o, "#include <protorpc/protorpc.h>\n");
 
 	for (int i = 0; i < f->dependency.len; i++) {
 		str_add(o, "#include \"");
 		str_addstr(o, f->dependency.v[i]);
-		str_add(o, ".h\"" EOL);
+		str_add(o, ".h\"\n");
 	}
 
-	str_add(o, "#ifdef __cplusplus" EOL);
-	str_add(o, "extern \"C\" {" EOL);
-	str_add(o, "#endif" EOL);
+	str_add(o, "#ifdef __cplusplus\n");
+	str_add(o, "extern \"C\" {\n");
+	str_add(o, "#endif\n");
 
 	// typedefs
-	str_add(o, EOL);
+	str_add(o, "\n");
 	for (int i = 0; i < num; i++) {
 		proto_type *t = types[i];
 		if (t->file == f && (t->msg || t->svc)) {
-			str_addf(o, "typedef struct %s %s;" EOL, t->c_type.c_str, t->c_type.c_str);
+			str_addf(o, "typedef struct %s %s;\n", t->c_type.c_str, t->c_type.c_str);
 		}
 	}
 
 	// typeinfos
-	str_add(o, EOL);
+	str_add(o, "\n");
 	for (int i = 0; i < num; i++) {
 		proto_type *t = types[i];
 		if (t->file == f && t->msg) {
-			str_addf(o, "extern const proto_message proto_%s;" EOL, t->c_type.c_str);
+			str_addf(o, "extern const proto_message proto_%s;\n", t->c_type.c_str);
 		} else if (t->file == f && t->en) {
-			str_addf(o, "extern const proto_enum proto_%s;" EOL, t->c_type.c_str);
+			str_addf(o, "extern const proto_enum proto_%s;\n", t->c_type.c_str);
 		} else if (t->file == f && t->svc) {
-			str_addf(o, "extern const proto_service proto_%s;" EOL, t->c_type.c_str);
+			str_addf(o, "extern const proto_service proto_%s;\n", t->c_type.c_str);
 			for (int j = 0; j < t->svc->method.len; j++) {
 				MethodDescriptorProto *m = t->svc->method.v[j];
-				str_addf(o, "extern const proto_method proto_%s_%s;" EOL, t->c_type.c_str, m->name.c_str);
+				str_addf(o, "extern const proto_method proto_%s_%s;\n", t->c_type.c_str, m->name.c_str);
 			}
 		}
 	}
@@ -205,11 +205,11 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 		}
 	}
 
-	str_add(o, EOL);
-	str_add(o, "#ifdef __cplusplus" EOL);
-	str_add(o, "}" EOL);
-	str_add(o, "#endif" EOL);
-	str_add(o, EOL);
+	str_add(o, "\n");
+	str_add(o, "#ifdef __cplusplus\n");
+	str_add(o, "}\n");
+	str_add(o, "#endif\n");
+	str_add(o, "\n");
 }
 
 static int cmp_enum_number(const void **a, const void **b) {
@@ -243,7 +243,7 @@ static int cmp_method_name(const void **a, const void **b) {
 }
 
 static void do_fields_by_number(str_t *o, const proto_type *t) {
-	str_addf(o, "static const struct proto_field fields_%s[] = {" EOL, t->c_type.c_str);
+	str_addf(o, "static const struct proto_field fields_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < t->msg->field.len; i++) {
 		FieldDescriptorProto *f = t->msg->field.v[i];
 		proto_type *ft = get_field_type(f);
@@ -254,7 +254,7 @@ static void do_fields_by_number(str_t *o, const proto_type *t) {
 			field_name = t->msg->oneof_decl.v[f->oneof_index.val]->name.c_str;
 		}
 		if (i) {
-			str_addf(o, "," EOL);
+			str_addf(o, ",\n");
 		}
 		str_addf(o, "\t{{%d, \"%s\"}, %s, offsetof(%s, %s), %u, ", f->json_name.len, f->json_name.c_str, type_enum, t->c_type.c_str, field_name, tag);
 		if (ft->msg || f->type == TYPE_ENUM) {
@@ -271,63 +271,63 @@ static void do_fields_by_number(str_t *o, const proto_type *t) {
 	if (!t->msg->field.len) {
 		str_addf(o, "\t{0}");
 	}
-	str_addf(o, EOL "};" EOL);
+	str_addf(o, "\n};\n");
 }
 
 static void do_fields_by_name(str_t *o, const proto_type *t) {
-	str_addf(o, "static const pb_string *by_name_%s[] = {" EOL, t->c_type.c_str);
+	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < t->msg->field.len; i++) {
 		FieldDescriptorProto *f = t->msg->field.v[i];
 		if (i) {
-			str_addf(o, "," EOL);
+			str_addf(o, ",\n");
 		}
 		str_addf(o, "\t&fields_%s[%d].json_name", t->c_type.c_str, f->by_number_index);
 	}
 	if (!t->msg->field.len) {
 		str_addf(o, "\tNULL");
 	}
-	str_addf(o, EOL "};" EOL);
+	str_addf(o, "\n};\n");
 }
 
 static void do_typeinfo(str_t *o, const proto_type *t) {
-	str_addf(o, "const proto_message proto_%s = {" EOL, t->c_type.c_str);
-	str_addf(o, "\tsizeof(%s)," EOL, t->c_type.c_str);
-	str_addf(o, "\t%d," EOL, t->msg->field.len);
-	str_addf(o, "\tfields_%s," EOL, t->c_type.c_str);
-	str_addf(o, "\tby_name_%s" EOL, t->c_type.c_str);
-	str_addf(o, "};" EOL);
+	str_addf(o, "const proto_message proto_%s = {\n", t->c_type.c_str);
+	str_addf(o, "\tsizeof(%s),\n", t->c_type.c_str);
+	str_addf(o, "\t%d,\n", t->msg->field.len);
+	str_addf(o, "\tfields_%s,\n", t->c_type.c_str);
+	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
+	str_addf(o, "};\n");
 }
 
 static void do_enum_by_number(str_t *o, const proto_type *t) {
-	str_addf(o, "static const proto_enum_value values_%s[] = {" EOL, t->c_type.c_str);
+	str_addf(o, "static const proto_enum_value values_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < t->en->value.len; i++) {
 		EnumValueDescriptorProto *v = t->en->value.v[i];
 		if (i) {
-			str_addf(o, "," EOL);
+			str_addf(o, ",\n");
 		}
 		str_addf(o, "\t{{%d, \"%s\"}, %d}", v->name.len, v->name.c_str, v->number);
 	}
-	str_add(o, EOL "};" EOL);
+	str_add(o, "\n};\n");
 }
 
 static void do_enum_by_name(str_t *o, const proto_type *t) {
-	str_addf(o, "static const pb_string *by_name_%s[] = {" EOL, t->c_type.c_str);
+	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < t->en->value.len; i++) {
 		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
 		if (i) {
-			str_addf(o, "," EOL);
+			str_addf(o, ",\n");
 		}
 		str_addf(o, "\t&values_%s[%d].name", t->c_type.c_str, v->by_number_index);
 	}
-	str_add(o, EOL "};" EOL);
+	str_add(o, "\n};\n");
 }
 
 static void do_enuminfo(str_t *o, const proto_type *t) {
-	str_addf(o, "const proto_enum proto_%s = {" EOL, t->c_type.c_str);
-	str_addf(o, "\t%d," EOL, t->en->value.len);
-	str_addf(o, "\tvalues_%s," EOL, t->c_type.c_str);
-	str_addf(o, "\tby_name_%s" EOL, t->c_type.c_str);
-	str_addf(o, "};" EOL);
+	str_addf(o, "const proto_enum proto_%s = {\n", t->c_type.c_str);
+	str_addf(o, "\t%d,\n", t->en->value.len);
+	str_addf(o, "\tvalues_%s,\n", t->c_type.c_str);
+	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
+	str_addf(o, "};\n");
 }
 
 static void do_method_by_index(str_t *o, const proto_type *t) {
@@ -336,30 +336,30 @@ static void do_method_by_index(str_t *o, const proto_type *t) {
 		MethodDescriptorProto *m = t->svc->method.v[i];
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
-		str_addf(o, "const proto_method proto_%s_%s = {" EOL, t->c_type.c_str, m->name.c_str);
-		str_addf(o, "\t{%d, \"/twirp/%s/%s\"}," EOL,
+		str_addf(o, "const proto_method proto_%s_%s = {\n", t->c_type.c_str, m->name.c_str);
+		str_addf(o, "\t{%d, \"/twirp/%s/%s\"},\n",
 			7 /*/twirp*/ + (t->proto_type.len-1) + 1 + m->name.len, t->proto_type.c_str+1, m->name.c_str);
-		str_addf(o, "\t%d," EOL, i);
-		str_addf(o, "\t&proto_%s," EOL, it->c_type.c_str);
-		str_addf(o, "\t&proto_%s" EOL, ot->c_type.c_str);
-		str_add(o, "};" EOL);
+		str_addf(o, "\t%d,\n", i);
+		str_addf(o, "\t&proto_%s,\n", it->c_type.c_str);
+		str_addf(o, "\t&proto_%s\n", ot->c_type.c_str);
+		str_add(o, "};\n");
 	}
 }
 
 static void do_method_by_name(str_t *o, const proto_type *t) {
-	str_addf(o, "static const pb_string *by_name_%s[] = {" EOL, t->c_type.c_str);
+	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < t->svc->method.len; i++) {
 		MethodDescriptorProto *m = t->svc->method.v[i];
-		str_addf(o, "\t&proto_%s_%s.path," EOL, t->c_type.c_str, m->name.c_str);
+		str_addf(o, "\t&proto_%s_%s.path,\n", t->c_type.c_str, m->name.c_str);
 	}
-	str_addf(o, "};" EOL);
+	str_addf(o, "};\n");
 }
 
 static void do_svcinfo(str_t *o, const proto_type *t) {
-	str_addf(o, "const proto_service proto_%s = {" EOL, t->c_type.c_str);
-	str_addf(o, "\t%d," EOL, t->svc->method.len);
-	str_addf(o, "\tby_name_%s" EOL, t->c_type.c_str);
-	str_addf(o, "};" EOL);
+	str_addf(o, "const proto_service proto_%s = {\n", t->c_type.c_str);
+	str_addf(o, "\t%d,\n", t->svc->method.len);
+	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
+	str_addf(o, "};\n");
 }
 
 static void write_source(str_t *o, const FileDescriptorProto *f) {
@@ -370,14 +370,14 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 	str_add(o, "#include \"");
 	char *slash = str_rfind_char(f->name, '/');
 	str_add(o, slash ? (slash + 1) : f->name.c_str);
-	str_add(o, ".h\"" EOL);
+	str_add(o, ".h\"\n");
 
 	// typeinfo
 	for (int i = 0; i < num; i++) {
 		proto_type *t = types[i];
 
 		if (t->file == f && t->msg) {
-			str_add(o, EOL);
+			str_add(o, "\n");
 			pa_sort(t->msg->field, &cmp_field_number);
 
 			for (int j = 0; j < t->msg->field.len; j++) {
@@ -392,7 +392,7 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 			do_typeinfo(o, t);
 
 		} else if (t->file == f && t->en) {
-			str_add(o, EOL);
+			str_add(o, "\n");
 			pa_sort(t->en->value, &cmp_enum_number);
 
 			for (int j = 0; j < t->en->value.len; j++) {
@@ -407,7 +407,7 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 			do_enuminfo(o, t);
 
 		} else if (t->file == f && t->svc) {
-			str_add(o, EOL);
+			str_add(o, "\n");
 			do_method_by_index(o, t);
 			pa_sort(t->svc->method, &cmp_method_name);
 			do_method_by_name(o, t);
@@ -415,7 +415,7 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 		}
 	}
 
-	str_add(o, EOL);
+	str_add(o, "\n");
 }
 
 static FileDescriptorProto *find_file(const CodeGeneratorRequest *r, pb_string name) {
