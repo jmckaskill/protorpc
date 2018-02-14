@@ -110,7 +110,9 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
 			str_addch(&http_url, '"');
 			str_addstr(&http_url, e->http);
 			str_addch(&http_url, '"');
-			str_replace_all(&comp, e->replace.c_str, http_url.c_str);
+			if (!str_equals(http_url, e->replace)) {
+				str_replace_all(&comp, e->replace.c_str, http_url.c_str);
+			}
 		}
     } else {
         str_fread_all(&comp, in, STR_BINARY);
@@ -219,8 +221,17 @@ int main(int argc, char *argv[]) {
         enum FileType type = TEXT;
         const char *meta = NULL;
 		int is_index = !strcmp(fn, "index.html");
+		bool cache = true;
+
+#ifndef NDEBUG
+		// disable caching on debug builds to make debugging in browsers easier
+		cache = false;
+#endif
 
 		if (!strcmp(ext, ".html")) {
+			// caching is disabled on html as these are root files
+			// and should have sensible URLs which can be refreshed
+			cache = false;
             meta = "text/html;charset=utf-8";
         } else if (!strcmp(ext, ".js")) {
             meta = "application/javascript;charset=utf-8";
@@ -258,10 +269,14 @@ int main(int argc, char *argv[]) {
 		str_init(&e->http);
 		str_addch(&e->http, '/');
 		if (!is_index) {
-			str_add2(&e->http, fn, ext - fn);
-			str_addch(&e->http, '.');
-			str_addf(&e->http, "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
-			str_add(&e->http, ext);
+			if (cache) {
+				str_add2(&e->http, fn, ext - fn);
+				str_addch(&e->http, '.');
+				str_addf(&e->http, "%02X%02X%02X%02X%02X", hash[0], hash[1], hash[2], hash[3], hash[4]);
+				str_add(&e->http, ext);
+			} else {
+				str_add(&e->http, fn);
+			}
 		}
 
 		str_init(&e->replace);
@@ -275,10 +290,11 @@ int main(int argc, char *argv[]) {
 			"Content-Length:%u\r\n"
 			"Content-Type:%s\r\n"
 			"Content-Encoding:gzip\r\n"
-			"%s\r\n",
+			"Cache-Control:%s\r\n"
+			"\r\n",
 			vout.len,
 			meta,
-			is_index ? "" : "Cache-Control:max-age=31536000\r\n");
+			cache ? "max-age=31536000" : "no-cache");
 
 		fprintf(cf, "\nstatic const uint8_t data_%d[] = {\n", i);
 		print_hex(cf, (uint8_t*)hdr, hlen);

@@ -25,6 +25,7 @@
     <None Include="index.html" />
     <None Include="proto.js" />
     <None Include="proto.min.js" />
+    <None Include="test.js" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AD1C504F-D1BD-4D8E-9144-42FE04858827}</ProjectGuid>

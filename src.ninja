@@ -60,8 +60,9 @@ build $bin/protoc-gen-twirp-js.exe: clink $
  $obj/protorpc.lib $
 
 build $obj/protorpc-example/lib.js: js-compile $
- $SRC/protorpc-example/proto.js $
+ $SRC/protorpc/protorpc.js $
  $SRC/protorpc-example/example.proto.js $
+ $SRC/protorpc-example/test.js $
 
 build $obj/protorpc-example/www-data.c: run $bin/rpc-file-compiler.exe $
  $obj/protorpc-example/lib.js $
