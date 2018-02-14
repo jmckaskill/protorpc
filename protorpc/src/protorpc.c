@@ -13,6 +13,34 @@ void *pb_calloc(pb_allocator *b, size_t num, size_t sz) {
 	return p;
 }
 
+struct list {
+	int len;
+	char *v;
+};
+
+void *pb_appendv_(pb_allocator *obj, void *list, size_t add, size_t objsz) {
+	struct list *l = (struct list*) list;
+	if (!l->len) {
+		// easy case - new list
+		l->len = add;
+		l->v = pb_calloc(obj, add, objsz);
+		return l->v;
+	}
+	// make sure we haven't added anything else in the interim
+	char *end = l->v + (l->len * objsz);
+	if (end != obj->next) {
+		return NULL;
+	}
+	// make sure we have enough room
+	char *newend = end + (add * objsz);
+	if (newend > obj->next) {
+		return NULL;
+	}
+	memset(end, 0, add * objsz);
+	l->len += add;
+	return end;
+}
+
 int create_message_list(pb_allocator *a, char *parent) {
 	pb_message_list *list = (pb_message_list*)parent;
 	union pb_msg **v = (union pb_msg**) pb_calloc(a, list->len, sizeof(union pb_msg*));

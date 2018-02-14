@@ -18,6 +18,7 @@ struct pb_allocator {
 	char *end;
 };
 
+#define pb_appendv(POBJ, PLIST, NUM) pb_appendv_((POBJ), (PLIST), (NUM), sizeof((PLIST)->v[0]))
 #define PB_INIT_ALLOCATOR(buf) {buf, buf + sizeof(buf)}
 
 // Messages are of the form
@@ -157,6 +158,7 @@ struct proto_dir {
 };
 
 void *pb_calloc(pb_allocator *obj, size_t num, size_t sz);
+void *pb_appendv_(pb_allocator *obj, void *list, size_t add, size_t objsz);
 void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const proto_message *type);
 int pb_encode(void *obj, const proto_message *type, char *data);
