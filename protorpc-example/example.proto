@@ -9,8 +9,8 @@ message EchoRequest {
 }
 
 service Example {
-    rpc ping(EchoRequest) returns (EchoRequest);
-    rpc error(Empty) returns (Empty);
+    rpc Echo(EchoRequest) returns (EchoRequest);
+    rpc GenerateError(Empty) returns (Empty);
 }
 
 

@@ -22,6 +22,29 @@
 // 15/31/47/63 - bytes & msg
 
 var proto = (function () {
+	// message types are stored in a compact form
+	// msg = {field: [tag,type,extra]}
+	// this converts it into an array useable by the encode & decode functions
+	// the array is cached in the message type for reuse
+	var load_message = function (fields) {
+		var dec = fields._decoder;
+		if (dec) {
+			return dec;
+		}
+		dec = [];
+		for (var name in fields) {
+			var field = fields[name];
+			if (field.length == 2) {
+				field.push(null);
+			}
+			field.push(name);
+			dec.push(field);
+		}
+		// a[0] is the tag
+		dec.sort((a, b) => a[0] - b[0]);
+		fields._decoder = dec;
+		return dec;
+	};
 	// in these functions
 	// v is a Uint8Array pointing to the original input buffer
 	// r is an array of [current offset, current end]
@@ -327,25 +350,26 @@ var proto = (function () {
 	};
 	decode_message = function (fields, v, r) {
 		var ret = {};
+		var msgtype = load_message(fields);
 		var fidx = 0;
 		var off = 0;
-		while (r[0] < r[1] && fidx < fields.length) {
-			var want = fields[fidx++];
-			var type = fields[fidx++];
+		while (r[0] < r[1] && fidx < msgtype.length) {
+			var field = msgtype[fidx];
+			var want = field[0];
+			var type = field[1];
 			var undo = r[0];
 			var have = get_varint(v, r);
 			if (want < have) {
 				r[0] = undo;
-				fidx += (type & 32) ? 2 : 1;
+				fidx++;
 				continue;
 			} else if (have < want) {
 				skip(v, r, have);
-				fidx -= 2;
 				continue;
 			}
 
-			var name = fields[fidx++];
-			var extra = (type & 32) ? fields[fidx++] : null;
+			var extra = field[2];
+			var name = field[3];
 			var base = type & 15;
 
 			if ((type & 16) == 0) {
@@ -578,13 +602,14 @@ var proto = (function () {
 		return idx;
 	};
 	message_length = function (fields, m, save) {
-		var fidx = 0;
+		var msgtype = load_message(fields);
 		var ret = 0;
-		while (fidx < fields.length) {
-			var tag = fields[fidx++];
-			var type = fields[fidx++];
-			var name = fields[fidx++];
-			var extra = (type & 32) ? fields[fidx++] : null;
+		for (var i in msgtype) {
+			var field = msgtype[i];
+			var tag = field[0];
+			var type = field[1];
+			var extra = field[2];
+			var name = field[3];
 			var val = m[name];
 
 			if (!val) {
@@ -606,12 +631,13 @@ var proto = (function () {
 		return ret;
 	};
 	encode_message = function (v, idx, m, fields, save) {
-		var fidx = 0;
-		while (fidx < fields.length) {
-			var tag = fields[fidx++];
-			var type = fields[fidx++];
-			var name = fields[fidx++];
-			var extra = (type & 32) ? fields[fidx++] : null;
+		var msgtype = fields._decoder;
+		for (var i in msgtype) {
+			var field = msgtype[i];
+			var tag = field[0];
+			var type = field[1];
+			var extra = field[2];
+			var name = field[3];
 			var val = m[name];
 
 			if (!val) {
@@ -664,32 +690,35 @@ var proto = (function () {
 			req.send(encmsg);
 		});
 	};
-	var all_msgs = {};
-	var all_clients = {};
-	var register = function (pkgstr, msgs, svcs) {
-		for (var name in msgs) {
-			var fullName = pkgstr + name;
-			all_msgs[fullName] = msgs[name];
-		}
-		for (var name in svcs) {
-			var sname = pkgstr + name;
-			var base = "/twirp/" + sname + "/";
-			var smeta = svcs[name];
-			var svc = {};
-			for (var i = 0; i < smeta.length; i += 3) {
-                (function(svc, base, mname, itype, otype) {
-                    svc[mname] = function (request) {
-                        return call(base + mname, itype, otype, this._timeout || 10000, request);
-                    }
-                })(svc, base, smeta[i], smeta[i+1], smeta[i+2]);
+	var new_client = function (svc, timeout) {
+		if (!svc._prototype) {
+			var bp = svc._basePath;
+			delete svc._basePath;
+
+			var proto = {};
+			for (var name in svc) {
+				(function (name, method) {
+					var path = method[0];
+					var itype = method[1];
+					var otype = method[2];
+					proto[name] = function (request) {
+						return call(bp + path, itype, otype, this._timeout || 10000, request);
+					}
+				})(name, svc[name]);
 			}
-			all_clients[sname] = svc;
+			svc._prototype = proto;
 		}
+
+		var c = Object.create(svc._prototype);
+		if (timeout) {
+			c._timeout = timeout;
+		}
+		return c;
 	};
+
 	return {
-		["decode"]: function (msgname, buf) {
+		decode: function (fields, buf) {
 			// returns decoded object
-			var fields = all_msgs[msgname];
 			if (buf.buffer) {
 				// buf is a typed view or data view
 				return decode_message(fields, new DataView(buf.buffer), [buf.byteOffset, buf.byteOffset + buf.byteLength]);
@@ -698,23 +727,9 @@ var proto = (function () {
 				return decode_message(fields, new DataView(buf), [0, buf.byteLength]);
 			}
 		},
-		["new_client"]: function (svcname, timeout) {
-			var svc = all_clients[svcname];
-			var c = Object.create(svc);
-			if (timeout) {
-				c._timeout = timeout;
-			}
-			return c;
-		},
-		["encode"]: function (msgname, data) {
-			var fields = all_msgs[msgname];
-			return encode(fields, data);
-		},
-		["register"]: register,
-		["messages"]: all_msgs,
-		["clients"]: all_clients,
-		["utf8to16"]: utf8to16,
+		new_client: new_client,
+		encode: encode,
+		utf8to16: utf8to16,
 	};
 })();
 
-window['proto'] = proto;

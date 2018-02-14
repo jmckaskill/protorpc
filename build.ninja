@@ -5,7 +5,7 @@ SRC = .
 
 include toolchain/host-gcc.ninja
 
-build bin/$HOST/protoc.exe: copy /usr/local/bin/protoc
+build toolchain/host/bin/protoc.exe: copy /usr/local/bin/protoc
 
 subninja generate.ninja
 subninja toolchain/target-gcc-debug.ninja

@@ -13,21 +13,21 @@ const proto_message proto_Empty = {
 	by_name_Empty
 };
 
-const proto_method proto_Example_ping = {
-	{31, "/twirp/com.example.Example/ping"},
+const proto_method proto_Example_Echo = {
+	{31, "/twirp/com.example.Example/Echo"},
 	0,
 	&proto_EchoRequest,
 	&proto_EchoRequest
 };
-const proto_method proto_Example_error = {
-	{32, "/twirp/com.example.Example/error"},
+const proto_method proto_Example_GenerateError = {
+	{40, "/twirp/com.example.Example/GenerateError"},
 	1,
 	&proto_Empty,
 	&proto_Empty
 };
 static const pb_string *by_name_Example[] = {
-	&proto_Example_ping.path,
-	&proto_Example_error.path,
+	&proto_Example_Echo.path,
+	&proto_Example_GenerateError.path,
 };
 const proto_service proto_Example = {
 	2,

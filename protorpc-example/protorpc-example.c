@@ -75,7 +75,7 @@ struct server {
 	Example svc;
 };
 
-static int example_ping(Example *svc, pb_allocator *obj, const EchoRequest *in, EchoRequest *out) {
+static int example_echo(Example *svc, pb_allocator *obj, const EchoRequest *in, EchoRequest *out) {
 	*out = *in;
 	return 0;
 }
@@ -174,8 +174,8 @@ int main(int argc, char *argv[]) {
 	set_non_blocking(sfd);
 
 	server s = { 0 };
-	s.svc.ping = &example_ping;
-	s.svc.error = &example_error;
+	s.svc.Echo = &example_echo;
+	s.svc.GenerateError = &example_error;
 
 	struct {
 		int len;
