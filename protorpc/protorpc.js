@@ -661,6 +661,9 @@ var proto = (function () {
 	};
 	var encode = function (fields, m) {
 		// returns arraybuffer
+		if (m == null) {
+			return new ArrayBuffer(0);
+		}
 		var save = [1]; // save[0] is the index used by encode_*
 		var len = message_length(fields, m, save);
 		var ab = new ArrayBuffer(len);

@@ -235,7 +235,7 @@ static void finish_array(struct out *o, int indent) {
 	*(o->next++) = ',';
 }
 
-int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
+int pb_print(const void *obj, const struct proto_message *type, char *buf, int sz) {
 	int depth = 0;
 	struct print_stack stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
@@ -615,4 +615,16 @@ int pb_print(void *obj, const struct proto_message *type, char *buf, int sz) {
 
 		f++;
 	}
+}
+
+int pb_fprint(FILE *f, const void *obj, const proto_message *type) {
+	char buf[4096];
+	int ret = pb_print(obj, type, buf, sizeof(buf));
+	if (ret < 0) {
+		return ret;
+	}
+	if (fwrite(buf, 1, ret, f) != ret) {
+		return 0;
+	}
+	return ret;
 }
