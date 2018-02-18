@@ -158,6 +158,7 @@ struct proto_dir {
 	const pb_string **by_path;
 };
 
+pb_string pb_strdup(pb_allocator *obj, const char *s, int sz);
 void *pb_calloc(pb_allocator *obj, size_t num, size_t sz);
 void *pb_appendv_(pb_allocator *obj, void *list, size_t add, size_t objsz);
 void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz);

@@ -13,6 +13,19 @@ void *pb_calloc(pb_allocator *b, size_t num, size_t sz) {
 	return p;
 }
 
+pb_string pb_strdup(pb_allocator *obj, const char *s, int sz) {
+	pb_string r = { 0, NULL };
+	if (obj->next + sz + 1 <= obj->end) {
+		char *p = obj->next;
+		memcpy(p, s, sz);
+		p[sz] = 0;
+		obj->end += sz + 1;
+		r.c_str = p;
+		r.len = sz;
+	}
+	return r;
+}
+
 struct list {
 	int len;
 	char *v;
