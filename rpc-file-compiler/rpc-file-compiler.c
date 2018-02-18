@@ -78,7 +78,7 @@ static void deflate_file(str_t *vout, uint8_t *hash, z_stream *stream, FILE *in,
 	static str_t http_url = STR_INIT;
     str_clear(&file);
 
-	str_fread_all(&file, in, STR_BINARY);
+	str_fread_all(&file, in);
 
 	for (int i = 0; i < ec; i++) {
 		const struct entry *e = &ev[i];

@@ -87,11 +87,9 @@ int str_vaddf(str_t *s, const char *fmt, va_list ap) {
     }
 }
 
-void str_fread_all(str_t *s, FILE *f, enum str_read_type type) {
+void str_fread_all(str_t *s, FILE *f) {
 #ifdef _WIN32
-    if (type == STR_BINARY) {
-	    _setmode(_fileno(f), _O_BINARY);
-    }
+	_setmode(_fileno(f), _O_BINARY);
 #endif
 	for (;;) {
         str_grow(s, s->len + 4096);
@@ -104,13 +102,17 @@ void str_fread_all(str_t *s, FILE *f, enum str_read_type type) {
     }
 }
 
-void str_read_file(str_t *s, const char *fn, enum str_read_type type) {
+int str_read_file(str_t *s, const char *fn) {
 	FILE *f;
 	if (!strcmp(fn, "-")) {
-		str_fread_all(s, stdin, type);
+		str_fread_all(s, stdin);
+		return 0;
 	} else if ((f = fopen(fn, "rb")) != NULL) {
-		str_fread_all(s, f, type);
+		str_fread_all(s, f);
 		fclose(f);
+		return 0;
+	} else {
+		return -1;
 	}
 }
 

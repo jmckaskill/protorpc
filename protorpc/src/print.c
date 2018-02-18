@@ -623,7 +623,7 @@ int pb_fprint(FILE *f, const void *obj, const proto_message *type) {
 	if (ret < 0) {
 		return ret;
 	}
-	if (fwrite(buf, 1, ret, f) != ret) {
+	if (fwrite(buf, 1, ret, f) != (size_t) ret) {
 		return 0;
 	}
 	return ret;

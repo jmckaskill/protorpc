@@ -451,7 +451,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	str_t in = STR_INIT;
-	str_fread_all(&in, stdin, STR_BINARY);
+	str_fread_all(&in, stdin);
 
 	pb_allocator alloc;
 	alloc.next = malloc(ALLOC_SIZE);

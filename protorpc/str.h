@@ -50,14 +50,9 @@ static inline char *str_release(str_t *s) {
 	return p;
 }
 
-enum str_read_type {
-	STR_TEXT = 0,
-	STR_BINARY = 1,
-};
-
 void str_destroy(str_t *s);
-void str_read_file(str_t *s, const char *fn, enum str_read_type type);
-void str_fread_all(str_t *s, FILE *f, enum str_read_type type);
+int str_read_file(str_t *s, const char *fn);
+void str_fread_all(str_t *s, FILE *f);
 void str_grow(str_t *s, int cap);
 void str_add2(str_t *s, const char *a, int len);
 void str_replace_all(str_t *s, const char *find, const char *replacement);
