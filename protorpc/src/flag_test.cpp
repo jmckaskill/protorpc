@@ -1,11 +1,11 @@
 #include <protorpc/flag.h>
+#include <protorpc/str.h>
 #include <gtest/gtest.h>
 
-static char *g_lastmsg;
+static str_t g_lastmsg = STR_INIT;
 
-static int my_exit(int code, char *msg) {
-	free(g_lastmsg);
-	g_lastmsg = msg;
+static int my_exit(int code, const char *msg) {
+	str_set(&g_lastmsg, msg);
 	return code;
 }
 
@@ -24,7 +24,7 @@ TEST(protorpc, flag) {
 	char *args1[] = { strdup("foo"), strdup("-h"), NULL };
 	int argc1 = 2;
 	EXPECT_EQ(1, flag_parse(&argc1, args1, "foo [arguments]", 0));
-	EXPECT_STREQ(g_lastmsg,
+	EXPECT_STREQ(g_lastmsg.c_str,
 		"Usage: foo [arguments]\n"
 		"\nMandatory arguments to long options are mandatory for short options too.\n"
 		"  -b, --bool                bool usage\n"

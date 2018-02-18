@@ -142,14 +142,14 @@ int main(int argc, char *argv[]) {
 		clean_slashes(argv[i]);
     }
 
-	FILE *cf = stdout;
-	if (outfn) {
-		clean_slashes((char*) outfn);
-		cf = fopen(outfn, "w");
-		if (!cf) {
-			fprintf(stderr, "failed to open %s\n", outfn);
-			return 3;
-		}
+	if (!outfn) {
+		return flag_error(4, "no output specified");
+	}
+
+	clean_slashes((char*) outfn);
+	FILE *cf = fopen(outfn, "wb");
+	if (!cf) {
+		return flag_error(5, "failed to open %s", outfn);
 	}
 
 	str_t outsym = STR_INIT;
@@ -172,8 +172,7 @@ int main(int argc, char *argv[]) {
         const char *fn = argv[i];
         FILE *in = fopen(fn, "rb");
         if (!in) {
-            fprintf(stderr, "failed to open %s\n", fn);
-            exit(1);
+			return flag_error(6, "failed to open %s", fn);
         }
 
 #if 0

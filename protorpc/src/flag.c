@@ -31,7 +31,7 @@ static struct flag *g_flags;
 static int g_num;
 static int g_cap;
 
-static int normal_exit(int code, char *msg) {
+static int normal_exit(int code, const char *msg) {
 	fputs(msg, stderr);
 	exit(code);
 	return 0;
@@ -106,6 +106,20 @@ static void print_usage(str_t *o) {
 	}
 }
 
+int flag_error(int code, const char *fmt, ...) {
+	str_t o = STR_INIT;
+	va_list ap;
+	va_start(ap, fmt);
+	str_vaddf(&o, fmt, ap);
+	if (o.len) {
+		str_addch(&o, '\n');
+	}
+	print_usage(&o);
+	int ret = flag_exit(code, o.c_str);
+	str_destroy(&o);
+	return ret;
+}
+
 static void append(enum flag_type type, void *p, char shopt, const char *longopt, const char *usage) {
 	if (g_num == g_cap) {
 		g_cap = (g_cap + 16) * 3 / 2;
@@ -158,10 +172,7 @@ static struct flag *find_short(char name) {
 
 static int process_flag(struct flag *f, char *arg, char *value) {
 	if (!value && f->type != FLAG_BOOL) {
-		str_t o = STR_INIT;
-		str_addf(&o, "expected value for %s\n", arg);
-		print_usage(&o);
-		return flag_exit(2, str_release(&o));
+		return flag_error(2, "expected value for %s", arg);
 	}
 
 	switch (f->type) {
@@ -190,10 +201,7 @@ static char *remove_argument(int i, int *pargc, char **argv) {
 }
 
 static int unknown_flag(char *arg) {
-	str_t o = STR_INIT;
-	str_addf(&o, "unknown flag %s\n", arg);
-	print_usage(&o);
-	return flag_exit(2, str_release(&o));
+	return flag_error(2, "unknown flag %s", arg);
 }
 
 int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
@@ -208,9 +216,7 @@ int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
 		char *arg = remove_argument(i, pargc, argv);
 
 		if (!strcmp(arg, "--help") || !strcmp(arg, "-h")) {
-			str_t o = STR_INIT;
-			print_usage(&o);
-			return flag_exit(1, str_release(&o));
+			return flag_error(1, "");
 		} else if (!strcmp(arg, "--")) {
 			break;
 		}
@@ -246,7 +252,7 @@ int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
 
 			err = process_flag(f, arg, value);
 		} else {
-			err = unknown_flag(arg);
+			return unknown_flag(arg);
 		}
 
 		if (err) {
@@ -255,10 +261,7 @@ int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
 	}
 
 	if (*pargc < minargs) {
-		str_t o = STR_INIT;
-		str_addf(&o, "expected %d arguments\n", minargs);
-		print_usage(&o);
-		return flag_exit(2, str_release(&o));
+		return flag_error(3, "expected %d arguments", minargs);
 	}
 	
 	// re null-terminate the argument list
