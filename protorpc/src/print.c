@@ -19,7 +19,7 @@ struct out {
 static void print_key(struct out *out, pb_string key, int indent) {
 	char *keyend = out->next + /*\n*/ 1 + indent + 1 /*"*/ + key.len + 3 /*": */;
 	if (keyend > out->end) {
-		out->next = out->end = NULL;
+		out->end = out->next;
 	} else {
 		*(out->next++) = '\n';
 		while (indent) {
@@ -38,7 +38,7 @@ static void print_key(struct out *out, pb_string key, int indent) {
 static void print_text(struct out *out, const char *text, int sz) {
 	char *end = out->next + sz;
 	if (end > out->end) {
-		out->next = out->end = NULL;
+		out->end = out->next;
 	} else {
 		memcpy(out->next, text, sz);
 		out->next = end;
@@ -94,7 +94,7 @@ static void print_enum(struct out *o, int value, const struct proto_enum *en) {
 		const struct proto_enum_value *v = &en->values[i];
 		if (v->number == value) {
 			if (o->next + 1 + v->name.len + 2 > o->end) {
-				o->next = o->end = NULL;
+				o->end = o->next;
 				return;
 			}
 			*(o->next++) = '"';
@@ -168,7 +168,7 @@ static void print_string(struct out *o, pb_string v) {
 	o->next = p;
 	return;
 err:
-	o->next = o->end = NULL;
+	o->end = o->next;
 }
 
 char *pb_encode_base64(char *p, const uint8_t *v, int n) {
@@ -194,7 +194,7 @@ char *pb_encode_base64(char *p, const uint8_t *v, int n) {
 static void print_bytes(struct out *o, pb_bytes v) {
 	char *p = o->next;
 	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ > o->end) {
-		o->next = o->end = NULL;
+		o->end = o->next;
 		return;
 	}
 	*(p++) = '\"';
@@ -211,7 +211,8 @@ static void start_array(struct out *o, pb_string json_name, int indent) {
 
 static void print_indent(struct out *o, int indent) {
 	if (o->next + 1 /*\n*/ + indent > o->end) {
-		o->next = o->end = NULL;
+		o->end = o->next;
+		return;
 	}
 	*(o->next++) = '\n';
 	while (indent) {
@@ -221,11 +222,12 @@ static void print_indent(struct out *o, int indent) {
 }
 
 static void finish_array(struct out *o, int indent) {
-	o->next--; // remove trailing ,
 	// now add \n<indent>],
-	if (o->next + 1 /*\n*/ + indent + 2 /*],*/ > o->end) {
-		o->next = o->end = NULL;
+	if (o->next - 1 /*,*/ + 1 /*\n*/ + indent + 2 /*],*/ > o->end) {
+		o->end = o->next;
+		return;
 	}
+	o->next--; // remove trailing ,
 	*(o->next++) = '\n';
 	while (indent) {
 		*(o->next++) = '\t';
@@ -500,6 +502,7 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 				print_text(&out, "{", 1);
 
 				if (++depth == MAX_DEPTH) {
+					*out.next = 0;
 					return -1;
 				}
 
@@ -541,6 +544,7 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 					stack[depth].next_index = list_index + 1;
 
 					if (++depth == MAX_DEPTH) {
+						*out.next = 0;
 						return -1;
 					}
 
@@ -563,6 +567,10 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 		}
 
 		if (!depth) {
+			if (out.next == out.end) {
+				*out.next = 0;
+				return -1;
+			}
 			if (out.next[-1] == ',') {
 				// non-empty message
 				out.next--;
@@ -570,9 +578,6 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 			} else {
 				// empty message "{}"
 				print_text(&out, "}\n", 2);
-			}
-			if (!out.next) {
-				return -1;
 			}
 			*out.next = '\0';
 			return out.next - buf;
@@ -617,14 +622,3 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 	}
 }
 
-int pb_fprint(FILE *f, const void *obj, const proto_message *type) {
-	char buf[4096];
-	int ret = pb_print(obj, type, buf, sizeof(buf));
-	if (ret < 0) {
-		return ret;
-	}
-	if (fwrite(buf, 1, ret, f) != (size_t) ret) {
-		return 0;
-	}
-	return ret;
-}

@@ -47,18 +47,22 @@ static inline void *memmem(const void *hay, size_t haysz, const void *needle, si
 //	char buf[...];
 // };
 
-typedef struct {
+typedef struct slice slice_t;
+
+struct slice {
 	int len;
 	const char *c_str;
-} slice_t;
+};
 
 // returns zero on success, non-zero on failure
 #define ca_setlen(P, SZ) 		(assert(sizeof((P)->c_str) != sizeof(char*)), (P)->len = (SZ), (P)->c_str[(P)->len] = '\0')
+#define ca_clear(P)             ca_setlen(P, 0)
 #define ca_set2(P, SRC, SRCSZ) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (SRCSZ)))
 #define ca_set(P, SRC) 			(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (int) strlen(SRC)))
 #define ca_setstr(P, ADD) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_set2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (ADD).c_str, (ADD).len))
 #define ca_add2(P, SRC, SRCSZ) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (SRCSZ)))
 #define ca_add(P, SRC) 			(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (SRC), (int) strlen(SRC)))
+#define ca_addch(P, CH)         (assert(sizeof((P)->c_str) != sizeof(char*)), (P)->len >= (sizeof((P)->c_str) - 1) ? -1 : ((P)->c_str[(P)->len++] = (CH), (P)->c_str[(P)->len] = 0))
 #define ca_addstr(P, ADD) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_add2_((P)->c_str, sizeof((P)->c_str), &(P)->len, (ADD).c_str, (ADD).len))
 #define ca_vaddf(P, FMT, AP) 	(assert(sizeof((P)->c_str) != sizeof(char*)), ca_vaddf_((P)->c_str, sizeof((P)->c_str), &(P)->len, (FMT), (AP)))
 #define ca_addf(P, ...) 		(assert(sizeof((P)->c_str) != sizeof(char*)), ca_addf_((P)->c_str, sizeof((P)->c_str), &(P)->len, __VA_ARGS__))

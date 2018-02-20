@@ -12,12 +12,13 @@ extern "C" {
 #endif
 
 // see char-array.h for string comparison functions
+typedef struct str str_t;
 
-typedef struct {
+struct str {
 	int cap;
 	int len;
 	char *c_str;
-} str_t;
+};
 
 extern char str_initbuf[];
 

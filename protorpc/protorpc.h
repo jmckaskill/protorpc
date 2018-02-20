@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -165,7 +164,6 @@ void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz
 int pb_encoded_size(void *obj, const proto_message *type);
 int pb_encode(void *obj, const proto_message *type, char *data);
 int pb_print(const void *obj, const proto_message *type, char *buf, int sz);
-int pb_fprint(FILE *f, const void *obj, const proto_message *type);
 void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
 
 const char *pb_lookup_file(const proto_dir *d, const char *path, int len, int *resplen);
