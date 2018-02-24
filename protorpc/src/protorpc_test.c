@@ -535,7 +535,7 @@ static void test_encode() {
 	sz = pb_encode(&m, &proto_TestMessage, buf);
 	EXPECT_EQ(sz, sizeof(test_proto));
 
-	EXPECT_BYTES(buf, sz, test_proto, sizeof(test_proto));
+	EXPECT_BYTES_EQ(buf, sz, test_proto, sizeof(test_proto));
 }
 
 static void test_decode() {
@@ -578,7 +578,7 @@ static void test_dispatch() {
 	int tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/protobuf\r\nContent-Length:%6d\r\n\r\n%.*s",
 		(int) sizeof(test_pod_proto), (int) sizeof(test_pod_proto), test_pod_proto);
 
-	EXPECT_BYTES(obuf, osz, tbuf, tsz);
+	EXPECT_BYTES_EQ(obuf, osz, tbuf, tsz);
 
 	// Try with json
 	inlen = strlen(test_json);
@@ -587,7 +587,7 @@ static void test_dispatch() {
 	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json;charset=utf-8\r\nContent-Length:%6d\r\n\r\n%s",
 		(int)strlen(test_pod_json), test_pod_json);
 
-	EXPECT_BYTES(obuf, osz, tbuf, tsz);
+	EXPECT_BYTES_EQ(obuf, osz, tbuf, tsz);
 }
 
 static void test_http() {

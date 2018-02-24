@@ -43,6 +43,10 @@ build $obj/protorpc/str_test.o: cc $SRC/protorpc/src/str_test.c
 build $bin/test_str.exe: clink $obj/protorpc/str_test.o $obj/protorpc.lib
 build $bin/test_str.out: run $bin/test_str.exe
 
+build $obj/protorpc/test_test.o: cc $SRC/protorpc/src/test_test.c
+build $bin/test_test.exe: clink $obj/protorpc/test_test.o $obj/protorpc.lib
+build $bin/test_test.out: run $bin/test_test.exe
+
 build $obj/protoc/exec.o: cc $SRC/protoc/exec.c
 build $obj/protoc/protoc-gen-protorpc.o: cc $SRC/protoc/protoc-gen-protorpc.c
 build $obj/protoc/protoc-gen-twirp-js.o: cc $SRC/protoc/protoc-gen-twirp-js.c
@@ -122,6 +126,7 @@ build $bin/test_rpc-file-compiler.exe: clink $
 
 
 build $SRC/$TGT/check: phony $
+ $bin/test_test.out $
  $bin/test_str.out $
  $bin/test_flag.out $
  $bin/test_protorpc.out $
@@ -129,11 +134,7 @@ build $SRC/$TGT/check: phony $
 
 
 build $SRC/$TGT: phony $
- $SRC/$TGT/check $
- $bin/rpc-file-compiler.exe $
  $bin/protorpc-example.exe $
- $bin/protoc-gen-protorpc.exe $
- $bin/protoc-gen-twirp-js.exe $
 
 
 

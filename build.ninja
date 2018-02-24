@@ -11,5 +11,5 @@ subninja generate.ninja
 subninja toolchain/target-gcc-debug.ninja
 subninja toolchain/target-gcc-release.ninja
 
-default gcc-debug gcc-release
 build check: phony gcc-debug/check gcc-release/check
+default gcc-debug gcc-release check

@@ -55,7 +55,7 @@ static int do_test_failed(const char *file, int line, const char *msg) {
 	}
 #endif
 #else
-	fprintf(stderr, "%s:%d: %s", file, line, msg);
+	fprintf(stderr, "%s:%d:1: error: %s", file, line, msg);
 #endif
 	return 0;
 }
@@ -80,6 +80,30 @@ int expect_int_eq(int64_t a, int64_t b, const char *astr, const char *bstr, cons
 	if (a != b) {
 		str_t s = STR_INIT;
 		str_addf(&s, "expected int ==\n\tLeft:  %"PRId64" for %s\n\tRight: %"PRId64" for %s\n",
+			a, astr, b, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
+	}
+	return ret;
+}
+
+int expect_int_gt(int64_t a, int64_t b, const char *astr, const char *bstr, const char *file, int line) {
+	int ret = 0;
+	if (a <= b) {
+		str_t s = STR_INIT;
+		str_addf(&s, "expected int >\n\tLeft:  %"PRId64" for %s\n\tRight: %"PRId64" for %s\n",
+			a, astr, b, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
+	}
+	return ret;
+}
+
+int expect_int_ge(int64_t a, int64_t b, const char *astr, const char *bstr, const char *file, int line) {
+	int ret = 0;
+	if (a < b) {
+		str_t s = STR_INIT;
+		str_addf(&s, "expected int >=\n\tLeft:  %"PRId64" for %s\n\tRight: %"PRId64" for %s\n",
 			a, astr, b, bstr);
 		ret = test_failed(file, line, s.c_str);
 		str_destroy(&s);
@@ -121,22 +145,28 @@ int expect_bytes_eq(const void *a, int alen, const void *b, int blen, const char
 		uint8_t *ub = (uint8_t*)b;
 		int idx = difference_index(ua, ub, alen);
 		str_t s = STR_INIT;
-		str_addf(&s, "expected bytes ==, different value in byte %d\n\tCommon:\n", idx);
+		str_addf(&s, "expected bytes ==, different value in byte %d\n", idx);
 
-		for (int i = 0; i < idx; i++) {
-			str_addf(&s, "%02X", ua[i]);
-			if (i && (i % 2) == 0) {
-				str_addch(&s, ' ');
+		if (idx) {
+			str_add(&s, "\tCommon: x");
+			for (int i = 0; i < idx; i++) {
+				str_addf(&s, "%02X", ua[i]);
+				if (i && (i % 2) == 0) {
+					str_addch(&s, ' ');
+				}
+				if (i && (i % 8) == 0) {
+					str_addch(&s, ' ');
+				}
+				if (i && (i % 16) == 0) {
+					str_addch(&s, '\n');
+				}
 			}
-			if (i && (i & 8) == 0) {
-				str_addch(&s, ' ');
-			}
-			if (i && (i & 16) == 0) {
+			if ((idx % 16) != 0) {
 				str_addch(&s, '\n');
 			}
 		}
-		str_addf(&s, "\n\tLeft[%d]:  %02X for %s\n", idx, ua[idx], astr);
-		str_addf(&s, "\n\tRight[%d]: %02X for %s\n", idx, ub[idx], bstr);
+		str_addf(&s, "\tLeft[%d]:  x%02X for %s\n", idx, ua[idx], astr);
+		str_addf(&s, "\tRight[%d]: x%02X for %s\n", idx, ub[idx], bstr);
 		ret = test_failed(file, line, s.c_str);
 		str_destroy(&s);
 	}
