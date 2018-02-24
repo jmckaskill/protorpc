@@ -11,6 +11,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\decode.c" />
+    <ClCompile Include="src\encode.c" />
+    <ClCompile Include="src\flag.c" />
+    <ClCompile Include="src\flag_test.c" />
+    <ClCompile Include="src\http-sockets.c" />
+    <ClCompile Include="src\http.c" />
+    <ClCompile Include="src\parse.c" />
+    <ClCompile Include="src\print.c" />
+    <ClCompile Include="src\protorpc.c" />
+    <ClCompile Include="src\protorpc_test.c" />
+    <ClCompile Include="src\ptr-vector.c" />
+    <ClCompile Include="src\service.c" />
+    <ClCompile Include="src\str.c" />
+    <ClCompile Include="src\str_test.c" />
+    <ClCompile Include="src\test.c" />
+    <ClCompile Include="src\test.proto.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="char-array.h" />
@@ -20,13 +36,17 @@
     <ClInclude Include="protorpc.h" />
     <ClInclude Include="ptr-array.h" />
     <ClInclude Include="ptr-vector.h" />
+    <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\test.proto.h" />
     <ClInclude Include="str.h" />
+    <ClInclude Include="test.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="protorpc.js" />
+    <None Include="src\test.proto" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5EB12FC8-F54C-4257-829B-41916333921A}</ProjectGuid>
+    <ProjectGuid>{050DDF54-1308-58A9-AB43-CF3C23C14F47}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
     <ProjectName>lib - protorpc</ProjectName>
   </PropertyGroup>
@@ -59,7 +79,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protorpc.lib</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protorpc.lib</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protorpc.lib</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
@@ -70,7 +90,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/protorpc.lib</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protorpc.lib &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/protorpc.lib</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protorpc.lib</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />

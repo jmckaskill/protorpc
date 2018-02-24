@@ -3,7 +3,7 @@
 #include <zlib/zlib.h>
 #include <string.h>
 
-const proto_dir dir_rpc_test_data;
+extern const proto_dir dir_rpc_test_data;
 
 static const char test_js_header[] =
 "HTTP/1.1 200 OK\r\n"

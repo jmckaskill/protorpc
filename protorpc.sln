@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_DEFAULT", "_DEFAULT.vcxproj", "{1E69E38F-001D-4219-9835-20D636CE1927}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_DEFAULT", "_DEFAULT.vcxproj", "{70B14E82-21E2-5842-A4A3-2358F8E7E30B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_GENERATE PROJECTS", "_GENERATE PROJECTS.vcxproj", "{29C53322-7C20-431A-93B3-42D84826FE11}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_GENERATE_VCXPROJ", "_GENERATE_VCXPROJ.vcxproj", "{EBF61EF1-9FDD-536D-A602-53A8E81FC5BE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc", "protorpc\protorpc.vcxproj", "{5EB12FC8-F54C-4257-829B-41916333921A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc", "protorpc\protorpc.vcxproj", "{050DDF54-1308-58A9-AB43-CF3C23C14F47}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc_test", "protorpc_test.vcxproj", "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test - protorpc", "protorpc_test.vcxproj", "{69AD12A5-59BD-5F3C-A5AA-7AFDA9098FC7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc\protoc-gen-protorpc.vcxproj", "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc\protoc-gen-protorpc.vcxproj", "{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-twirp-js", "protoc\protoc-gen-twirp-js.vcxproj", "{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-twirp-js", "protoc\protoc-gen-twirp-js.vcxproj", "{3FD9C97E-4EB8-51F5-BAF8-7D079F0BFED4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler", "rpc-file-compiler\rpc-file-compiler.vcxproj", "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler", "rpc-file-compiler\rpc-file-compiler.vcxproj", "{3083AEF7-713A-529B-AD68-85050A5B2163}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - rpc-file-compiler_test", "rpc-file-compiler\rpc-file-compiler_test.vcxproj", "{FC88B55B-1658-491C-8712-F8E59DE2DC80}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test - rpc-file-compiler", "rpc-file-compiler\rpc-file-compiler_test.vcxproj", "{1A07B608-5205-5733-966E-9614BDABD2B4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc-example", "protorpc-example\protorpc-example.vcxproj", "{AD1C504F-D1BD-4D8E-9144-42FE04858827}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protorpc-example", "protorpc-example\protorpc-example.vcxproj", "{756D8397-6198-5DAF-8CD9-F040FAC20262}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,26 +27,26 @@ Global
 		Release|ALL = Release|ALL
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5EB12FC8-F54C-4257-829B-41916333921A}.Debug|ALL.ActiveCfg = Debug|Win32
-		{5EB12FC8-F54C-4257-829B-41916333921A}.Release|ALL.ActiveCfg = Release|Win32
-		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Debug|ALL.ActiveCfg = Debug|Win32
-		{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}.Release|ALL.ActiveCfg = Release|Win32
-		{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}.Debug|ALL.ActiveCfg = Debug|Win32
-		{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}.Release|ALL.ActiveCfg = Release|Win32
-		{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}.Debug|ALL.ActiveCfg = Debug|Win32
-		{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}.Release|ALL.ActiveCfg = Release|Win32
-		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Debug|ALL.ActiveCfg = Debug|Win32
-		{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}.Release|ALL.ActiveCfg = Release|Win32
-		{FC88B55B-1658-491C-8712-F8E59DE2DC80}.Debug|ALL.ActiveCfg = Debug|Win32
-		{FC88B55B-1658-491C-8712-F8E59DE2DC80}.Release|ALL.ActiveCfg = Release|Win32
-		{AD1C504F-D1BD-4D8E-9144-42FE04858827}.Debug|ALL.ActiveCfg = Debug|Win32
-		{AD1C504F-D1BD-4D8E-9144-42FE04858827}.Release|ALL.ActiveCfg = Release|Win32
-		{29C53322-7C20-431A-93B3-42D84826FE11}.Debug|ALL.ActiveCfg = Debug|Win32
-		{29C53322-7C20-431A-93B3-42D84826FE11}.Release|ALL.ActiveCfg = Release|Win32
-		{1E69E38F-001D-4219-9835-20D636CE1927}.Debug|ALL.ActiveCfg = Debug|Win32
-		{1E69E38F-001D-4219-9835-20D636CE1927}.Debug|ALL.Build.0 = Debug|Win32
-		{1E69E38F-001D-4219-9835-20D636CE1927}.Release|ALL.ActiveCfg = Release|Win32
-		{1E69E38F-001D-4219-9835-20D636CE1927}.Release|ALL.Build.0 = Release|Win32
+		{050DDF54-1308-58A9-AB43-CF3C23C14F47}.Debug|ALL.ActiveCfg = Debug|Win32
+		{050DDF54-1308-58A9-AB43-CF3C23C14F47}.Release|ALL.ActiveCfg = Release|Win32
+		{69AD12A5-59BD-5F3C-A5AA-7AFDA9098FC7}.Debug|ALL.ActiveCfg = Debug|Win32
+		{69AD12A5-59BD-5F3C-A5AA-7AFDA9098FC7}.Release|ALL.ActiveCfg = Release|Win32
+		{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}.Debug|ALL.ActiveCfg = Debug|Win32
+		{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}.Release|ALL.ActiveCfg = Release|Win32
+		{3FD9C97E-4EB8-51F5-BAF8-7D079F0BFED4}.Debug|ALL.ActiveCfg = Debug|Win32
+		{3FD9C97E-4EB8-51F5-BAF8-7D079F0BFED4}.Release|ALL.ActiveCfg = Release|Win32
+		{3083AEF7-713A-529B-AD68-85050A5B2163}.Debug|ALL.ActiveCfg = Debug|Win32
+		{3083AEF7-713A-529B-AD68-85050A5B2163}.Release|ALL.ActiveCfg = Release|Win32
+		{1A07B608-5205-5733-966E-9614BDABD2B4}.Debug|ALL.ActiveCfg = Debug|Win32
+		{1A07B608-5205-5733-966E-9614BDABD2B4}.Release|ALL.ActiveCfg = Release|Win32
+		{756D8397-6198-5DAF-8CD9-F040FAC20262}.Debug|ALL.ActiveCfg = Debug|Win32
+		{756D8397-6198-5DAF-8CD9-F040FAC20262}.Release|ALL.ActiveCfg = Release|Win32
+		{EBF61EF1-9FDD-536D-A602-53A8E81FC5BE}.Debug|ALL.ActiveCfg = Debug|Win32
+		{EBF61EF1-9FDD-536D-A602-53A8E81FC5BE}.Release|ALL.ActiveCfg = Release|Win32
+		{70B14E82-21E2-5842-A4A3-2358F8E7E30B}.Debug|ALL.ActiveCfg = Debug|Win32
+		{70B14E82-21E2-5842-A4A3-2358F8E7E30B}.Debug|ALL.Build.0 = Debug|Win32
+		{70B14E82-21E2-5842-A4A3-2358F8E7E30B}.Release|ALL.ActiveCfg = Release|Win32
+		{70B14E82-21E2-5842-A4A3-2358F8E7E30B}.Release|ALL.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

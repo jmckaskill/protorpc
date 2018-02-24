@@ -11,9 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{29C53322-7C20-431A-93B3-42D84826FE11}</ProjectGuid>
+    <ProjectGuid>{EBF61EF1-9FDD-536D-A602-53A8E81FC5BE}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
-    <ProjectName>_GENERATE PROJECTS</ProjectName>
+    <ProjectName>_GENERATE_VCXPROJ</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -39,13 +39,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj.exe ../../projects.json</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj.exe ../../projects.json</NMakeReBuildCommandLine>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine></NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj.exe ../../projects.json</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj.exe ../../projects.json</NMakeReBuildCommandLine>
+    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine></NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>

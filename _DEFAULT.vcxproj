@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1E69E38F-001D-4219-9835-20D636CE1927}</ProjectGuid>
+    <ProjectGuid>{70B14E82-21E2-5842-A4A3-2358F8E7E30B}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
     <ProjectName>_DEFAULT</ProjectName>
   </PropertyGroup>

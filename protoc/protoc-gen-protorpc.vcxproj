@@ -27,7 +27,7 @@
     <None Include="plugin.proto" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}</ProjectGuid>
+    <ProjectGuid>{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
     <ProjectName>bin - protoc-gen-protorpc</ProjectName>
   </PropertyGroup>
@@ -60,7 +60,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protoc-gen-protorpc.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
@@ -71,7 +71,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protoc-gen-protorpc.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />

@@ -12,7 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rpc-file-compiler.c" />
-    <ClCompile Include="rpc-file-compiler_test.cpp" />
+    <ClCompile Include="rpc-file-compiler_test.c" />
     <ClCompile Include="rpc-test-data.c" />
     <ClCompile Include="sha1.c" />
   </ItemGroup>
@@ -22,7 +22,7 @@
   <ItemGroup>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}</ProjectGuid>
+    <ProjectGuid>{3083AEF7-713A-529B-AD68-85050A5B2163}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
     <ProjectName>bin - rpc-file-compiler</ProjectName>
   </PropertyGroup>
@@ -55,7 +55,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/rpc-file-compiler.exe</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/rpc-file-compiler.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-debug/rpc-file-compiler.exe</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-debug/rpc-file-compiler.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />
@@ -66,7 +66,7 @@
     <NMakeBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/rpc-file-compiler.exe</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/rpc-file-compiler.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja bin/win32-release/rpc-file-compiler.exe</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>$(SolutionDir)\toolchain\install\install.exe &amp;&amp; $(SolutionDir)\toolchain\host\bin\ninja.exe -C $(SolutionDir) -f msvc.ninja -t clean bin/win32-release/rpc-file-compiler.exe</NMakeCleanCommandLine>
-    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\gtest\googletest\include;$(SolutionDir)\gtest\googletest;$(SolutionDir)\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
     <ExcludePath />

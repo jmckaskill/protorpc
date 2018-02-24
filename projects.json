@@ -1,10 +1,6 @@
 {
     "Solution": "protorpc.sln",
-    "DefaultUUID": "{1E69E38F-001D-4219-9835-20D636CE1927}",
-    "GenerateUUID": "{29C53322-7C20-431A-93B3-42D84826FE11}",
     "Includes": [
-        "gtest/googletest/include",
-        "gtest/googletest",
         ""
     ],
     "Targets": [
@@ -23,47 +19,41 @@
         {
             "Name": "lib - protorpc",
             "File": "protorpc/protorpc.vcxproj",
-            "UUID": "{5EB12FC8-F54C-4257-829B-41916333921A}",
-            "Target": "bin/{TGT}/protorpc.lib"
+            "Target": "bin/{TGT}/protorpc.lib",
+            "Dirs": ["protorpc", "protorpc/src"]
         },
         {
-            "Name": "bin - protorpc_test",
+            "Name": "test - protorpc",
             "File": "protorpc_test.vcxproj",
-            "UUID": "{730E5A44-48DC-4F59-B34D-2D2F4869E5A0}",
-            "Target": "bin/{TGT}/protorpc_test.exe",
-            "Empty": true
+            "Target": "bin/{TGT}/test_protorpc.exe"
         },
         {
             "Name": "bin - protoc-gen-protorpc",
             "File": "protoc/protoc-gen-protorpc.vcxproj",
-            "UUID": "{1E25CB77-88FE-4E07-86DB-2C8C4007DB46}",
-            "Target": "bin/{TGT}/protoc-gen-protorpc.exe"
+            "Target": "bin/{TGT}/protoc-gen-protorpc.exe",
+            "Dirs": ["protoc"]
         },
         {
             "Name": "bin - protoc-gen-twirp-js",
             "File": "protoc/protoc-gen-twirp-js.vcxproj",
-            "UUID": "{B0FDEB3B-F80B-40D9-9C9E-333CE67BC854}",
-            "Target": "bin/{TGT}/protoc-gen-twirp-js.exe",
-            "Empty": true
+            "Target": "bin/{TGT}/protoc-gen-twirp-js.exe"
         },
         {
             "Name": "bin - rpc-file-compiler",
             "File": "rpc-file-compiler/rpc-file-compiler.vcxproj",
-            "UUID": "{C50CAB48-B133-49CB-9F81-920F4A7D2EDA}",
-            "Target": "bin/{TGT}/rpc-file-compiler.exe"
+            "Target": "bin/{TGT}/rpc-file-compiler.exe",
+            "Dirs": ["rpc-file-compiler"]
         },
         {
-            "Name": "bin - rpc-file-compiler_test",
+            "Name": "test - rpc-file-compiler",
             "File": "rpc-file-compiler/rpc-file-compiler_test.vcxproj",
-            "UUID": "{FC88B55B-1658-491C-8712-F8E59DE2DC80}",
-            "Target": "bin/{TGT}/rpc-file-compiler_test.exe",
-            "Empty": true
+            "Target": "bin/{TGT}/test_rpc-file-compiler.exe"
         },
         {
             "Name": "bin - protorpc-example",
             "File": "protorpc-example/protorpc-example.vcxproj",
-            "UUID": "{AD1C504F-D1BD-4D8E-9144-42FE04858827}",
-            "Target": "bin/{TGT}/protorpc-example.exe"
+            "Target": "bin/{TGT}/protorpc-example.exe",
+            "Dirs": ["protorpc-example"]
         }
     ]
 }

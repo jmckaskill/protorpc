@@ -1,5 +1,6 @@
 #include "protorpc/test.h"
 #include "protorpc/flag.h"
+#include "protorpc/str.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,6 +9,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <crtdbg.h>
 #else
 #include <unistd.h>
 #endif
@@ -43,27 +45,58 @@ int finish_test() {
 	return error_count;
 }
 
-void assert_true(bool a, const char *astr, const char *file, int line) {
+static int do_test_failed(const char *file, int line, const char *msg) {
+	error_count++;
+#ifdef _MSC_VER
+	fprintf(stderr, "%s(%d): error : %s", file, line, msg);
+#ifndef NDEBUG
+	if (IsDebuggerPresent()) {
+		return _CrtDbgReport(_CRT_ASSERT, file, line, NULL, "%s", msg);
+	}
+#endif
+#else
+	fprintf(stderr, "%s:%d: %s", file, line, msg);
+#endif
+	return 0;
+}
+
+test_failure_fn test_failed = &do_test_failed;
+
+int assert_true(bool a, const char *astr, const char *file, int line) {
+	int ret = 0;
 	if (!a) {
-		fprintf(stderr, "%s(%d): assertion failed\n\t%s == false\n", file, line, astr);
-		exit(-1);
+		str_t s = STR_INIT;
+		str_addf(&s, "assertion failed\n\t%s == false\n", astr);
+		ret = test_failed(file, line, s.c_str);
+		if (!ret) {
+			exit(-1);
+		}
 	}
+	return ret;
 }
 
-void expect_int_eq(int64_t a, int64_t b, const char *astr, const char *bstr, const char *file, int line) {
+int expect_int_eq(int64_t a, int64_t b, const char *astr, const char *bstr, const char *file, int line) {
+	int ret = 0;
 	if (a != b) {
-		error_count++;
-		fprintf(stderr, "%s(%d): expected int ==\n\tLeft:  %"PRId64" for %s\n\tRight: %"PRId64" for %s\n",
-			file, line, a, astr, b, bstr);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected int ==\n\tLeft:  %"PRId64" for %s\n\tRight: %"PRId64" for %s\n",
+			a, astr, b, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	}
+	return ret;
 }
 
-void expect_str_eq(const char *a, const char *b, const char *astr, const char *bstr, const char *file, int line) {
+int expect_str_eq(const char *a, const char *b, const char *astr, const char *bstr, const char *file, int line) {
+	int ret = 0;
 	if (strcmp(a, b)) {
-		error_count++;
-		fprintf(stderr, "%s(%d): expected string ==\n\tLeft:  \"%s\" for %s\n\tRight: \"%s\" for %s\n",
-			file, line, a, astr, b, bstr);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected string ==\n\tLeft:  \"%s\" for %s\n\tRight: \"%s\" for %s\n",
+			a, astr, b, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	}
+	return ret;
 }
 
 static int difference_index(uint8_t *a, uint8_t *b, int sz) {
@@ -75,33 +108,39 @@ static int difference_index(uint8_t *a, uint8_t *b, int sz) {
 	return 0;
 }
 
-void expect_bytes_eq(const void *a, int alen, const void *b, int blen, const char *astr, const char *bstr, const char *file, int line) {
+int expect_bytes_eq(const void *a, int alen, const void *b, int blen, const char *astr, const char *bstr, const char *file, int line) {
+	int ret = 0;
 	if (alen != blen) {
-		error_count++;
-		fprintf(stderr, "%s(%d): expected bytes ==, have different lengths\n\tLeft:  %d long for %s\n\tRight: %d long for %s\n",
-			file, line, alen, astr, blen, bstr);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected bytes ==, have different lengths\n\tLeft:  %d long for %s\n\tRight: %d long for %s\n",
+			alen, astr, blen, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	} else if (memcmp(a, b, alen)) {
 		uint8_t *ua = (uint8_t*)a;
 		uint8_t *ub = (uint8_t*)b;
 		int idx = difference_index(ua, ub, alen);
-		fprintf(stderr, "%s(%d): expected bytes ==, different value in byte %d\n\tCommon:\n", file, line, idx);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected bytes ==, different value in byte %d\n\tCommon:\n", idx);
 
 		for (int i = 0; i < idx; i++) {
-			fprintf(stderr, "%02X", ua[i]);
+			str_addf(&s, "%02X", ua[i]);
 			if (i && (i % 2) == 0) {
-				putc(' ', stderr);
+				str_addch(&s, ' ');
 			}
 			if (i && (i & 8) == 0) {
-				putc(' ', stderr);
+				str_addch(&s, ' ');
 			}
 			if (i && (i & 16) == 0) {
-				putc('\n', stderr);
+				str_addch(&s, '\n');
 			}
 		}
-		fprintf(stderr, "\n\tLeft[%d]:  %02X for %s\n", idx, ua[idx], astr);
-		fprintf(stderr, "\n\tRight[%d]: %02X for %s\n", idx, ub[idx], bstr);
-		error_count++;
+		str_addf(&s, "\n\tLeft[%d]:  %02X for %s\n", idx, ua[idx], astr);
+		str_addf(&s, "\n\tRight[%d]: %02X for %s\n", idx, ub[idx], bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	}
+	return ret;
 }
 
 static const char *float_type(int type) {
@@ -121,25 +160,35 @@ static const char *float_type(int type) {
 	}
 }
 
-void expect_float_eq(double a, double b, const char *astr, const char *bstr, const char *file, int line) {
+int expect_float_eq(double a, double b, const char *astr, const char *bstr, const char *file, int line) {
 	int typea = fpclassify(a);
 	int typeb = fpclassify(b);
+	int ret = 0;
 	if (fpclassify(a) != fpclassify(b)) {
-		error_count++;
-		fprintf(stderr, "%s(%d): expected float ==, different types\n\tLeft:  %s for %s\n\tRight: %s for %s\n",
-			file, line, float_type(typea), astr, float_type(typeb), bstr);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected float ==, different types\n\tLeft:  %s for %s\n\tRight: %s for %s\n",
+			float_type(typea), astr, float_type(typeb), bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	} else if ((typea == FP_INFINITE && (a > 0) != (b > 0))
 		|| ((typea == FP_NORMAL || typea == FP_SUBNORMAL) && fabs(a/b - 1) > 0.00001)) {
-		error_count++;
-		fprintf(stderr, "%s(%d): expected float ==\n\tLeft:  %g for %s\n\tRight: %g for %s\n",
-			file, line, a, astr, b, bstr);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected float ==\n\tLeft:  %g for %s\n\tRight: %g for %s\n",
+			a, astr, b, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	}
+	return ret;
 }
 
-void expect_ptr_eq(const void *a, const void *b, const char *astr, const char *bstr, const char *file, int line) {
+int expect_ptr_eq(const void *a, const void *b, const char *astr, const char *bstr, const char *file, int line) {
+	int ret = 0;
 	if (a != b) {
-		error_count++;
-		fprintf(stderr, "%s(%d): expected ptr ==\n\tLeft:  %p for %s\n\tRight: %p for %s\n",
-			file, line, a, astr, b, bstr);
+		str_t s = STR_INIT;
+		str_addf(&s, "expected ptr ==\n\tLeft:  %p for %s\n\tRight: %p for %s\n",
+			a, astr, b, bstr);
+		ret = test_failed(file, line, s.c_str);
+		str_destroy(&s);
 	}
+	return ret;
 }
