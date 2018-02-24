@@ -27,12 +27,14 @@
     <ClCompile Include="src\str_test.c" />
     <ClCompile Include="src\test.c" />
     <ClCompile Include="src\test.proto.c" />
+    <ClCompile Include="src\test_test.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="char-array.h" />
     <ClInclude Include="flag.h" />
     <ClInclude Include="heap-inl.h" />
     <ClInclude Include="http.h" />
+    <ClInclude Include="log.h" />
     <ClInclude Include="protorpc.h" />
     <ClInclude Include="ptr-array.h" />
     <ClInclude Include="ptr-vector.h" />

@@ -7,11 +7,13 @@
         {
             "VS": "Debug",
             "Ninja": "win32-debug",
+            "Default": "win32-debug win32-debug/check",
             "Defines": "WIN32;DEBUG"
         },
         {
             "VS": "Release",
             "Ninja": "win32-release",
+            "Default": "win32-release win32-release/check",
             "Defines": "WIN32;NDEBUG"
         }
     ],

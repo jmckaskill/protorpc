@@ -42,6 +42,12 @@ static void record_start_time() {
 
 static float calc_time_span_ms() {
 #ifdef _WIN32
+	LARGE_INTEGER end_time, freq;
+	QueryPerformanceCounter(&end_time);
+	QueryPerformanceFrequency(&freq);
+	uint64_t span = end_time.QuadPart - start_time.QuadPart;
+	float sec = (float)span / (float)freq.QuadPart;
+	return sec * 1000.0f;
 #elif defined __MACH__
 	uint64_t end_time = mach_absolute_time();
 	uint64_t span = end_time - start_time;
@@ -68,7 +74,7 @@ static int do_log(log_t *log, const char *fmt, ...) {
 	}
 #ifdef _WIN32
 	if (IsDebuggerPresent()) {
-		OutputDebugStringA(log_test.c_str + sz);
+		OutputDebugStringA(log_text.c_str + sz);
 	}
 #endif
 	if (error_count) {
