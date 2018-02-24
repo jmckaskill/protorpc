@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	EXPECT_FLOAT_EQ(0.2, 1.0);
 	check_msg("expected float ==\n\tLeft:  0.2 for 0.2\n\tRight: 1 for 1.0\n");
 	EXPECT_FLOAT_EQ(NAN, 0);
-	check_msg("expected float ==, different types\n\tLeft:  nan for NAN\n\tRight: zero for 0\n");
+	check_msg("expected float ==\n\tLeft:  %g for NAN\n\tRight: 0 for 0\n", NAN);
 	EXPECT_FLOAT_EQ(NAN, NAN);
 	check_msg("");
 	EXPECT_FLOAT_EQ(INFINITY, INFINITY);

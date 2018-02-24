@@ -29,7 +29,7 @@ build $obj/protorpc.lib: lib $
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/protorpc_test.o: cc $SRC/protorpc/src/protorpc_test.c || $SRC/protorpc/src/test.proto.h
-build $bin/test_protorpc.out: run $bin/test_protorpc.exe
+build $bin/test_protorpc.log: run $bin/test_protorpc.exe
 build $bin/test_protorpc.exe: clink $
  $obj/protorpc/protorpc_test.o $
  $obj/protorpc/test.proto.o $
@@ -37,15 +37,15 @@ build $bin/test_protorpc.exe: clink $
 
 build $obj/protorpc/flag_test.o: cc $SRC/protorpc/src/flag_test.c
 build $bin/test_flag.exe: clink $obj/protorpc/flag_test.o $obj/protorpc.lib
-build $bin/test_flag.out: run $bin/test_flag.exe
+build $bin/test_flag.log: run $bin/test_flag.exe
 
 build $obj/protorpc/str_test.o: cc $SRC/protorpc/src/str_test.c
 build $bin/test_str.exe: clink $obj/protorpc/str_test.o $obj/protorpc.lib
-build $bin/test_str.out: run $bin/test_str.exe
+build $bin/test_str.log: run $bin/test_str.exe
 
 build $obj/protorpc/test_test.o: cc $SRC/protorpc/src/test_test.c
 build $bin/test_test.exe: clink $obj/protorpc/test_test.o $obj/protorpc.lib
-build $bin/test_test.out: run $bin/test_test.exe
+build $bin/test_test.log: run $bin/test_test.exe
 
 build $obj/protoc/exec.o: cc $SRC/protoc/exec.c
 build $obj/protoc/protoc-gen-protorpc.o: cc $SRC/protoc/protoc-gen-protorpc.c
@@ -117,7 +117,7 @@ build $bin/rpc-file-compiler.exe: clink $
 
 build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
 build $obj/rpc-file-compiler_test.o: cc $SRC/rpc-file-compiler/rpc-file-compiler_test.c
-build $bin/test_rpc-file-compiler.out: run $bin/test_rpc-file-compiler.exe
+build $bin/test_rpc-file-compiler.log: run $bin/test_rpc-file-compiler.exe
 build $bin/test_rpc-file-compiler.exe: clink $
  $obj/rpc-test-data.o $
  $obj/rpc-file-compiler_test.o $
@@ -126,11 +126,11 @@ build $bin/test_rpc-file-compiler.exe: clink $
 
 
 build $SRC/$TGT/check: phony $
- $bin/test_test.out $
- $bin/test_str.out $
- $bin/test_flag.out $
- $bin/test_protorpc.out $
- $bin/test_rpc-file-compiler.out $
+ $bin/test_test.log $
+ $bin/test_str.log $
+ $bin/test_flag.log $
+ $bin/test_protorpc.log $
+ $bin/test_rpc-file-compiler.log $
 
 
 build $SRC/$TGT: phony $
