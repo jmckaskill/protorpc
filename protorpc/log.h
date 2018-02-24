@@ -9,4 +9,4 @@ struct logger {
 	int(*log)(log_t* log, const char *fmt, ...);
 };
 
-#define LOG(PLOG, ...) ((PLOG) && (PLOG)->log(PLOG, __VA_ARGS__))
+#define LOG(PLOG, ...) ((void) ((void*)(PLOG) != NULL && (PLOG)->log(PLOG, __VA_ARGS__)))

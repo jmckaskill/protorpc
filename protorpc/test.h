@@ -5,7 +5,8 @@
 #include <crtdbg.h>
 #define BREAK() (_CrtDbgBreak(),0)
 #else
-#define BREAK() (0)
+#include <stdlib.h>
+#define BREAK() (abort(),0)
 #endif
 
 typedef struct str str_t;

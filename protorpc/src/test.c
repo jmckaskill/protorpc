@@ -13,6 +13,7 @@
 #include <crtdbg.h>
 #else
 #include <unistd.h>
+#include <time.h>
 #endif
 
 static const char *output_fn;
