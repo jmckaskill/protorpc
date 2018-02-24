@@ -1,15 +1,8 @@
-#include <gtest/gtest.h>
 #include "test.proto.h"
 #include <protorpc/http.h>
 #include <protorpc/char-array.h>
-#include <vector>
-#include <memory>
-
-// wire types
-#define VAR 0
-#define F64 1
-#define LEN 2
-#define F32 5
+#include <protorpc/test.h>
+#include <stdlib.h>
 
 // for zig zag types
 // if negative = 2|x| - 1
@@ -270,7 +263,7 @@ static const char test_json[] =
 		"\t]\n"
 	"}\n";
 
-static void setup_message(struct TestMessage *m) {
+static void setup_message(TestMessage *m) {
 	static bool rb[3] = { false, true, false };
 	static uint32_t ru32[3] = { 1,2,3 };
 	static uint64_t ru64[3] = { 3,4,5 };
@@ -288,18 +281,18 @@ static void setup_message(struct TestMessage *m) {
 	static pb_string rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
 	static TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
 
-	static TestMessage msg2 = {};
+	static TestMessage msg2 = {0};
 	msg2.b = true;
-	static TestMessage msg3 = {};
+	static TestMessage msg3 = {0};
 	msg3.u64 = 10234;
-	static TestMessage emptymsg = {};
+	static TestMessage emptymsg = {0};
 	static TestMessage *rmsg[3] = { &msg2, &msg3, &emptymsg };
 
-	static TestPod pod = {};
+	static TestPod pod = {0};
 	pod.foo_type = TESTPOD_I;
 	pod.foo.i = -12;
 
-	static TestPod rpod[2] = {};
+	static TestPod rpod[2] = {0};
 	rpod[0].foo_type = TESTPOD_U;
 	rpod[0].foo.u = 1;
 	rpod[1].foo_type = TESTPOD_I;
@@ -381,8 +374,8 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(UINT64_C(1234567890123456789), m->f64);
 	EXPECT_EQ(-34757, m->sf32);
 	EXPECT_EQ(INT64_C(-1234567890123456789), m->sf64);
-	EXPECT_EQ(314, m->f);
-	EXPECT_EQ(3.141, m->d);
+	EXPECT_FLOAT_EQ(314, m->f);
+	EXPECT_FLOAT_EQ(3.141, m->d);
 	EXPECT_EQ(5, m->by.len);
 	EXPECT_STREQ("abcde", (char*)m->by.p);
 	EXPECT_EQ(strlen("abc$¢€𝌆"), m->str.len);
@@ -432,11 +425,11 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(0, m->rsf64.v[1]);
 	EXPECT_EQ(100, m->rsf64.v[2]);
 	EXPECT_EQ(1, m->rf.len);
-	EXPECT_EQ(3.5, m->rf.v[0]);
+	EXPECT_FLOAT_EQ(3.5, m->rf.v[0]);
 	EXPECT_EQ(3, m->rd.len);
-	EXPECT_EQ(1.1, m->rd.v[0]);
-	EXPECT_EQ(2.2, m->rd.v[1]);
-	EXPECT_EQ(3.3, m->rd.v[2]);
+	EXPECT_FLOAT_EQ(1.1, m->rd.v[0]);
+	EXPECT_FLOAT_EQ(2.2, m->rd.v[1]);
+	EXPECT_FLOAT_EQ(3.3, m->rd.v[2]);
 	EXPECT_EQ(2, m->rby.len);
 	EXPECT_EQ(5, m->rby.v[0].len);
 	EXPECT_STREQ("defgh", (char*) m->rby.v[0].p);
@@ -465,8 +458,8 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(-1, m->rpod.v[1].foo.i);
 }
 
-TEST(protorpc, print) {
-	struct TestMessage m = {};
+static void test_print() {
+	struct TestMessage m = {0};
 	setup_message(&m);
 
 	char buf[4096];
@@ -475,20 +468,20 @@ TEST(protorpc, print) {
 	EXPECT_STREQ(test_json, buf);
 }
 
-TEST(protorpc, encode_base64) {
+static void test_encode_base64() {
 	char buf[32];
 
-	EXPECT_EQ(buf + 2, pb_encode_base64(buf, (uint8_t*) "a", 1));
+	EXPECT_PTREQ(buf + 2, pb_encode_base64(buf, (uint8_t*) "a", 1));
 	EXPECT_STREQ("YQ", buf);
 
-	EXPECT_EQ(buf + 3, pb_encode_base64(buf, (uint8_t*) "ab", 2));
+	EXPECT_PTREQ(buf + 3, pb_encode_base64(buf, (uint8_t*) "ab", 2));
 	EXPECT_STREQ("YWI", buf);
 
-	EXPECT_EQ(buf + 4, pb_encode_base64(buf, (uint8_t*) "abc", 3));
+	EXPECT_PTREQ(buf + 4, pb_encode_base64(buf, (uint8_t*) "abc", 3));
 	EXPECT_STREQ("YWJj", buf);
 }
 
-TEST(protorpc, parse) {
+static void test_parse() {
 	char objbuf[65536];
 	pb_allocator obj = PB_INIT_ALLOCATOR(objbuf);
 	char *json_in = strdup(test_json);
@@ -496,79 +489,56 @@ TEST(protorpc, parse) {
 	check_message(m);
 }
 
-TEST(protorpc, decode_base64) {
+static void test_decode_base64() {
 	pb_bytes by;
 	char a[] = "YQ";
-	EXPECT_EQ(a + 2, pb_decode_base64(a, &by));
+	EXPECT_PTREQ(a + 2, pb_decode_base64(a, &by));
 	EXPECT_EQ(1, by.len);
 	a[1] = 0;
 	EXPECT_STREQ("a", (char*)by.p);
 
 	char ab[] = "YWI";
-	EXPECT_EQ(ab + 3, pb_decode_base64(ab, &by));
+	EXPECT_PTREQ(ab + 3, pb_decode_base64(ab, &by));
 	EXPECT_EQ(2, by.len);
 	ab[2] = 0;
 	EXPECT_STREQ("ab", (char*)by.p);
 
 	char abc[] = "YWJj";
-	EXPECT_EQ(abc + 4, pb_decode_base64(abc, &by));
+	EXPECT_PTREQ(abc + 4, pb_decode_base64(abc, &by));
 	EXPECT_EQ(3, by.len);
 	abc[3] = 0;
 	EXPECT_STREQ("abc", (char*)by.p);
 
 	char apad[] = "YQ==";
-	EXPECT_EQ(apad + 4, pb_decode_base64(apad, &by));
+	EXPECT_PTREQ(apad + 4, pb_decode_base64(apad, &by));
 	EXPECT_EQ(1, by.len);
 	apad[1] = 0;
 	EXPECT_STREQ("a", (char*)by.p);
 
 	char abpad[] = "YWI=";
-	EXPECT_EQ(abpad + 4, pb_decode_base64(abpad, &by));
+	EXPECT_PTREQ(abpad + 4, pb_decode_base64(abpad, &by));
 	EXPECT_EQ(2, by.len);
 	abpad[2] = 0;
 	EXPECT_STREQ("ab", (char*)by.p);
 }
 
-bool operator==(pb_bytes a, pb_bytes b) {
-	return a.len == b.len && !memcmp(a.p, b.p, a.len);
-}
-
-std::ostream& operator<<(std::ostream& o, pb_bytes m) {
-	std::ios_base::fmtflags flags = o.flags();
-	std::streamsize prec = o.precision();
-	char fill = o.fill();
-	o << "[";
-	o << std::hex << std::setfill('0') << std::uppercase;	
-	for (int i = 0; i < m.len; i++) {
-		//if (i && !(i&1)) {o << " ";}
-		o << "0x" << std::setw(2) << (int) m.p[i] << ",";
-	}
-	o << "]";
-	o.flags(flags);
-	o.precision(prec);
-	o.fill(fill);
-	return o;
-}
-
-TEST(protorpc, encode) {
-	struct TestMessage m = {};
+static void test_encode() {
+	struct TestMessage m = {0};
 	setup_message(&m);
 
 	char buf[1024];
 	memset(buf, 0xAB, sizeof(buf));
 
 	int sz = pb_encoded_size(&m, &proto_TestMessage);
-	ASSERT_EQ(sz, sizeof(test_proto));
+	EXPECT_EQ(sz, sizeof(test_proto));
 
 	sz = pb_encode(&m, &proto_TestMessage, buf);
 	EXPECT_EQ(sz, sizeof(test_proto));
 
-	pb_bytes have = { sz, (uint8_t*)buf };
-	pb_bytes test = {sizeof(test_proto), test_proto};
-	EXPECT_EQ(test, have);
+	EXPECT_BYTES(buf, sz, test_proto, sizeof(test_proto));
 }
 
-TEST(protorpc, decode) {
+static void test_decode() {
 	char obuf[65536];
 	pb_allocator obj = PB_INIT_ALLOCATOR(obuf);
 
@@ -587,7 +557,7 @@ static int test_rpc1(TestService *s, pb_allocator *a, const TestMessage *in, Tes
 	return 201;
 }
 
-TEST(protorpc, dispatch) {
+static void test_dispatch() {
 	char abuf[65536];
 	char ibuf[4096];
 	char obuf[4096];
@@ -599,7 +569,7 @@ TEST(protorpc, dispatch) {
 	svc.rpc1 = &test_rpc1;
 
 	const char *path = "/twirp/com.example.TestService/rpc1";
-	EXPECT_EQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, path, strlen(path)));
+	EXPECT_PTREQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, path, strlen(path)));
 
 	// Try with protobufs
 	int inlen = sizeof(test_proto);
@@ -608,9 +578,7 @@ TEST(protorpc, dispatch) {
 	int tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/protobuf\r\nContent-Length:%6d\r\n\r\n%.*s",
 		(int) sizeof(test_pod_proto), (int) sizeof(test_pod_proto), test_pod_proto);
 
-	pb_bytes have = { osz, (uint8_t*) obuf };
-	pb_bytes want = { tsz, (uint8_t*) tbuf };
-	EXPECT_EQ(want, have);
+	EXPECT_BYTES(obuf, osz, tbuf, tsz);
 
 	// Try with json
 	inlen = strlen(test_json);
@@ -619,12 +587,10 @@ TEST(protorpc, dispatch) {
 	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json;charset=utf-8\r\nContent-Length:%6d\r\n\r\n%s",
 		(int)strlen(test_pod_json), test_pod_json);
 
-	pb_bytes have2 = { osz, (uint8_t*)obuf };
-	pb_bytes want2 = { tsz, (uint8_t*)tbuf };
-	EXPECT_EQ(want2, have2);
+	EXPECT_BYTES(obuf, osz, tbuf, tsz);
 }
 
-TEST(protorpc, http) {
+static void test_http() {
 	http h;
 	char rxbuf[4096];
 	http_reset(&h, rxbuf, sizeof(rxbuf), NULL); 
@@ -632,7 +598,7 @@ TEST(protorpc, http) {
 	// test normal one off request
 	int len;
 	char *rx = http_recv_buffer(&h, &len);
-	EXPECT_EQ(rxbuf, rx);
+	EXPECT_PTREQ(rxbuf, rx);
 	EXPECT_EQ(sizeof(rxbuf), len);
 	EXPECT_EQ(HTTP_IDLE, h.state);
 
@@ -644,7 +610,7 @@ TEST(protorpc, http) {
 	// we haven't accepted the request so we shouldn't be getting
 	// any data yet
 	EXPECT_EQ(3, h.length_remaining);
-	EXPECT_EQ(NULL, http_request_data(&h, &len));
+	EXPECT_PTREQ(NULL, http_request_data(&h, &len));
 	EXPECT_EQ(0, len);
 
 	// now accept it
@@ -662,17 +628,17 @@ TEST(protorpc, http) {
 
 	// send the response
 	const char *tx = http_send_buffer(&h, &len);
-	EXPECT_EQ(ok, tx);
+	EXPECT_PTREQ(ok, tx);
 	EXPECT_EQ(strlen(ok), len);
 
 	// complete the send
 	EXPECT_EQ(0, http_sent(&h, len));
 	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
-	EXPECT_EQ(NULL, h.txnext);
+	EXPECT_PTREQ(NULL, h.txnext);
 
 	// test that there's no more
 	tx = http_send_buffer(&h, &len);
-	EXPECT_EQ(NULL, tx);
+	EXPECT_PTREQ(NULL, tx);
 	EXPECT_EQ(0, len);
 
 
@@ -698,11 +664,11 @@ TEST(protorpc, http) {
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
 
 	// we shouldn't be getting any payload as we've dumped it
-	EXPECT_EQ(NULL, http_request_data(&h, &len));
+	EXPECT_PTREQ(NULL, http_request_data(&h, &len));
 	EXPECT_EQ(0, len);
 
 	tx = http_send_buffer(&h, &len);
-	EXPECT_EQ(resp404, tx);
+	EXPECT_PTREQ(resp404, tx);
 	EXPECT_EQ(strlen(resp404), len);
 
 	EXPECT_EQ(0, http_sent(&h, len));
@@ -720,7 +686,7 @@ TEST(protorpc, http) {
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
 
 	tx = http_send_buffer(&h, &len);
-	EXPECT_EQ(ok, tx);
+	EXPECT_PTREQ(ok, tx);
 	EXPECT_EQ(strlen(ok), len);
 	
 	EXPECT_EQ(0, http_sent(&h, len));
@@ -752,11 +718,11 @@ TEST(protorpc, http) {
 	// send an early response - it won't be sent until the rest of the payload is received
 	EXPECT_EQ(0, http_send_response(&h, ok, strlen(ok)));
 	EXPECT_EQ(HTTP_RECEIVING_DATA, h.state);
-	EXPECT_EQ(ok, h.txnext);
-	EXPECT_EQ(NULL, http_send_buffer(&h, &len));
+	EXPECT_PTREQ(ok, h.txnext);
+	EXPECT_PTREQ(NULL, http_send_buffer(&h, &len));
 
 	rx = http_recv_buffer(&h, &len);
-	EXPECT_EQ(rxbuf, rx);
+	EXPECT_PTREQ(rxbuf, rx);
 	EXPECT_EQ(sizeof(rxbuf), len);
 
 	// send the response data in two chunks. since we sent an early response it should be dumped
@@ -769,14 +735,14 @@ TEST(protorpc, http) {
 
 	// and the second chunk
 	rx = http_recv_buffer(&h, &len);
-	EXPECT_EQ(rxbuf, rx);
+	EXPECT_PTREQ(rxbuf, rx);
 	EXPECT_EQ(sizeof(rxbuf), len);
 	len = sprintf(rx, "45");
 	EXPECT_EQ(0, http_received(&h, len));
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
 
 	tx = http_send_buffer(&h, &len);
-	EXPECT_EQ(ok, tx);
+	EXPECT_PTREQ(ok, tx);
 	EXPECT_EQ(strlen(ok), len);
 	EXPECT_EQ(0, http_sent(&h, len));
 
@@ -804,7 +770,7 @@ TEST(protorpc, http) {
 
 	// upload the second chunk
 	rx = http_recv_buffer(&h, &len);
-	EXPECT_EQ(rxbuf+1, rx);
+	EXPECT_PTREQ(rxbuf+1, rx);
 	EXPECT_EQ(sizeof(rxbuf)-1, len);
 	len = sprintf(rx, "23");
 	EXPECT_EQ(0, http_received(&h, len));
@@ -822,7 +788,7 @@ TEST(protorpc, http) {
 
 	// receive the rest of it
 	rx = http_recv_buffer(&h, &len);
-	EXPECT_EQ(rxbuf+1, rx);
+	EXPECT_PTREQ(rxbuf+1, rx);
 	EXPECT_EQ(sizeof(rxbuf)-1, len);
 	len = sprintf(rx, "45");
 	EXPECT_EQ(0, http_received(&h, len));
@@ -845,28 +811,41 @@ TEST(protorpc, http) {
 	EXPECT_EQ(0, http_send_response(&h, down1, strlen(down1)));
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
 
-	EXPECT_EQ(down1, http_send_buffer(&h, &len));
+	EXPECT_PTREQ(down1, http_send_buffer(&h, &len));
 	EXPECT_EQ(strlen(down1), len);
 
 	// send some of it
 	EXPECT_EQ(0, http_sent(&h, 12));
-	EXPECT_EQ(down1+12, http_send_buffer(&h, &len));
+	EXPECT_PTREQ(down1+12, http_send_buffer(&h, &len));
 	EXPECT_EQ(strlen(down1)-12, len);
 
 	// then the rest
 	EXPECT_EQ(0, http_sent(&h, strlen(down1)-12));
 	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
-	EXPECT_EQ(NULL, http_send_buffer(&h, &len));
+	EXPECT_PTREQ(NULL, http_send_buffer(&h, &len));
 	EXPECT_EQ(0, len);
 
 	// then send the second chunk
 	static const char down2[] = "defg";
 	EXPECT_EQ(0, http_send_response(&h, down2, strlen(down2)));
 	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
-	EXPECT_EQ(down2, http_send_buffer(&h, &len));
+	EXPECT_PTREQ(down2, http_send_buffer(&h, &len));
 	EXPECT_EQ(strlen(down2), len);
 	EXPECT_EQ(0, http_sent(&h, len));
 	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
-	EXPECT_EQ(NULL, http_send_buffer(&h, &len));
+	EXPECT_PTREQ(NULL, http_send_buffer(&h, &len));
 	EXPECT_EQ(0, len);
+}
+
+int main(int argc, char *argv[]) {
+	start_test(&argc, argv);
+	test_print();
+	test_encode_base64();
+	test_parse();
+	test_decode_base64();
+	test_encode();
+	test_decode();
+	test_dispatch();
+	test_http();
+	return finish_test();
 }

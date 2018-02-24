@@ -1,8 +1,9 @@
 #include <protorpc/protorpc.h>
-#include <gtest/gtest.h>
+#include <protorpc/test.h>
 #include <zlib/zlib.h>
+#include <string.h>
 
-extern "C" const proto_dir dir_rpc_test_data;
+const proto_dir dir_rpc_test_data;
 
 static const char test_js_header[] =
 "HTTP/1.1 200 OK\r\n"
@@ -17,7 +18,9 @@ static const char test_js_data[] =
 	"    \"foo\": \"bar\"\n"
 	"}\n";
 
-TEST(protorpc, compiler) {
+int main(int argc, char *argv[]) {
+	start_test(&argc, argv);
+
 	int respsz;
 	const char *path = "/test.4CDDE84B7A.js";
 	const char *resp = pb_lookup_file(&dir_rpc_test_data, path, strlen(path), &respsz);
@@ -46,6 +49,8 @@ TEST(protorpc, compiler) {
 	// Test 404 response
 	path = "/test.js";
 	resp = pb_lookup_file(&dir_rpc_test_data, path, strlen(path), &respsz);
-	EXPECT_EQ(NULL, resp);
+	EXPECT_PTREQ(NULL, resp);
+
+	return finish_test();
 }
 

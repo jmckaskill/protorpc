@@ -1,6 +1,6 @@
 #include <protorpc/flag.h>
 #include <protorpc/str.h>
-#include <gtest/gtest.h>
+#include <protorpc/test.h>
 
 static str_t g_lastmsg = STR_INIT;
 
@@ -9,7 +9,9 @@ static int my_exit(int code, const char *msg) {
 	return code;
 }
 
-TEST(protorpc, flag) {
+int main(int argc, char *argv[]) {
+	start_test(&argc, argv);
+
 	bool b = false;
 	int i = 34;
 	const char *str = "default";
@@ -23,7 +25,7 @@ TEST(protorpc, flag) {
 
 	char *args1[] = { strdup("foo"), strdup("-h"), NULL };
 	int argc1 = 2;
-	EXPECT_EQ(1, flag_parse(&argc1, args1, "foo [arguments]", 0));
+	EXPECT_EQ(1, flag_parse(&argc1, args1, "[arguments]", 0));
 	EXPECT_STREQ(g_lastmsg.c_str,
 		"Usage: foo [arguments]\n"
 		"\nMandatory arguments to long options are mandatory for short options too.\n"
@@ -38,10 +40,12 @@ TEST(protorpc, flag) {
 
 	char *args2[] = { strdup("foo"), strdup("-b"), strdup("--int=3"), strdup("argument"), strdup("-s"), strdup("foobar"), NULL };
 	int argc2 = 6;
-	EXPECT_EQ(0, flag_parse(&argc2, args2, "foo [arguments]", 0));
+	EXPECT_EQ(0, flag_parse(&argc2, args2, "[arguments]", 0));
 	EXPECT_EQ(1, argc2);
 	EXPECT_STREQ("argument", args2[0]);
 	EXPECT_EQ(true, b);
 	EXPECT_EQ(i, 3);
 	EXPECT_STREQ(str, "foobar");
+
+	return finish_test();
 }

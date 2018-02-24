@@ -1,9 +1,6 @@
 obj = bin/obj/$TGT
 bin = bin/$TGT
 
-build $obj/gtest_main.o: cxx gtest/googletest/src/gtest_main.cc
-build $obj/gtest-all.o: cxx gtest/googletest/src/gtest-all.cc
-
 build $obj/protorpc/parse.o: cc $SRC/protorpc/src/parse.c
 build $obj/protorpc/print.o: cc $SRC/protorpc/src/print.c
 build $obj/protorpc/decode.o: cc $SRC/protorpc/src/decode.c
@@ -15,6 +12,7 @@ build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
 build $obj/protorpc/http.o: cc $SRC/protorpc/src/http.c
 build $obj/protorpc/http-sockets.o: cc $SRC/protorpc/src/http-sockets.c
 build $obj/protorpc/flag.o: cc $SRC/protorpc/src/flag.c
+build $obj/protorpc/test2.o: cc $SRC/protorpc/src/test.c
 build $obj/protorpc.lib: lib $
  $obj/protorpc/decode.o $
  $obj/protorpc/encode.o $
@@ -27,19 +25,23 @@ build $obj/protorpc.lib: lib $
  $obj/protorpc/http.o $
  $obj/protorpc/http-sockets.o $
  $obj/protorpc/flag.o $
+ $obj/protorpc/test2.o $
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
-build $obj/protorpc/test.o: cxx $SRC/protorpc/src/test.cpp || $SRC/protorpc/src/test.proto.h
-build $obj/protorpc/flag_test.o: cxx $SRC/protorpc/src/flag_test.cpp
-build $obj/protorpc/str_test.o: cxx $SRC/protorpc/src/str_test.cpp
-build $bin/protorpc_test.exe: cxxlink $
- $obj/protorpc/str_test.o $
- $obj/protorpc/flag_test.o $
- $obj/protorpc/test.o $
+build $obj/protorpc/protorpc_test.o: cc $SRC/protorpc/src/protorpc_test.c || $SRC/protorpc/src/test.proto.h
+build $bin/test_protorpc.out: run $bin/test_protorpc.exe
+build $bin/test_protorpc.exe: clink $
+ $obj/protorpc/protorpc_test.o $
  $obj/protorpc/test.proto.o $
  $obj/protorpc.lib $
- $obj/gtest_main.o $
- $obj/gtest-all.o $
+
+build $obj/protorpc/flag_test.o: cc $SRC/protorpc/src/flag_test.c
+build $bin/test_flag.exe: clink $obj/protorpc/flag_test.o $obj/protorpc.lib
+build $bin/test_flag.out: run $bin/test_flag.exe
+
+build $obj/protorpc/str_test.o: cc $SRC/protorpc/src/str_test.c
+build $bin/test_str.exe: clink $obj/protorpc/str_test.o $obj/protorpc.lib
+build $bin/test_str.out: run $bin/test_str.exe
 
 build $obj/protoc/exec.o: cc $SRC/protoc/exec.c
 build $obj/protoc/protoc-gen-protorpc.o: cc $SRC/protoc/protoc-gen-protorpc.c
@@ -110,23 +112,25 @@ build $bin/rpc-file-compiler.exe: clink $
  $obj/zlib.lib $
 
 build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
-build $obj/rpc-file-compiler_test.o: cxx $SRC/rpc-file-compiler/rpc-file-compiler_test.cpp
-build $bin/rpc-file-compiler_test.exe: cxxlink $
+build $obj/rpc-file-compiler_test.o: cc $SRC/rpc-file-compiler/rpc-file-compiler_test.c
+build $bin/test_rpc-file-compiler.out: run $bin/test_rpc-file-compiler.exe
+build $bin/test_rpc-file-compiler.exe: clink $
  $obj/rpc-test-data.o $
  $obj/rpc-file-compiler_test.o $
  $obj/protorpc.lib $
  $obj/zlib.lib $
- $obj/gtest_main.o $
- $obj/gtest-all.o $
 
 
-
+build $SRC/$TGT/check: phony $
+ $bin/test_str.out $
+ $bin/test_flag.out $
+ $bin/test_protorpc.out $
+ $bin/test_rpc-file-compiler.out $
 
 
 build $SRC/$TGT: phony $
- $bin/protorpc_test.exe $
+ $SRC/$TGT/check $
  $bin/rpc-file-compiler.exe $
- $bin/rpc-file-compiler_test.exe $
  $bin/protorpc-example.exe $
  $bin/protoc-gen-protorpc.exe $
  $bin/protoc-gen-twirp-js.exe $

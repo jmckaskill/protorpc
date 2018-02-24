@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
 #include <protorpc/str.h>
+#include <protorpc/test.h>
 
-TEST(protorpc, str) {
+int main(int argc, char *argv[]) {
+	start_test(&argc, argv);
+
 	str_t s = STR_INIT;
 	str_set(&s, "foo bar foo bar");
 	str_replace_all(&s, "foo", "abcde");
@@ -10,4 +12,6 @@ TEST(protorpc, str) {
 	EXPECT_STREQ("abcde a abcde a", s.c_str);
 	str_replace_all(&s, "abcde", "ghijk");
 	EXPECT_STREQ("ghijk a ghijk a", s.c_str);
+
+	return finish_test();
 }

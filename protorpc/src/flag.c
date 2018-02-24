@@ -27,6 +27,7 @@ struct flag {
 };
 
 static const char *g_usage;
+static const char *g_argv0;
 static struct flag *g_flags;
 static int g_num;
 static int g_cap;
@@ -47,7 +48,7 @@ static void print_spaces(str_t *o, int num) {
 }
 
 static void print_usage(str_t *o) {
-	str_addf(o, "Usage: %s\n", g_usage);
+	str_addf(o, "Usage: %s %s\n", g_argv0, g_usage);
 	if (g_num) {
 		str_addf(o, "\nMandatory arguments to long options are mandatory for short options too.\n");
 		for (int i = 0; i < g_num; i++) {
@@ -206,7 +207,7 @@ static int unknown_flag(char *arg) {
 
 int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
 	g_usage = usage;
-	remove_argument(0, pargc, argv);
+	g_argv0 = remove_argument(0, pargc, argv);
 	for (int i = 0; i < *pargc;) {
 		if (argv[i][0] != '-') {
 			i++;
@@ -268,6 +269,7 @@ int flag_parse(int *pargc, char **argv, const char *usage, int minargs) {
 	argv[*pargc] = NULL;
 
 	free(g_flags);
+	g_flags = NULL;
 	g_num = 0;
 	g_cap = 0;
 	return 0;
