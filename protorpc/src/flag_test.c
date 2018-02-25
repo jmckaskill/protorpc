@@ -20,23 +20,25 @@ int main(int argc, char *argv[]) {
 
 	// test the help
 	flag_bool(&b, 'b', "bool", "bool usage");
-	flag_int(&i, 0, "int", "int usage");
-	flag_string(&str, 's', NULL, "string usage");
+	flag_int(&i, 0, "int", "N", "int usage");
+	flag_string(&str, 's', NULL, "S", "string usage");
 
 	char *args1[] = { strdup("foo"), strdup("-h"), NULL };
 	int argc1 = 2;
-	EXPECT_EQ(1, flag_parse(&argc1, args1, "[arguments]", 0));
-	EXPECT_STREQ(g_lastmsg.c_str,
-		"Usage: foo [arguments]\n"
-		"\nMandatory arguments to long options are mandatory for short options too.\n"
-		"  -b, --bool                bool usage\n"
-		"      --int=34              int usage\n"
-		"  -s default                string usage\n");
+	EXPECT_EQ(1, flag_parse(&argc1, args1, "[options]", 0));
+	EXPECT_STREQ(
+		"usage: foo [options]\n"
+		"\n"
+		"options:\n"
+		"  -b, --bool, --no-bool         bool usage\n"
+		"  --int=N                       int usage [default=34]\n"
+		"  -s S                          string usage [default=default]\n",
+		g_lastmsg.c_str);
 
 	// test the parsing
 	flag_bool(&b, 'b', "bool", "bool usage");
-	flag_int(&i, 0, "int", "int usage");
-	flag_string(&str, 's', NULL, "string usage");
+	flag_int(&i, 0, "int", "N", "int usage");
+	flag_string(&str, 's', NULL, "S", "string usage");
 
 	char *args2[] = { strdup("foo"), strdup("-b"), strdup("--int=3"), strdup("argument"), strdup("-s"), strdup("foobar"), NULL };
 	int argc2 = 6;

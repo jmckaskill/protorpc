@@ -17,7 +17,7 @@ static void check_msg(const char *fmt, ...) {
 	va_start(ap, fmt);
 	vsprintf(buf, fmt, ap);
 	if (strcmp(last_msg.c_str, buf)) {
-		fprintf(stderr, "expected %s\ngot %s\n", buf, last_msg.c_str);
+		fprintf(stderr, "expected:\n%sgot:\n%s\n", buf, last_msg.c_str);
 		exit(2);
 	}
 	str_clear(&last_msg);
@@ -25,7 +25,7 @@ static void check_msg(const char *fmt, ...) {
 
 int main(int argc, char *argv[]) {
 	const char *output_fn;
-	flag_string(&output_fn, 'o', "output", "output filename for success");
+	flag_string(&output_fn, 'o', "output", "FILE", "output filename");
 	flag_parse(&argc, argv, "[arguments]", 0);
 
 	test_failed = &failure_cb;
@@ -33,43 +33,50 @@ int main(int argc, char *argv[]) {
 	EXPECT_EQ(0, 0);
 	check_msg("");
 	EXPECT_EQ(0, 1);
-	check_msg("expected int ==\n\tLeft:  0 for 0\n\tRight: 1 for 1\n");
+	check_msg("value of 1\n\t  Actual: 1\n\tExpected: 0\n");
+	EXPECT_EQ(0+0, 1);
+	check_msg("value of 1\n\t  Actual: 1\n\tExpected: 0 (0+0)\n");
 
 	EXPECT_FLOAT_EQ(0.2, 1.0);
-	check_msg("expected float ==\n\tLeft:  0.2 for 0.2\n\tRight: 1 for 1.0\n");
+	check_msg("value of 1.0\n\t  Actual: 1\n\tExpected: 0.2\n");
 	EXPECT_FLOAT_EQ(NAN, 0);
-	check_msg("expected float ==\n\tLeft:  %g for NAN\n\tRight: 0 for 0\n", NAN);
+	check_msg("value of 0\n\t  Actual: 0\n\tExpected: %g (NAN)\n", NAN);
 	EXPECT_FLOAT_EQ(NAN, NAN);
 	check_msg("");
 	EXPECT_FLOAT_EQ(INFINITY, INFINITY);
 	check_msg("");
-	EXPECT_FLOAT_EQ(INFINITY, -INFINITY);
-	check_msg("expected float ==\n\tLeft:  %g for INFINITY\n\tRight: %g for -INFINITY\n", INFINITY, -INFINITY);
+	EXPECT_FLOAT_EQ(INFINITY+0, -INFINITY);
+	check_msg("value of -INFINITY\n\t  Actual: %g\n\tExpected: %g (INFINITY+0)\n", -INFINITY, INFINITY);
+
+	EXPECT_NEAR(0.2, 0.21, 0.01);
+	check_msg("");
+	EXPECT_NEAR(0.2, 0.21f, 0.001);
+	check_msg("value of 0.21f\n\t  Actual: 0.21\n\tExpected: 0.2\n\t  Within: 0.001\n");
 
 	char a, b;
 	EXPECT_PTREQ(&a, &a);
 	check_msg("");
 	EXPECT_PTREQ(&a, &b);
-	check_msg("expected ptr ==\n\tLeft:  %p for &a\n\tRight: %p for &b\n", &a, &b);
+	check_msg("value of &b\n\t  Actual: %p\n\tExpected: %p (&a)\n", &b, &a);
 
 	EXPECT_STREQ("a", "a");
 	check_msg("");
 	EXPECT_STREQ("a", "ab");
-	check_msg("expected string ==\n\tLeft:  \"a\" for \"a\"\n\tRight: \"ab\" for \"ab\"\n");
+	check_msg("value of \"ab\"\n\t  Actual: \"ab\"\n\tExpected: \"a\" (\"a\")\n");
 
 	EXPECT_GT(1, 0);
 	check_msg("");
-	EXPECT_GT(0, 0);
-	check_msg("expected int >\n\tLeft:  0 for 0\n\tRight: 0 for 0\n");
-	EXPECT_GT(-1, 0);
-	check_msg("expected int >\n\tLeft:  -1 for -1\n\tRight: 0 for 0\n");
+	EXPECT_GT(0+0, 0-0);
+	check_msg("expected 0 (0+0) > 0 (0-0)\n");
+	EXPECT_GT(0-1, 0);
+	check_msg("expected -1 (0-1) > 0\n");
 
 	EXPECT_GE(1, 0);
 	check_msg("");
 	EXPECT_GE(0, 0);
 	check_msg("");
-	EXPECT_GE(-1, 0);
-	check_msg("expected int >=\n\tLeft:  -1 for -1\n\tRight: 0 for 0\n");
+	EXPECT_GE(0-1, 0);
+	check_msg("expected -1 (0-1) >= 0\n");
 
 	char ab[] = "ab";
 	char bc[] = "bc";
@@ -77,11 +84,11 @@ int main(int argc, char *argv[]) {
 	EXPECT_BYTES_EQ(ab, 2, abd, 2);
 	check_msg("");
 	EXPECT_BYTES_EQ(ab, 2, bc, 2);
-	check_msg("expected bytes ==, different value in byte 0\n\tLeft[0]:  x61 for ab\n\tRight[0]: x62 for bc\n");
+	check_msg("value of bc\n\t  Actual: [x62,x63]\n\tExpected: [x61,x62] (ab)\n");
 	EXPECT_BYTES_EQ(bc, 2, abd+1, 2);
-	check_msg("expected bytes ==, different value in byte 1\n\tCommon: x62\n\tLeft[1]:  x63 for bc\n\tRight[1]: x64 for abd+1\n");
+	check_msg("value of abd+1\n\t  Actual: [x62,x64]\n\tExpected: [x62,x63] (bc)\n");
 	EXPECT_BYTES_EQ(ab, 2, abd, 3);
-	check_msg("expected bytes ==, have different lengths\n\tLeft:  2 long for ab\n\tRight: 3 long for abd\n");
+	check_msg("value of abd\n\t  Actual: [x61,x62,x64]\n\tExpected: [x61,x62] (ab)\n");
 
 	if (output_fn) {
 		FILE *f = fopen(output_fn, "wb");

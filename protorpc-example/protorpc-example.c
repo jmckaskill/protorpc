@@ -167,8 +167,8 @@ int main(int argc, char *argv[]) {
 #endif
 
 	const char *port = "80";
-	flag_string(&port, 0, "port", "HTTP server listen port");
-	flag_parse(&argc, argv, "protorpc-example.exe [arguments]", 0);
+	flag_string(&port, 0, "port", "PORT", "HTTP server listen port");
+	flag_parse(&argc, argv, "[options]", 0);
 
 	int sfd = open_server(NULL, port);
 	set_non_blocking(sfd);

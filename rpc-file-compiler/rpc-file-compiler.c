@@ -135,8 +135,8 @@ static const char *filename(const char *path) {
 
 int main(int argc, char *argv[]) {
 	const char *outfn = NULL;
-	flag_string(&outfn, 'o', "output", "Output filename");
-	flag_parse(&argc, argv, "rpc-file-compiler <input files...>", 1);
+	flag_string(&outfn, 'o', "output", "FILE", "Output filename");
+	flag_parse(&argc, argv, "[options] <input files...>", 1);
 	
 	for (int i = 0; i < argc; i++) {
 		clean_slashes(argv[i]);
