@@ -281,12 +281,13 @@ static void setup_message(TestMessage *m) {
 	static pb_string rstr[2] = { {5, "ghikj"}, {5, "lmnop"} };
 	static TestEnum ren[3] = { ENUM_C, ENUM_B, ENUM_A };
 
-	static TestMessage msg2 = {0};
-	msg2.b = true;
-	static TestMessage msg3 = {0};
-	msg3.u64 = 10234;
 	static TestMessage emptymsg = {0};
-	static TestMessage *rmsg[3] = { &msg2, &msg3, &emptymsg };
+	static TestMessage msg3 = {0};
+	msg3._next = &emptymsg;
+	msg3.u64 = 10234;
+	static TestMessage msg2 = {0};
+	msg2._next = &msg3;
+	msg2.b = true;
 
 	static TestPod pod = {0};
 	pod.foo_type = TESTPOD_I;
@@ -350,8 +351,7 @@ static void setup_message(TestMessage *m) {
 	m->ren.v = ren;
 	m->msg = &msg2;
 	m->pod = pod;
-	m->rmsg.len = 3;
-	m->rmsg.v = rmsg;
+	m->rmsg = &msg2;
 	m->rpod.len = 2;
 	m->rpod.v = rpod;
 }
@@ -448,9 +448,10 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(true, m->msg->b);
 	EXPECT_EQ(TESTPOD_I, m->pod.foo_type);
 	EXPECT_EQ(-12, m->pod.foo.i);
-	EXPECT_EQ(3, m->rmsg.len);
-	EXPECT_EQ(true, m->rmsg.v[0]->b);
-	EXPECT_EQ(10234, m->rmsg.v[1]->u64);
+	EXPECT_EQ(true, m->rmsg->b);
+	EXPECT_EQ(10234, m->rmsg->_next->u64);
+	EXPECT_EQ(true, m->rmsg->_next->_next != NULL);
+	EXPECT_EQ(true, m->rmsg->_next->_next->_next == NULL);
 	EXPECT_EQ(2, m->rpod.len);
 	EXPECT_EQ(TESTPOD_U, m->rpod.v[0].foo_type);
 	EXPECT_EQ(1, m->rpod.v[0].foo.u);
@@ -838,7 +839,7 @@ static void test_http() {
 }
 
 int main(int argc, char *argv[]) {
-	start_test(&argc, argv);
+	start_test(&argc, argv, 10);
 	test_print();
 	test_encode_base64();
 	test_parse();

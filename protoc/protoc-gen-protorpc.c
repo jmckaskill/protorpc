@@ -11,9 +11,8 @@ static void define_enum(str_t *o, proto_type *t) {
 
 	str_add(o, "\n");
 	str_addf(o, "enum %s {\n", t->c_type.c_str);
-	for (int i = 0; i < t->en->value.len; i++) {
-		EnumValueDescriptorProto *v = t->en->value.v[i];
-		if (i) {
+	for (EnumValueDescriptorProto *v = t->en->value; v != NULL; v = v->_next) {
+		if (v != t->en->value) {
 			str_add(o, ",\n");
 		}
 		str_addf(o, "\t%s = %d", v->name.c_str, v->number);
@@ -34,15 +33,24 @@ static void add_upper(str_t *o, const char *str) {
 	}
 }
 
-static void declare_oneof(str_t *o, const proto_type *t, unsigned oneof_idx) {
-	OneofDescriptorProto *oneof = t->msg->oneof_decl.v[oneof_idx];
+static OneofDescriptorProto *get_oneof(const DescriptorProto *msg, unsigned idx) {
+	OneofDescriptorProto *v = msg->oneof_decl;
+	while (idx && v) {
+		v = v->_next;
+	}
+	if (v == NULL) {
+		fprintf(stderr, "invalid oneof\n");
+		exit(2);
+	}
+	return v;
+}
 
+static void declare_oneof(str_t *o, const proto_type *t, OneofDescriptorProto* oneof, unsigned oneof_idx) {
 	str_add(o, "\n");
 	str_addf(o, "enum %s_%s {\n", t->c_type.c_str, oneof->name.c_str);
 	bool first = true;
 
-	for (int i = 0; i < t->msg->field.len; i++) {
-		FieldDescriptorProto *f = t->msg->field.v[i];
+	for (FieldDescriptorProto *f = t->msg->field; f != NULL; f = f->_next) {
 		if (f->oneof_index.set && f->oneof_index.val == oneof_idx) {
 			if (!first) {
 				str_add(o, ",\n");
@@ -65,7 +73,7 @@ static void append_field(str_t *o, const FieldDescriptorProto *f) {
 		if (ft->is_pod) {
 			str_addf(o, "\tstruct {int len; %s *v;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else if (ft->msg) {
-			str_addf(o, "\tstruct {int len; %s **v;} %s;\n", ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\t%s *%s;\n", ft->c_type.c_str, f->name.c_str);
 		} else if (ft->en) {
 			str_addf(o, "\tstruct {int len; %s *v; int _encoded;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else {
@@ -86,50 +94,49 @@ static void define_message(str_t *o, proto_type *t) {
 		return;
 	}
 
-	for (int i = 0; i < t->msg->field.len; i++) {
-		FieldDescriptorProto *f = t->msg->field.v[i];
+	for (FieldDescriptorProto *f = t->msg->field; f != NULL; f = f->_next) {
 		proto_type *ft = get_field_type(f);
-		if (f->label != LABEL_REPEATED && ft->is_pod&& ft->file == t->file) {
+		if (f->label != LABEL_REPEATED && ft->is_pod && ft->file == t->file) {
 			define_message(o, ft);
-		} else if (f->type == TYPE_ENUM&& ft->file == t->file) {
+		} else if (f->type == TYPE_ENUM && ft->file == t->file) {
 			define_enum(o, ft);
 		}
 	}
 
-	for (int i = 0; i < t->msg->oneof_decl.len; i++) {
-		declare_oneof(o, t, i);
+	unsigned oneof_idx = 0;
+	for (OneofDescriptorProto *n = t->msg->oneof_decl; n != NULL; n = n->_next) {
+		declare_oneof(o, t, n, oneof_idx++);
 	}
 
 	str_add(o, "\n");
 	str_addf(o, "struct %s {\n", t->c_type.c_str);
 	if (!t->is_pod) {
-		str_add(o, "\tpb_msg _pbhdr;\n");
-	} else if (!t->msg->field.len) {
+		str_addf(o, "\t%s *_next;\n", t->c_type.c_str);
+		str_add(o, "\tint _encsz;\n");
+	} else if (t->msg->field == NULL) {
 		str_add(o, "\tchar _pbempty;\n");
 	}
-	for (int i = 0; i < t->msg->field.len;) {
-		FieldDescriptorProto *f = t->msg->field.v[i];
 
+	for (FieldDescriptorProto *f = t->msg->field; f != NULL;) {
 		if (f->oneof_index.set) {
 			unsigned oneof = f->oneof_index.val;
-			const char *oneof_name = t->msg->oneof_decl.v[oneof]->name.c_str;
+			const char *oneof_name = get_oneof(t->msg, oneof)->name.c_str;
 			str_addf(o, "\tenum %s_%s %s_type;\n", t->c_type.c_str, oneof_name, oneof_name);
 			str_add(o, "\tunion {\n");
 
-			while (i < t->msg->field.len) {
-				f = t->msg->field.v[i];
+			while (f) {
 				if (!f->oneof_index.set || f->oneof_index.val != oneof) {
 					break;
 				}
 				str_add(o, "\t");
 				append_field(o, f);
-				i++;
+				f = f->_next;
 			}
 
 			str_addf(o, "\t} %s;\n", oneof_name);
 		} else {
 			append_field(o, f);
-			i++;
+			f = f->_next;
 		}
 	}
 	str_add(o, "};\n");
@@ -139,8 +146,7 @@ static void define_message(str_t *o, proto_type *t) {
 static void define_service(str_t *o, const proto_type *t) {
 	str_add(o, "\n");
 	str_addf(o, "struct %s {\n", t->c_type.c_str);
-	for (int i = 0; i < t->svc->method.len; i++) {
-		MethodDescriptorProto *m = t->svc->method.v[i];
+	for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
 		str_addf(o, "\tint (*%s)(%s *svc, pb_allocator *obj, const %s *in, %s *out);\n",
@@ -186,8 +192,7 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 			str_addf(o, "extern const proto_enum proto_%s;\n", t->c_type.c_str);
 		} else if (t->file == f && t->svc) {
 			str_addf(o, "extern const proto_service proto_%s;\n", t->c_type.c_str);
-			for (int j = 0; j < t->svc->method.len; j++) {
-				MethodDescriptorProto *m = t->svc->method.v[j];
+			for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
 				str_addf(o, "extern const proto_method proto_%s_%s;\n", t->c_type.c_str, m->name.c_str);
 			}
 		}
@@ -212,46 +217,66 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 	str_add(o, "\n");
 }
 
-static int cmp_enum_number(const void **a, const void **b) {
-	EnumValueDescriptorProto *va = *(EnumValueDescriptorProto**)a;
-	EnumValueDescriptorProto *vb = *(EnumValueDescriptorProto**)b;
-	return va->number - vb->number;
+typedef struct EnumValue EnumValue;
+
+struct EnumValue {
+	const EnumValueDescriptorProto *pb;
+	int by_number_index;
+};
+
+static int cmp_enum_number(const void *a, const void *b) {
+	EnumValue *va = (EnumValue*)a;
+	EnumValue *vb = (EnumValue*)b;
+	return va->pb->number - vb->pb->number;
 }
 
-static int cmp_enum_name(const void **a, const void **b) {
-	EnumValueDescriptorProto *va = *(EnumValueDescriptorProto**)a;
-	EnumValueDescriptorProto *vb = *(EnumValueDescriptorProto**)b;
-	return compare_string(va->name.c_str, va->name.len, vb->name.c_str, vb->name.len);
+static int cmp_enum_name(const void *a, const void *b) {
+	EnumValue *va = (EnumValue*)a;
+	EnumValue *vb = (EnumValue*)b; 
+	return compare_string(va->pb->name.c_str, va->pb->name.len, vb->pb->name.c_str, vb->pb->name.len);
 }
 
-static int cmp_field_number(const void **a, const void **b) {
-	FieldDescriptorProto *fa = *(FieldDescriptorProto**)a;
-	FieldDescriptorProto *fb = *(FieldDescriptorProto**)b;
-	return fa->number - fb->number;
+typedef struct Field Field;
+
+struct Field {
+	const FieldDescriptorProto *pb;
+	int by_number_index;
+};
+
+static int cmp_field_number(const void *a, const void *b) {
+	Field *fa = (Field*)a;
+	Field *fb = (Field*)b;
+	return fa->pb->number - fb->pb->number;
 }
 
-static int cmp_field_name(const void **a, const void **b) {
-	FieldDescriptorProto *fa = *(FieldDescriptorProto**)a;
-	FieldDescriptorProto *fb = *(FieldDescriptorProto**)b;
-	return compare_string(fa->json_name.c_str, fa->json_name.len, fb->json_name.c_str, fb->json_name.len);
+static int cmp_field_json_name(const void *a, const void *b) {
+	Field *fa = (Field*)a;
+	Field *fb = (Field*)b;
+	return compare_string(fa->pb->json_name.c_str, fa->pb->json_name.len, fb->pb->json_name.c_str, fb->pb->json_name.len);
 }
 
-static int cmp_method_name(const void **a, const void **b) {
-	MethodDescriptorProto *ma = *(MethodDescriptorProto**)a;
-	MethodDescriptorProto *mb = *(MethodDescriptorProto**)b;
-	return compare_string(ma->name.c_str, ma->name.len, mb->name.c_str, mb->name.len);
+typedef struct Method Method;
+
+struct Method {
+	const MethodDescriptorProto *pb;
+};
+
+static int cmp_method_name(const void *a, const void *b) {
+	Method *ma = (Method*)a;
+	Method *mb = (Method*)b;
+	return compare_string(ma->pb->name.c_str, ma->pb->name.len, mb->pb->name.c_str, mb->pb->name.len);
 }
 
-static void do_fields_by_number(str_t *o, const proto_type *t) {
+static void do_fields_by_number(str_t *o, const proto_type *t, Field *fields, int num) {
 	str_addf(o, "static const struct proto_field fields_%s[] = {\n", t->c_type.c_str);
-	for (int i = 0; i < t->msg->field.len; i++) {
-		FieldDescriptorProto *f = t->msg->field.v[i];
+	for (int i = 0; i < num; i++) {
+		const FieldDescriptorProto *f = fields[i].pb;
 		proto_type *ft = get_field_type(f);
 		uint32_t tag = get_tag(f);
 		const char *type_enum = field_decode_type(f, ft);
 		const char *field_name = f->name.c_str;
 		if (f->oneof_index.set) {
-			field_name = t->msg->oneof_decl.v[f->oneof_index.val]->name.c_str;
+			field_name = get_oneof(t->msg, f->oneof_index.val)->name.c_str;
 		}
 		if (i) {
 			str_addf(o, ",\n");
@@ -268,22 +293,21 @@ static void do_fields_by_number(str_t *o, const proto_type *t) {
 			str_add(o, " -1}");
 		}
 	}
-	if (!t->msg->field.len) {
+	if (!num) {
 		str_addf(o, "\t{0}");
 	}
 	str_addf(o, "\n};\n");
 }
 
-static void do_fields_by_name(str_t *o, const proto_type *t) {
+static void do_fields_by_name(str_t *o, const proto_type *t, Field *fields, int num) {
 	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
-	for (int i = 0; i < t->msg->field.len; i++) {
-		FieldDescriptorProto *f = t->msg->field.v[i];
+	for (int i = 0; i < num; i++) {
 		if (i) {
 			str_addf(o, ",\n");
 		}
-		str_addf(o, "\t&fields_%s[%d].json_name", t->c_type.c_str, f->by_number_index);
+		str_addf(o, "\t&fields_%s[%d].json_name", t->c_type.c_str, fields[i].by_number_index);
 	}
-	if (!t->msg->field.len) {
+	if (!num) {
 		str_addf(o, "\tNULL");
 	}
 	str_addf(o, "\n};\n");
@@ -292,74 +316,81 @@ static void do_fields_by_name(str_t *o, const proto_type *t) {
 static void do_typeinfo(str_t *o, const proto_type *t) {
 	str_addf(o, "const proto_message proto_%s = {\n", t->c_type.c_str);
 	str_addf(o, "\tsizeof(%s),\n", t->c_type.c_str);
-	str_addf(o, "\t%d,\n", t->msg->field.len);
+	str_addf(o, "\tsizeof(fields_%s)/sizeof(proto_field),\n", t->c_type.c_str);
 	str_addf(o, "\tfields_%s,\n", t->c_type.c_str);
 	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
 	str_addf(o, "};\n");
 }
 
-static void do_enum_by_number(str_t *o, const proto_type *t) {
+static void do_enum_by_number(str_t *o, const proto_type *t, const EnumValue *values, int num) {
 	str_addf(o, "static const proto_enum_value values_%s[] = {\n", t->c_type.c_str);
-	for (int i = 0; i < t->en->value.len; i++) {
-		EnumValueDescriptorProto *v = t->en->value.v[i];
+	for (int i = 0; i < num; i++) {
 		if (i) {
 			str_addf(o, ",\n");
 		}
+		const EnumValueDescriptorProto *v = values[i].pb;
 		str_addf(o, "\t{{%d, \"%s\"}, %d}", v->name.len, v->name.c_str, v->number);
 	}
 	str_add(o, "\n};\n");
 }
 
-static void do_enum_by_name(str_t *o, const proto_type *t) {
+static void do_enum_by_name(str_t *o, const proto_type *t, const EnumValue *values, int num) {
 	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
-	for (int i = 0; i < t->en->value.len; i++) {
-		const struct EnumValueDescriptorProto *v = t->en->value.v[i];
+	for (int i = 0; i < num; i++) {
 		if (i) {
 			str_addf(o, ",\n");
 		}
-		str_addf(o, "\t&values_%s[%d].name", t->c_type.c_str, v->by_number_index);
+		str_addf(o, "\t&values_%s[%d].name", t->c_type.c_str, values[i].by_number_index);
 	}
 	str_add(o, "\n};\n");
 }
 
 static void do_enuminfo(str_t *o, const proto_type *t) {
 	str_addf(o, "const proto_enum proto_%s = {\n", t->c_type.c_str);
-	str_addf(o, "\t%d,\n", t->en->value.len);
+	str_addf(o, "\tsizeof(values_%s)/sizeof(proto_enum_value),\n", t->c_type.c_str);
 	str_addf(o, "\tvalues_%s,\n", t->c_type.c_str);
 	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
 	str_addf(o, "};\n");
 }
 
 static void do_method_by_index(str_t *o, const proto_type *t) {
-	for (int i = 0; i < t->svc->method.len; i++) {
+	int method_idx = 0;
+	for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
 		// Note the proto_type has a leading . that we want to remove
-		MethodDescriptorProto *m = t->svc->method.v[i];
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
 		str_addf(o, "const proto_method proto_%s_%s = {\n", t->c_type.c_str, m->name.c_str);
 		str_addf(o, "\t{%d, \"/twirp/%s/%s\"},\n",
 			7 /*/twirp*/ + (t->proto_type.len-1) + 1 + m->name.len, t->proto_type.c_str+1, m->name.c_str);
-		str_addf(o, "\t%d,\n", i);
+		str_addf(o, "\t%d,\n", method_idx++);
 		str_addf(o, "\t&proto_%s,\n", it->c_type.c_str);
 		str_addf(o, "\t&proto_%s\n", ot->c_type.c_str);
 		str_add(o, "};\n");
 	}
 }
 
-static void do_method_by_name(str_t *o, const proto_type *t) {
+static void do_method_by_name(str_t *o, const proto_type *t, Method *methods, int num) {
 	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
-	for (int i = 0; i < t->svc->method.len; i++) {
-		MethodDescriptorProto *m = t->svc->method.v[i];
-		str_addf(o, "\t&proto_%s_%s.path,\n", t->c_type.c_str, m->name.c_str);
+	for (int i = 0; i < num; i++) {
+		str_addf(o, "\t&proto_%s_%s.path,\n", t->c_type.c_str, methods[i].pb->name.c_str);
 	}
 	str_addf(o, "};\n");
 }
 
 static void do_svcinfo(str_t *o, const proto_type *t) {
 	str_addf(o, "const proto_service proto_%s = {\n", t->c_type.c_str);
-	str_addf(o, "\t%d,\n", t->svc->method.len);
+	str_addf(o, "\tsizeof(by_name_%s)/sizeof(pb_string*),\n", t->c_type.c_str);
 	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
 	str_addf(o, "};\n");
+}
+
+static int list_length(void *head) {
+	int sz = 0;
+	while (head) {
+		sz++;
+		head = *(void**)head;
+	}
+	return sz;
 }
 
 static void write_source(str_t *o, const FileDescriptorProto *f) {
@@ -378,39 +409,71 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 
 		if (t->file == f && t->msg) {
 			str_add(o, "\n");
-			pa_sort(t->msg->field, &cmp_field_number);
 
-			for (int j = 0; j < t->msg->field.len; j++) {
-				t->msg->field.v[j]->by_number_index = j;
+			int fnum = list_length(t->msg->field);
+			Field *fields = (Field*)calloc(fnum, sizeof(Field));
+
+			int j = 0;
+			for (FieldDescriptorProto *fld = t->msg->field; fld != NULL; fld = fld->_next) {
+				fields[j++].pb = fld;
 			}
 
-			do_fields_by_number(o, t);
+			qsort(fields, fnum, sizeof(fields[0]), &cmp_field_number);
 
-			pa_sort(t->msg->field, &cmp_field_name);
+			for (j = 0; j < fnum; j++) {
+				fields[j].by_number_index = j;
+			}
 
-			do_fields_by_name(o, t);
+			do_fields_by_number(o, t, fields, fnum);
+
+			qsort(fields, fnum, sizeof(fields[0]), &cmp_field_json_name);
+
+			do_fields_by_name(o, t, fields, fnum);
 			do_typeinfo(o, t);
+
+			free(fields);
 
 		} else if (t->file == f && t->en) {
 			str_add(o, "\n");
-			pa_sort(t->en->value, &cmp_enum_number);
 
-			for (int j = 0; j < t->en->value.len; j++) {
-				t->en->value.v[j]->by_number_index = j;
+			int vnum = list_length(t->en->value);
+			EnumValue *values = (EnumValue*)calloc(vnum, sizeof(EnumValue));
+
+			int j = 0;
+			for (EnumValueDescriptorProto *v = t->en->value; v != NULL; v = v->_next) {
+				values[j++].pb = v;
 			}
 
-			do_enum_by_number(o, t);
+			qsort(values, vnum, sizeof(values[0]), &cmp_enum_number);
 
-			pa_sort(t->en->value, &cmp_enum_name);
+			for (j = 0; j < vnum; j++) {
+				values[j].by_number_index = j;
+			}
 
-			do_enum_by_name(o, t);
+			do_enum_by_number(o, t, values, vnum);
+
+			qsort(values, vnum, sizeof(values[0]), &cmp_enum_name);
+
+			do_enum_by_name(o, t, values, vnum);
 			do_enuminfo(o, t);
+
+			free(values);
 
 		} else if (t->file == f && t->svc) {
 			str_add(o, "\n");
 			do_method_by_index(o, t);
-			pa_sort(t->svc->method, &cmp_method_name);
-			do_method_by_name(o, t);
+
+			int mnum = list_length(t->svc->method);
+			Method *methods = (Method*)calloc(mnum, sizeof(Method));
+
+			int j = 0;
+			for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
+				methods[j++].pb = m;
+			}
+
+			qsort(methods, mnum, sizeof(methods[0]), &cmp_method_name);
+
+			do_method_by_name(o, t, methods, mnum);
 			do_svcinfo(o, t);
 		}
 	}
@@ -419,9 +482,9 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 }
 
 static FileDescriptorProto *find_file(const CodeGeneratorRequest *r, pb_string name) {
-	for (int i = 0; i < r->proto_file.len; i++) {
-		if (str_equals(r->proto_file.v[i]->name, name)) {
-			return r->proto_file.v[i];
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
+		if (str_equals(f->name, name)) {
+			return f;
 		}
 	}
 	return NULL;
@@ -459,8 +522,8 @@ int main(int argc, char *argv[]) {
 
 	CodeGeneratorRequest *r = (CodeGeneratorRequest*)pb_decode(&alloc, &type_CodeGeneratorRequest, in.c_str, in.len);
 
-	for (int i = 0; i < r->proto_file.len; i++) {
-		insert_file_types(r->proto_file.v[i]);
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
+		insert_file_types(f);
 	}
 	finish_types();
 

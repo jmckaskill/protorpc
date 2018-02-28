@@ -9,7 +9,6 @@ extern "C" {
 #endif
 
 typedef struct pb_allocator pb_allocator;
-typedef union pb_msg pb_msg;
 typedef struct pb_bytes pb_bytes;
 typedef struct pb_string pb_string;
 
@@ -21,15 +20,6 @@ struct pb_allocator {
 #define pb_appendv(POBJ, PLIST, NUM) pb_appendv_((POBJ), (PLIST), (NUM), sizeof((PLIST)->v[0]))
 #define PB_INIT_ALLOCATOR(buf) {buf, buf + sizeof(buf)}
 
-// Messages are of the form
-// struct my_message {
-//   pb_msg _pbhdr;
-//   fields...
-// }
-union pb_msg {
-	pb_msg *previous;
-	int encoded_size;
-};
 
 struct pb_bytes {
 	int len;
@@ -111,7 +101,7 @@ struct proto_enum_value {
 
 struct proto_enum {
 	size_t num_values;
-	const struct proto_enum_value *values;
+	const proto_enum_value *values;
 	const pb_string **by_name;
 };
 

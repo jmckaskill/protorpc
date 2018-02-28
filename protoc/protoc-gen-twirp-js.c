@@ -28,8 +28,7 @@ static void define_enum(str_t *o, const char *ns, const EnumDescriptorProto *en)
 	str_add(o, "\tvar ");
 	write_variable(o, ns, en->name.c_str);
 	str_add(o, " = {\n");
-	for (int i = 0; i < en->value.len; i++) {
-		EnumValueDescriptorProto *v = en->value.v[i];
+	for (EnumValueDescriptorProto *v = en->value; v != NULL; v = v->_next) {
 		str_addf(o, "\t\t[%d]: \"%s\",\n", v->number, v->name.c_str);
 	}
 	str_add(o, "\t};\n");
@@ -39,11 +38,11 @@ static void define_nested_enum(str_t *o, str_t *ns, const DescriptorProto *m) {
 	int nslen = ns->len;
 	str_addstr(ns, m->name);
 	str_addch(ns, '.');
-	for (int i = 0; i < m->enum_type.len; i++) {
-		define_enum(o, ns->c_str, m->enum_type.v[i]);
+	for (EnumDescriptorProto *en = m->enum_type; en != NULL; en = en->_next) {
+		define_enum(o, ns->c_str, en);
 	}
-	for (int i = 0; i < m->nested_type.len; i++) {
-		define_nested_enum(o, ns, m->nested_type.v[i]);
+	for (DescriptorProto *n = m->nested_type; n != NULL; n = n->_next) {
+		define_nested_enum(o, ns, n);
 	}
 	str_setlen(ns, nslen);
 }
@@ -140,21 +139,32 @@ uint32_t field_tag(const struct FieldDescriptorProto *f) {
 	return field_wire_type(f) | (f->number << 3);
 }
 
-static int compare_field_number(const void **a, const void **b) {
+static int compare_field_number(const void *a, const void *b) {
 	FieldDescriptorProto *fa = *(FieldDescriptorProto**)a;
 	FieldDescriptorProto *fb = *(FieldDescriptorProto**)b;
 	return fa->number - fb->number;
 }
 
 static void define_message(str_t *o, str_t *ns, const DescriptorProto *m) {
-	pa_sort(m->field, &compare_field_number);
+	int fnum = 0;
+	for (FieldDescriptorProto *f = m->field; f != NULL; f = f->_next) {
+		fnum++;
+	}
+
+	FieldDescriptorProto **fields = (FieldDescriptorProto**)calloc(fnum, sizeof(FieldDescriptorProto*));
+	int i = 0;
+	for (FieldDescriptorProto *f = m->field; f != NULL; f = f->_next) {
+		fields[i++] = f;
+	}
+
+	qsort(fields, fnum, sizeof(fields[0]), &compare_field_number);
 
 	str_add(o, "\tvar ");
 	write_variable(o, ns->c_str, m->name.c_str);
 	str_add(o, " = {\n");
 
-	for (int i = 0; i < m->field.len; i++) {
-		FieldDescriptorProto *f = m->field.v[i];
+	for (i = 0; i < fnum; i++) {
+		FieldDescriptorProto *f = fields[i];
 		int tag = field_tag(f);
 		int type = field_type(f);
 		str_addf(o, "\t\t%s: [%d,%d", f->json_name.c_str, tag, type);
@@ -172,15 +182,14 @@ static void define_message(str_t *o, str_t *ns, const DescriptorProto *m) {
 	int nslen = ns->len;
 	str_addstr(ns, m->name);
 	str_addch(ns, '.');
-	for (int i = 0; i < m->nested_type.len; i++) {
-		define_message(o, ns, m->nested_type.v[i]);
+	for (DescriptorProto *n = m->nested_type; n != NULL; n = n->_next) {
+		define_message(o, ns, n);
 	}
 	str_setlen(ns, nslen);
 }
 
 static void link_message(str_t *o, str_t *ns, const DescriptorProto *m) {
-	for (int i = 0; i < m->field.len; i++) {
-		FieldDescriptorProto *f = m->field.v[i];
+	for (FieldDescriptorProto *f = m->field; f != NULL; f = f->_next) {
 		if (f->type == TYPE_MESSAGE) {
 			str_addf(o, "\t");
 			write_variable(o, ns->c_str, m->name.c_str);
@@ -194,8 +203,8 @@ static void link_message(str_t *o, str_t *ns, const DescriptorProto *m) {
 	int nslen = ns->len;
 	str_addstr(ns, m->name);
 	str_addch(ns, '.');
-	for (int i = 0; i < m->nested_type.len; i++) {
-		link_message(o, ns, m->nested_type.v[i]);
+	for (DescriptorProto *n = m->nested_type; n != NULL; n = n->_next) {
+		link_message(o, ns, n);
 	}
 	str_setlen(ns, nslen);
 }
@@ -213,8 +222,7 @@ static void define_service(str_t *o, const char *ns, const ServiceDescriptorProt
 	write_variable(o, ns, s->name.c_str);
 	str_add(o, " = {\n");
 	str_addf(o, "\t\t_basePath: \"/twirp/%s%s/\",\n", ns, s->name.c_str);
-	for (int i = 0; i < s->method.len; i++) {
-		const MethodDescriptorProto *m = s->method.v[i];
+	for (MethodDescriptorProto *m = s->method; m != NULL; m = m->_next) {
 		str_addf(o, "\t\t%s: [\"%s\", ", m->name.c_str, m->name.c_str);
 		write_variable(o, NULL, m->input_type.c_str+1);
 		str_add(o, ", ");
@@ -268,50 +276,45 @@ int main(int argc, char *argv[]) {
 	str_add(&o, "(function(proto){\n");
 
 	// define enums
-	for (int i = 0; i < r->proto_file.len; i++) {
-		FileDescriptorProto *f = r->proto_file.v[i];
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
 		set_namespace(&ns, f);
-		for (int j = 0; j < f->enum_type.len; j++) {
-			define_enum(&o, ns.c_str, f->enum_type.v[j]);
+		for (EnumDescriptorProto *en = f->enum_type; en != NULL; en = en->_next) {
+			define_enum(&o, ns.c_str, en);
 		}
-		for (int j = 0; j < f->message_type.len; j++) {
-			define_nested_enum(&o, &ns, f->message_type.v[j]);
+		for (DescriptorProto *m = f->message_type; m != NULL; m = m->_next) {
+			define_nested_enum(&o, &ns, m);
 		}
 	}
 
 	// define messages
-	for (int i = 0; i < r->proto_file.len; i++) {
-		FileDescriptorProto *f = r->proto_file.v[i];
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
 		set_namespace(&ns, f);
-		for (int j = 0; j < f->message_type.len; j++) {
-			define_message(&o, &ns, f->message_type.v[j]);
+		for (DescriptorProto *m = f->message_type; m != NULL; m = m->_next) {
+			define_message(&o, &ns, m);
 		}
 	}
 
 	// link messages
-	for (int i = 0; i < r->proto_file.len; i++) {
-		FileDescriptorProto *f = r->proto_file.v[i];
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
 		set_namespace(&ns, f);
-		for (int j = 0; j < f->message_type.len; j++) {
-			link_message(&o, &ns, f->message_type.v[j]);
+		for (DescriptorProto *m = f->message_type; m != NULL; m = m->_next) {
+			link_message(&o, &ns, m);
 		}
 	}
 
 	// register messages
-	for (int i = 0; i < r->proto_file.len; i++) {
-		FileDescriptorProto *f = r->proto_file.v[i];
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
 		set_namespace(&ns, f);
-		for (int j = 0; j < f->message_type.len; j++) {
-			register_message(&o, ns.c_str, f->message_type.v[j]);
+		for (DescriptorProto *m = f->message_type; m != NULL; m = m->_next) {
+			register_message(&o, ns.c_str, m);
 		}
 	}
 
 	// define services
-	for (int i = 0; i < r->proto_file.len; i++) {
-		FileDescriptorProto *f = r->proto_file.v[i];
+	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
 		set_namespace(&ns, f);
-		for (int j = 0; j < f->service.len; j++) {
-			define_service(&o, ns.c_str, f->service.v[j]);
+		for (ServiceDescriptorProto *s = f->service; s != NULL; s = s->_next) {
+			define_service(&o, ns.c_str, s);
 		}
 	}
 

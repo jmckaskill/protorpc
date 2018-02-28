@@ -5,7 +5,7 @@ struct encode_stack {
 	const struct proto_field *next_field;
 	const struct proto_field *field_end;
 	char *msg;
-	int next_index;
+	char *next_msg;
 	union {
 		int val;
 		uint8_t *ptr;
@@ -49,7 +49,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	int ret = 0;
-	int list_index = 0;
+	char *next_msg = NULL;
 	char *msg = (char*) obj;
 
 	for (;;) {
@@ -241,7 +241,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 				if (*(char**) (msg + f->offset) == NULL) {
 					break;
 				}
-				// fallthrough
+				// fall through
 			case PROTO_POD: {
 				stack[depth].next_field = f;
 				stack[depth].field_end = end;
@@ -264,33 +264,45 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 				ret = 0;
 				continue;
 			}
-			case PROTO_LIST_POD:
 			case PROTO_LIST_MESSAGE:
-				list_index = 0;
-				// fallthrough
-			next_message_in_list: {
-				pb_pod_list *pod = (pb_pod_list*) (msg + f->offset);
-				if (list_index >= pod->len) {
-					break;
+				next_msg = *(char**)(msg + f->offset);
+				if (next_msg) {
+					goto next_message_in_list;
 				}
+				break;
+			case PROTO_LIST_POD:
+			{
+				pb_pod_list *list = (pb_pod_list*)(msg + f->offset);
+				if (list->len) {
+					next_msg = list->data;
+					goto next_message_in_list;
+				}
+				break;
+			}
+			next_message_in_list: {
+				const struct proto_message *ct = (struct proto_message*) f->proto_type;
 
 				stack[depth].next_field = f;
 				stack[depth].field_end = end;
 				stack[depth].msg = msg;
 				stack[depth].encoded_size.val = ret;
-				stack[depth].next_index = list_index + 1;
+
+				if (f->type == PROTO_LIST_POD) {
+					pb_pod_list *list = (pb_pod_list*)(msg + f->offset);
+					msg = next_msg;
+					next_msg = msg + ct->datasz;
+					if (next_msg == list->data + (list->len * ct->datasz)) {
+						next_msg = NULL;
+					}
+				} else {
+					msg = next_msg;
+					next_msg = (char*)((pb_message*)msg)->next;
+				}
+
+				stack[depth].next_msg = next_msg;
 
 				if (++depth == MAX_DEPTH) {
 					return -1;
-				}
-
-				const struct proto_message *ct = (struct proto_message*) f->proto_type;
-
-				if (f->type == PROTO_LIST_POD) {
-					msg = pod->data + (list_index * ct->datasz);
-				} else {
-					pb_message_list *list = (pb_message_list*) pod;
-					msg = (char*) list->u.v[list_index];
 				}
 
 				f = ct->fields;
@@ -308,7 +320,7 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 
 		depth--;
 
-		union pb_msg *child = (union pb_msg*) msg;
+		pb_message *child = (pb_message*) msg;
 		int childsz = ret;
 
 		f = stack[depth].next_field;
@@ -326,14 +338,16 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 		switch (f->type) {
 		case PROTO_LIST_MESSAGE:
 			child->encoded_size = childsz;
-			// fallthrough
+			// fall through
 		case PROTO_LIST_POD:
-			list_index = stack[depth].next_index;
-			goto next_message_in_list;
-
+			next_msg = stack[depth].next_msg;
+			if (next_msg) {
+				goto next_message_in_list;
+			}
+			break;
 		case PROTO_MESSAGE:
 			child->encoded_size = childsz;
-			// fallthrough
+			// fall through
 		case PROTO_POD:
 		default:
 			break;
@@ -386,7 +400,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 	int depth = 0;
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
-	int list_index = 0;
+	char *next_msg = NULL;
 	char *msg = (char*)obj;
 	uint8_t *p = (uint8_t*)data;
 
@@ -569,7 +583,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				break;
 			}
 			case PROTO_MESSAGE: {
-				union pb_msg *child = *(union pb_msg**) (msg + f->offset);
+				pb_message *child = *(pb_message**) (msg + f->offset);
 				if (child == NULL || !child->encoded_size) {
 					break;
 				}
@@ -602,47 +616,54 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				end = f + ct->num_fields;
 				continue;
 			}
-
-			case PROTO_LIST_POD:
 			case PROTO_LIST_MESSAGE:
-				list_index = 0;
-				// fallthrough
-			next_message_in_list: {
-				pb_message_list *msgs = (pb_message_list*) (msg + f->offset);
-				if (list_index >= msgs->len) {
-					break;
+				next_msg = *(char**)(msg + f->offset);
+				if (next_msg) {
+					goto next_message_in_list;
 				}
-
-				p = put_varint(p, f->tag);
-
-				if (f->type == PROTO_LIST_POD) {
-					stack[depth].encoded_size.ptr = p++;
-				} else {
-					p = put_varint(p, msgs->u.v[list_index]->encoded_size);
+				break;
+			case PROTO_LIST_POD:
+			{
+				pb_pod_list *list = (pb_pod_list*)(msg + f->offset);
+				if (list->len) {
+					next_msg = list->data;
+					goto next_message_in_list;
 				}
+				break;
+			}
+		next_message_in_list: {
+			const struct proto_message *ct = (struct proto_message*) f->proto_type;
 
-				stack[depth].next_field = f;
-				stack[depth].field_end = end;
-				stack[depth].msg = msg;
-				stack[depth].next_index = list_index + 1;
+			stack[depth].next_field = f;
+			stack[depth].field_end = end;
+			stack[depth].msg = msg;
 
-				if (++depth == MAX_DEPTH) {
-					return -1;
+			p = put_varint(p, f->tag);
+
+			if (f->type == PROTO_LIST_POD) {
+				pb_pod_list *list = (pb_pod_list*)(msg + f->offset);
+				msg = next_msg;
+				next_msg = msg + ct->datasz;
+				if (next_msg == list->data + (list->len * ct->datasz)) {
+					next_msg = NULL;
 				}
+				stack[depth].encoded_size.ptr = p++;
+			} else {
+				msg = next_msg;
+				next_msg = (char*)((pb_message*)msg)->next;
+				p = put_varint(p, ((pb_message*)msg)->encoded_size);
+			}
 
-				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
+			stack[depth].next_msg = next_msg;
 
-				if (f->type == PROTO_LIST_POD) {
-					pb_pod_list *pods = (pb_pod_list*) msgs;
-					msg = pods->data + (list_index * ct->datasz);
-				} else {
-					msg = (char*)msgs->u.v[list_index];
-				}
+			if (++depth == MAX_DEPTH) {
+				return -1;
+			}
 
-				f = ct->fields;
-				end = f + ct->num_fields;
-				continue;
-				}
+			f = ct->fields;
+			end = f + ct->num_fields;
+			continue;
+			}
 			}
 
 			f++;
@@ -662,10 +683,13 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 		switch (f->type) {
 		case PROTO_LIST_POD:
 			*szptr = (uint8_t)(p - szptr - 1);
-			// fallthrough
+			// fall-through
 		case PROTO_LIST_MESSAGE:
-			list_index = stack[depth].next_index;
-			goto next_message_in_list;
+			next_msg = stack[depth].next_msg;
+			if (next_msg) {
+				goto next_message_in_list;
+			}
+			break;
 
 		case PROTO_POD:
 			if (p == szptr + 1) {
@@ -674,7 +698,7 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 			} else {
 				*szptr = (uint8_t)(p - szptr - 1);
 			}
-			// fallthrough
+			// fall-through
 		case PROTO_MESSAGE:
 		default:
 			break;

@@ -19,7 +19,7 @@ static const char test_js_data[] =
 	"}\n";
 
 int main(int argc, char *argv[]) {
-	start_test(&argc, argv);
+	start_test(&argc, argv, 10);
 
 	int respsz;
 	const char *path = "/test.4CDDE84B7A.js";

@@ -2,7 +2,7 @@
 #include <protorpc/test.h>
 
 int main(int argc, char *argv[]) {
-	start_test(&argc, argv);
+	start_test(&argc, argv, 10);
 
 	str_t s = STR_INIT;
 	str_set(&s, "foo bar foo bar");

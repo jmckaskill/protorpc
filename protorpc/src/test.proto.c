@@ -10,7 +10,7 @@ static const pb_string *by_name_TestPod[] = {
 };
 const proto_message proto_TestPod = {
 	sizeof(TestPod),
-	2,
+	sizeof(fields_TestPod)/sizeof(proto_field),
 	fields_TestPod,
 	by_name_TestPod
 };
@@ -26,7 +26,7 @@ static const pb_string *by_name_TestEnum[] = {
 	&values_TestEnum[2].name
 };
 const proto_enum proto_TestEnum = {
-	3,
+	sizeof(values_TestEnum)/sizeof(proto_enum_value),
 	values_TestEnum,
 	by_name_TestEnum
 };
@@ -145,7 +145,7 @@ static const pb_string *by_name_TestMessage[] = {
 };
 const proto_message proto_TestMessage = {
 	sizeof(TestMessage),
-	54,
+	sizeof(fields_TestMessage)/sizeof(proto_field),
 	fields_TestMessage,
 	by_name_TestMessage
 };
@@ -167,7 +167,7 @@ static const pb_string *by_name_TestService[] = {
 	&proto_TestService_rpc2.path,
 };
 const proto_service proto_TestService = {
-	2,
+	sizeof(by_name_TestService)/sizeof(pb_string*),
 	by_name_TestService
 };
 
@@ -181,7 +181,7 @@ static const pb_string *by_name_TestMessage_MbEntry[] = {
 };
 const proto_message proto_TestMessage_MbEntry = {
 	sizeof(TestMessage_MbEntry),
-	2,
+	sizeof(fields_TestMessage_MbEntry)/sizeof(proto_field),
 	fields_TestMessage_MbEntry,
 	by_name_TestMessage_MbEntry
 };
@@ -196,7 +196,7 @@ static const pb_string *by_name_TestMessage_MdEntry[] = {
 };
 const proto_message proto_TestMessage_MdEntry = {
 	sizeof(TestMessage_MdEntry),
-	2,
+	sizeof(fields_TestMessage_MdEntry)/sizeof(proto_field),
 	fields_TestMessage_MdEntry,
 	by_name_TestMessage_MdEntry
 };
@@ -211,7 +211,7 @@ static const pb_string *by_name_TestMessage_MfEntry[] = {
 };
 const proto_message proto_TestMessage_MfEntry = {
 	sizeof(TestMessage_MfEntry),
-	2,
+	sizeof(fields_TestMessage_MfEntry)/sizeof(proto_field),
 	fields_TestMessage_MfEntry,
 	by_name_TestMessage_MfEntry
 };
@@ -226,7 +226,7 @@ static const pb_string *by_name_TestMessage_MbyEntry[] = {
 };
 const proto_message proto_TestMessage_MbyEntry = {
 	sizeof(TestMessage_MbyEntry),
-	2,
+	sizeof(fields_TestMessage_MbyEntry)/sizeof(proto_field),
 	fields_TestMessage_MbyEntry,
 	by_name_TestMessage_MbyEntry
 };
@@ -241,7 +241,7 @@ static const pb_string *by_name_TestMessage_MenEntry[] = {
 };
 const proto_message proto_TestMessage_MenEntry = {
 	sizeof(TestMessage_MenEntry),
-	2,
+	sizeof(fields_TestMessage_MenEntry)/sizeof(proto_field),
 	fields_TestMessage_MenEntry,
 	by_name_TestMessage_MenEntry
 };
@@ -256,7 +256,7 @@ static const pb_string *by_name_TestMessage_Mf32Entry[] = {
 };
 const proto_message proto_TestMessage_Mf32Entry = {
 	sizeof(TestMessage_Mf32Entry),
-	2,
+	sizeof(fields_TestMessage_Mf32Entry)/sizeof(proto_field),
 	fields_TestMessage_Mf32Entry,
 	by_name_TestMessage_Mf32Entry
 };
@@ -271,7 +271,7 @@ static const pb_string *by_name_TestMessage_Mf64Entry[] = {
 };
 const proto_message proto_TestMessage_Mf64Entry = {
 	sizeof(TestMessage_Mf64Entry),
-	2,
+	sizeof(fields_TestMessage_Mf64Entry)/sizeof(proto_field),
 	fields_TestMessage_Mf64Entry,
 	by_name_TestMessage_Mf64Entry
 };
@@ -286,7 +286,7 @@ static const pb_string *by_name_TestMessage_Mi32Entry[] = {
 };
 const proto_message proto_TestMessage_Mi32Entry = {
 	sizeof(TestMessage_Mi32Entry),
-	2,
+	sizeof(fields_TestMessage_Mi32Entry)/sizeof(proto_field),
 	fields_TestMessage_Mi32Entry,
 	by_name_TestMessage_Mi32Entry
 };
@@ -301,7 +301,7 @@ static const pb_string *by_name_TestMessage_Mi64Entry[] = {
 };
 const proto_message proto_TestMessage_Mi64Entry = {
 	sizeof(TestMessage_Mi64Entry),
-	2,
+	sizeof(fields_TestMessage_Mi64Entry)/sizeof(proto_field),
 	fields_TestMessage_Mi64Entry,
 	by_name_TestMessage_Mi64Entry
 };
@@ -316,7 +316,7 @@ static const pb_string *by_name_TestMessage_MmsgEntry[] = {
 };
 const proto_message proto_TestMessage_MmsgEntry = {
 	sizeof(TestMessage_MmsgEntry),
-	2,
+	sizeof(fields_TestMessage_MmsgEntry)/sizeof(proto_field),
 	fields_TestMessage_MmsgEntry,
 	by_name_TestMessage_MmsgEntry
 };
@@ -331,7 +331,7 @@ static const pb_string *by_name_TestMessage_MpodEntry[] = {
 };
 const proto_message proto_TestMessage_MpodEntry = {
 	sizeof(TestMessage_MpodEntry),
-	2,
+	sizeof(fields_TestMessage_MpodEntry)/sizeof(proto_field),
 	fields_TestMessage_MpodEntry,
 	by_name_TestMessage_MpodEntry
 };
@@ -346,7 +346,7 @@ static const pb_string *by_name_TestMessage_Ms32Entry[] = {
 };
 const proto_message proto_TestMessage_Ms32Entry = {
 	sizeof(TestMessage_Ms32Entry),
-	2,
+	sizeof(fields_TestMessage_Ms32Entry)/sizeof(proto_field),
 	fields_TestMessage_Ms32Entry,
 	by_name_TestMessage_Ms32Entry
 };
@@ -361,7 +361,7 @@ static const pb_string *by_name_TestMessage_Ms64Entry[] = {
 };
 const proto_message proto_TestMessage_Ms64Entry = {
 	sizeof(TestMessage_Ms64Entry),
-	2,
+	sizeof(fields_TestMessage_Ms64Entry)/sizeof(proto_field),
 	fields_TestMessage_Ms64Entry,
 	by_name_TestMessage_Ms64Entry
 };
@@ -376,7 +376,7 @@ static const pb_string *by_name_TestMessage_MstrEntry[] = {
 };
 const proto_message proto_TestMessage_MstrEntry = {
 	sizeof(TestMessage_MstrEntry),
-	2,
+	sizeof(fields_TestMessage_MstrEntry)/sizeof(proto_field),
 	fields_TestMessage_MstrEntry,
 	by_name_TestMessage_MstrEntry
 };
@@ -391,7 +391,7 @@ static const pb_string *by_name_TestMessage_Mu32Entry[] = {
 };
 const proto_message proto_TestMessage_Mu32Entry = {
 	sizeof(TestMessage_Mu32Entry),
-	2,
+	sizeof(fields_TestMessage_Mu32Entry)/sizeof(proto_field),
 	fields_TestMessage_Mu32Entry,
 	by_name_TestMessage_Mu32Entry
 };
@@ -406,7 +406,7 @@ static const pb_string *by_name_TestMessage_Mu64Entry[] = {
 };
 const proto_message proto_TestMessage_Mu64Entry = {
 	sizeof(TestMessage_Mu64Entry),
-	2,
+	sizeof(fields_TestMessage_Mu64Entry)/sizeof(proto_field),
 	fields_TestMessage_Mu64Entry,
 	by_name_TestMessage_Mu64Entry
 };
@@ -421,7 +421,7 @@ static const pb_string *by_name_TestMessage_Msf32Entry[] = {
 };
 const proto_message proto_TestMessage_Msf32Entry = {
 	sizeof(TestMessage_Msf32Entry),
-	2,
+	sizeof(fields_TestMessage_Msf32Entry)/sizeof(proto_field),
 	fields_TestMessage_Msf32Entry,
 	by_name_TestMessage_Msf32Entry
 };
@@ -436,7 +436,7 @@ static const pb_string *by_name_TestMessage_Msf64Entry[] = {
 };
 const proto_message proto_TestMessage_Msf64Entry = {
 	sizeof(TestMessage_Msf64Entry),
-	2,
+	sizeof(fields_TestMessage_Msf64Entry)/sizeof(proto_field),
 	fields_TestMessage_Msf64Entry,
 	by_name_TestMessage_Msf64Entry
 };

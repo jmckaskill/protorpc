@@ -12,22 +12,24 @@ typedef struct MethodDescriptorProto MethodDescriptorProto;
 typedef struct CodeGeneratorRequest CodeGeneratorRequest;
 
 struct FileDescriptorProto {
-	pb_msg _pbhdr;
+	FileDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
 	pb_string	package;
 	pb_string_list	dependency;
-	struct {int len; DescriptorProto **v;}	message_type;
-	struct {int len; EnumDescriptorProto **v;}	enum_type;
-	struct {int len; ServiceDescriptorProto **v;}	service;
+	DescriptorProto *message_type;
+	EnumDescriptorProto *enum_type;
+	ServiceDescriptorProto *service;
 	pb_string	syntax;
 };
 struct DescriptorProto {
-	pb_msg _pbhdr;
+	DescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
-	struct {int len; FieldDescriptorProto **v;}	field;
-	struct {int len; DescriptorProto **v;}	nested_type;
-	struct {int len; EnumDescriptorProto **v;}	enum_type;
-	struct {int len; OneofDescriptorProto **v;}	oneof_decl;
+	FieldDescriptorProto *field;
+	DescriptorProto *nested_type;
+	EnumDescriptorProto *enum_type;
+	OneofDescriptorProto *oneof_decl;
 };
 enum FieldDescriptorProto_Type {
 	TYPE_DOUBLE = 1,
@@ -59,7 +61,8 @@ enum FieldDescriptorProto_Label {
 typedef enum FieldDescriptorProto_Label FieldDescriptorProto_Label;
 
 struct FieldDescriptorProto {
-	pb_msg _pbhdr;
+	FieldDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
 	int32_t	number;
 	FieldDescriptorProto_Label	label;
@@ -67,30 +70,33 @@ struct FieldDescriptorProto {
 	pb_string	type_name;
 	pb_opt_uint	oneof_index;
 	pb_string	json_name;
-	int by_number_index;
 };
 struct OneofDescriptorProto {
-	pb_msg _pbhdr;
+	OneofDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
 };
 struct EnumDescriptorProto {
-	pb_msg _pbhdr;
+	EnumDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
-	struct {int len; EnumValueDescriptorProto **v;}	value;
+	EnumValueDescriptorProto *value;
 };
 struct EnumValueDescriptorProto {
-	pb_msg _pbhdr;
+	EnumValueDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
 	int32_t	number;
-	int by_number_index;
 };
 struct ServiceDescriptorProto {
-	pb_msg _pbhdr;
+	ServiceDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
-	struct {int len; MethodDescriptorProto **v;}	method;
+	MethodDescriptorProto *method;
 };
 struct MethodDescriptorProto {
-	pb_msg _pbhdr;
+	MethodDescriptorProto *_next;
+	int _encsz;
 	pb_string	name;
 	pb_string	input_type;
 	pb_string	output_type;
@@ -99,9 +105,10 @@ struct MethodDescriptorProto {
 };
 
 struct CodeGeneratorRequest {
-	pb_msg _pbhdr;
+	CodeGeneratorRequest *_next;
+	int _encsz;
 	pb_string_list file_to_generate;
-	struct {int len; FileDescriptorProto **v;}	proto_file;
+	FileDescriptorProto *proto_file;
 };
 
 extern const proto_message type_FileDescriptorProto;

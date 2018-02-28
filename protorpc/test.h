@@ -15,7 +15,7 @@ typedef struct logger log_t;
 typedef int(*test_failure_fn)(const char*, int, const char*);
 extern test_failure_fn test_failed;
 
-log_t *start_test(int *argc, char *argv[]);
+log_t *start_test(int *argc, char *argv[], int timeout_ms);
 int finish_test();
 
 int assert_true(int a, const char *astr, const char *file, int line);

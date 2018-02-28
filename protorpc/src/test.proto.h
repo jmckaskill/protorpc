@@ -72,7 +72,8 @@ enum TestEnum {
 typedef enum TestEnum TestEnum;
 
 struct TestMessage {
-	pb_msg _pbhdr;
+	TestMessage *_next;
+	int _encsz;
 	bool b;
 	unsigned u32;
 	uint64_t u64;
@@ -107,7 +108,7 @@ struct TestMessage {
 	struct {int len; TestEnum *v; int _encoded;} ren;
 	TestMessage *msg;
 	TestPod pod;
-	struct {int len; TestMessage **v;} rmsg;
+	TestMessage *rmsg;
 	struct {int len; TestPod *v;} rpod;
 	struct {int len; TestMessage_MbEntry *v;} mb;
 	struct {int len; TestMessage_Mu32Entry *v;} mu32;
@@ -122,10 +123,10 @@ struct TestMessage {
 	struct {int len; TestMessage_Msf64Entry *v;} msf64;
 	struct {int len; TestMessage_MfEntry *v;} mf;
 	struct {int len; TestMessage_MdEntry *v;} md;
-	struct {int len; TestMessage_MbyEntry **v;} mby;
-	struct {int len; TestMessage_MstrEntry **v;} mstr;
+	TestMessage_MbyEntry *mby;
+	TestMessage_MstrEntry *mstr;
 	struct {int len; TestMessage_MenEntry *v;} men;
-	struct {int len; TestMessage_MmsgEntry **v;} mmsg;
+	TestMessage_MmsgEntry *mmsg;
 	struct {int len; TestMessage_MpodEntry *v;} mpod;
 };
 
@@ -150,7 +151,8 @@ struct TestMessage_MfEntry {
 };
 
 struct TestMessage_MbyEntry {
-	pb_msg _pbhdr;
+	TestMessage_MbyEntry *_next;
+	int _encsz;
 	unsigned key;
 	pb_bytes value;
 };
@@ -181,7 +183,8 @@ struct TestMessage_Mi64Entry {
 };
 
 struct TestMessage_MmsgEntry {
-	pb_msg _pbhdr;
+	TestMessage_MmsgEntry *_next;
+	int _encsz;
 	unsigned key;
 	TestMessage *value;
 };
@@ -202,7 +205,8 @@ struct TestMessage_Ms64Entry {
 };
 
 struct TestMessage_MstrEntry {
-	pb_msg _pbhdr;
+	TestMessage_MstrEntry *_next;
+	int _encsz;
 	unsigned key;
 	pb_string value;
 };

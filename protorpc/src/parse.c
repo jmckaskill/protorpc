@@ -8,6 +8,7 @@ struct parse_stack {
 	const struct proto_message *type;
 	const struct proto_field *field;
 	char *msg;
+	pb_message **plast_msg;
 };
 
 static char errret[] = { 0 };
@@ -577,6 +578,7 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 	const pb_string *fname;
 	const struct proto_field *f;
 	pb_pod_list *list;
+	pb_message **plast_msg = NULL;
 
 	char field_seperator = '{';
 
@@ -735,30 +737,31 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 					goto err;
 				}
 				break;
-			case PROTO_LIST_POD:
 			case PROTO_LIST_MESSAGE:
+				plast_msg = (pb_message**)(msg + f->offset);
+				// fallthrough
+			case PROTO_LIST_POD:
 				if (!start_array(&p)) {
 					break;
 				}
+				// fallthrough
 			next_message_in_list:
 				stack[depth].type = type;
 				stack[depth].msg = msg;
 				stack[depth].field = f;
 				field_seperator = '{';
 
-				if (++depth == MAX_DEPTH) {
-					goto err;
-				}
-
 				type = (const struct proto_message*) f->proto_type;
 
 				if (f->type == PROTO_LIST_POD) {
 					msg = append_pod_list(obj, msg + f->offset, type->datasz);
 				} else {
-					msg = append_message_list(obj, msg + f->offset, type->datasz);
+					msg = append_message_list(obj, &plast_msg, type->datasz);
 				}
 
-				if (!msg) {
+				stack[depth].plast_msg = plast_msg;
+
+				if (++depth == MAX_DEPTH || !msg) {
 					goto err;
 				}
 				break;
@@ -782,11 +785,6 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 			if (f->type == PROTO_LIST_POD || f->type == PROTO_LIST_MESSAGE) {
 				if (more_in_array(&p)) {
 					goto next_message_in_list;
-				}
-
-				// commit the list
-				if (f->type == PROTO_LIST_MESSAGE && create_message_list(obj, msg + f->offset)) {
-					goto err;
 				}
 			}
 		} else {

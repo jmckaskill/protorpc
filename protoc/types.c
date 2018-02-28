@@ -94,8 +94,7 @@ static float compute_proto_size(proto_type *t) {
 	t->max_proto_size_calculated = true;
 	t->max_proto_size = INFINITY;
 
-	for (int i = 0; i < t->msg->field.len && isfinite(sz); i++) {
-		FieldDescriptorProto *f = t->msg->field.v[i];
+	for (FieldDescriptorProto *f = t->msg->field; f != NULL && isfinite(sz); f = f->_next) {
 		proto_type *ft = get_field_type(f);
 		if (f->label == LABEL_REPEATED) {
 			sz = INFINITY;
@@ -183,11 +182,11 @@ static void insert_message(const FileDescriptorProto *file, DescriptorProto *m, 
 	t->msg = m;
 	t->file = file;
 
-	for (int i = 0; i < m->nested_type.len; i++) {
-		insert_message(file, m->nested_type.v[i], proto, c);
+	for (DescriptorProto *n = m->nested_type; n != NULL; n = n->_next) {
+		insert_message(file, n, proto, c);
 	}
-	for (int i = 0; i < m->enum_type.len; i++) {
-		insert_enum(file, m->enum_type.v[i], proto, c);
+	for (EnumDescriptorProto *en = m->enum_type; en != NULL; en = en->_next) {
+		insert_enum(file, en, proto, c);
 	}
 
 	str_setlen(proto, protobase);
@@ -202,16 +201,16 @@ void insert_file_types(const FileDescriptorProto *file) {
 	str_set(&proto, ".");
 	str_addstr(&proto, file->package);
 
-	for (int i = 0; i < file->message_type.len; i++) {
-		insert_message(file, file->message_type.v[i], &proto, &c);
+	for (DescriptorProto *m = file->message_type; m != NULL; m = m->_next) {
+		insert_message(file, m, &proto, &c);
 	}
 
-	for (int i = 0; i < file->enum_type.len; i++) {
-		insert_enum(file, file->enum_type.v[i], &proto, &c);
+	for (EnumDescriptorProto *en = file->enum_type; en != NULL; en = en->_next) {
+		insert_enum(file, en, &proto, &c);
 	}
 
-	for (int i = 0; i < file->service.len; i++) {
-		insert_service(file, file->service.v[i], &proto, &c);
+	for (ServiceDescriptorProto *s = file->service; s != NULL; s = s->_next) {
+		insert_service(file, s, &proto, &c);
 	}
 }
 

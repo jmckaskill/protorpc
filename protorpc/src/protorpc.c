@@ -54,21 +54,6 @@ void *pb_appendv_(pb_allocator *obj, void *list, size_t add, size_t objsz) {
 	return end;
 }
 
-int create_message_list(pb_allocator *a, char *parent) {
-	pb_message_list *list = (pb_message_list*)parent;
-	union pb_msg **v = (union pb_msg**) pb_calloc(a, list->len, sizeof(union pb_msg*));
-	if (!v) {
-		return -1;
-	}
-	union pb_msg *iter = list->u.last;
-	for (int i = list->len - 1; i >= 0; i--) {
-		v[i] = iter;
-		iter = iter->previous;
-	}
-	list->u.v = v;
-	return 0;
-}
-
 char * create_child_message(pb_allocator *a, char *parent, size_t datasz) {
 	char *child = (char*)pb_calloc(a, 1, datasz);
 	if (!child) {
@@ -78,15 +63,13 @@ char * create_child_message(pb_allocator *a, char *parent, size_t datasz) {
 	return child;
 }
 
-char *append_message_list(pb_allocator *a, char *parent, size_t datasz) {
-	pb_message_list *list = (pb_message_list*)parent;
-	union pb_msg *child = (union pb_msg*) pb_calloc(a, 1, datasz);
+char *append_message_list(pb_allocator *a, pb_message ***plast_msg, size_t datasz) {
+	pb_message *child = (pb_message*) pb_calloc(a, 1, datasz);
 	if (!child) {
 		return NULL;
 	}
-	list->len++;
-	child->previous = list->u.last;
-	list->u.last = child;
+	**plast_msg = child;
+	*plast_msg = &child->next;
 	return (char*)child;
 }
 

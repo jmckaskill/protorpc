@@ -8,15 +8,18 @@
 #define WIRE_VARIABLE 2
 #define WIRE_FIXED_32 5
 
-// lists are of the form
-// struct {int len; <type> const *v;} field;
-typedef struct {
-	int len;
-	union {
-		union pb_msg **v;
-		union pb_msg *last;
-	} u;
-} pb_message_list;
+// Messages are of the form
+// struct my_message {
+//   my_message *_next;
+//   int _encsz;
+//   fields ...
+// }
+typedef struct pb_message pb_message;
+
+struct pb_message {
+	pb_message *next;
+	int encoded_size;
+};
 
 typedef struct {
 	int len;
@@ -27,12 +30,9 @@ static inline char *align(char *p, size_t align) {
 	return (char*)(((uintptr_t)p + (align - 1)) &~(align - 1));
 }
 
-char *append_message_list(pb_allocator *a, char *parent, size_t datasz);
-int create_message_list(pb_allocator *a, char *parent);
-
-char *create_child_message(pb_allocator *a, char *parent, size_t datasz);
-
 char *append_pod_list(pb_allocator *a, char *parent, size_t datasz);
+char *append_message_list(pb_allocator *a, pb_message ***plast_msg, size_t datasz);
+char *create_child_message(pb_allocator *a, char *parent, size_t datasz);
 
 // binary_search does a binary search on the field names
 // the field names are ordered by length and then bitwise

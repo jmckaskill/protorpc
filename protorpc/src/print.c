@@ -8,7 +8,7 @@ struct print_stack {
 	const struct proto_field *field_end;
 	char *msg;
 	char *key_start;
-	int next_index;
+	char *next_msg;
 };
 
 struct out {
@@ -243,7 +243,7 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	char *msg = (char*)obj;
-	int list_index = 0;
+	char *next_msg = NULL;
 	struct out out;
 	out.next = buf;
 	out.end = buf + sz;
@@ -518,43 +518,53 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 				continue;
 			}
 			case PROTO_LIST_POD:
+			{
+				pb_pod_list *list = (pb_pod_list*)(msg + f->offset);
+				if (list->len) {
+					next_msg = list->data;
+					start_array(&out, f->json_name, indent++);
+					goto next_message_in_list;
+				}
+				break;
+			}
 			case PROTO_LIST_MESSAGE:
-				list_index = 0;
-				// fallthrough
+			{
+				pb_message *list = *(pb_message**)(msg + f->offset);
+				next_msg = (char*)list;
+				if (next_msg) {
+					start_array(&out, f->json_name, indent++);
+					goto next_message_in_list;
+				}
+				break;
+			}
 			next_message_in_list: 
 				{
-					pb_message_list *msgs = (pb_message_list*) (msg + f->offset);
-					if (list_index >= msgs->len) {
-						if (list_index) {
-							finish_array(&out, --indent);
-						}
-						break;
-					}
-
-					if (!list_index) {
-						start_array(&out, f->json_name, indent++);
-					}
-
 					print_indent(&out, indent++);
 					print_text(&out, "{", 1);
 
 					stack[depth].next_field = f;
 					stack[depth].field_end = end;
 					stack[depth].msg = msg;
-					stack[depth].next_index = list_index + 1;
-
-					if (++depth == MAX_DEPTH) {
-						*out.next = 0;
-						return -1;
-					}
 
 					const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 
 					if (f->type == PROTO_LIST_POD) {
-						pb_pod_list *pods = (pb_pod_list*) msgs;
-						msg = pods->data + (list_index * ct->datasz);
+						pb_pod_list *pods = (pb_pod_list*) (msg + f->offset);
+						msg = next_msg;
+						next_msg = msg + ct->datasz;
+						if (next_msg == pods->data + (pods->len * ct->datasz)) {
+							next_msg = NULL;
+						}
 					} else {
-						msg = (char*)msgs->u.v[list_index];
+						msg = next_msg;
+						next_msg = (char*) ((pb_message*)msg)->next;
+					}
+
+					stack[depth].next_msg = next_msg;
+
+					if (++depth == MAX_DEPTH) {
+						*out.next = 0;
+						return -1;
 					}
 
 					f = ct->fields;
@@ -600,8 +610,13 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 				print_indent(&out, indent);
 			}
 			print_text(&out, "},", 2);
-			list_index = stack[depth].next_index;
-			goto next_message_in_list;
+			next_msg = stack[depth].next_msg;
+			if (next_msg) {
+				goto next_message_in_list;
+			} else {
+				finish_array(&out, --indent);
+			}
+			break;
 
 		case PROTO_POD:
 		case PROTO_MESSAGE:

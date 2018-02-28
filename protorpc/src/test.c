@@ -86,19 +86,48 @@ static int do_log(log_t *log, const char *fmt, ...) {
 
 static log_t test_logger = {
 	&do_log,
-}; 
+};
 
-log_t *start_test(int *argc, char *argv[]) {
+#ifdef _WIN32
+static DWORD WINAPI timeout_thread(void *udata) {
+	int timeout_ms = (uintptr_t)udata;
+	Sleep(timeout_ms);
+	OutputDebugStringA("test timed out\n");
+	fprintf(stderr, "test timed out\n");
+	ExitProcess(3);
+	return 0;
+}
+#else
+static void *timeout_thread(void *udata) {
+	int timeout_ms = (uintptr_t)udata;
+	struct timespec ts = { timeout_ms / 1000, (timeout_ms % 1000) * 1000 * 1000 };
+	nanosleep(&ts, NULL);
+	fprintf(stderr, "test timed out\n");
+	_exit(3);
+	return NULL;
+}
+#endif
+
+log_t *start_test(int *argc, char *argv[], int timeout_ms) {
 	test_name = argv[0];
 	flag_string(&output_fn, 'o', "output", "FILE", "test status output file");
 	flag_parse(argc, argv, "[options]", 0);
-	if (output_fn) {
 #ifdef _WIN32
+	if (output_fn) {
 		DeleteFileA(output_fn);
-#else
-		unlink(output_fn);
-#endif
 	}
+	if (!IsDebuggerPresent()) {
+		HANDLE h = CreateThread(NULL, 0, &timeout_thread, (void*)(uintptr_t)timeout_ms, 0, NULL);
+		CloseHandle(h);
+	}
+#else
+	if (output_fn) {
+		unlink(output_fn);
+	}
+	pthread_t thr;
+	pthread_create(&thr, NULL, &timeout_thread);
+	pthread_detach(thr);
+#endif
 	record_start_time();
 	str_clear(&log_text);
 	return &test_logger;

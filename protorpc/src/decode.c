@@ -11,6 +11,7 @@ struct decode_stack {
 	const struct proto_field *field_end;
 	char *msg;
 	uint8_t *data_end;
+	pb_message **plast_msg;
 };
 
 static int get_varint(struct in *in, unsigned *pv) {
@@ -195,6 +196,7 @@ void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data,
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	char *objstart = obj->next;
+	pb_message **plast_msg = NULL;
 	struct in in;
 	in.next = (uint8_t*) data;
 	in.end = in.next + sz;
@@ -427,31 +429,30 @@ void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data,
 				end = f + ct->num_fields;
 				continue;
 			}
-next_message_in_list:
 			case PROTO_LIST_MESSAGE:
+				plast_msg = (pb_message**)(msg + f->offset);
+				// fallthrough
+next_message_in_list:
 			case PROTO_LIST_POD: {
 				if (get_bytes(&in, &bytes)) {
 					goto err;
 				}
 
+				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
 				stack[depth].next_field = f;
 				stack[depth].field_end = end;
 				stack[depth].msg = msg;
 				stack[depth].data_end = in.end;
 
-				if (++depth == MAX_DEPTH) {
-					goto err;
-				}
-
-				const struct proto_message *ct = (const struct proto_message*) f->proto_type;
-
 				if (f->type == PROTO_LIST_POD) {
 					msg = append_pod_list(obj, msg + f->offset, ct->datasz);
 				} else {
-					msg = append_message_list(obj, msg + f->offset, ct->datasz);
+					msg = append_message_list(obj, &plast_msg, ct->datasz);
 				}
 
-				if (!msg) {
+				stack[depth].plast_msg = plast_msg;
+
+				if (++depth == MAX_DEPTH || !msg) {
 					goto err;
 				}
 
@@ -479,15 +480,11 @@ end_of_fields:
 		end = stack[depth].field_end;
 		in.next = in.end;
 		in.end = stack[depth].data_end;
+		plast_msg = stack[depth].plast_msg;
 
 		if (f->type == PROTO_LIST_MESSAGE || f->type == PROTO_LIST_POD) {
 			if (still_in_list(&in, f->tag)) {
 				goto next_message_in_list;
-			}
-
-			// we've finished the list, we should commit it
-			if (f->type == PROTO_LIST_MESSAGE && create_message_list(obj, msg + f->offset)) {
-				goto err;
 			}
 
 			f++;

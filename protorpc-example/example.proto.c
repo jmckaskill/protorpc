@@ -8,7 +8,7 @@ static const pb_string *by_name_Empty[] = {
 };
 const proto_message proto_Empty = {
 	sizeof(Empty),
-	0,
+	sizeof(fields_Empty)/sizeof(proto_field),
 	fields_Empty,
 	by_name_Empty
 };
@@ -30,7 +30,7 @@ static const pb_string *by_name_Example[] = {
 	&proto_Example_GenerateError.path,
 };
 const proto_service proto_Example = {
-	2,
+	sizeof(by_name_Example)/sizeof(pb_string*),
 	by_name_Example
 };
 
@@ -42,7 +42,7 @@ static const pb_string *by_name_EchoRequest[] = {
 };
 const proto_message proto_EchoRequest = {
 	sizeof(EchoRequest),
-	1,
+	sizeof(fields_EchoRequest)/sizeof(proto_field),
 	fields_EchoRequest,
 	by_name_EchoRequest
 };

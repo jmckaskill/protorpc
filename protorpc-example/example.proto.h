@@ -24,7 +24,8 @@ struct Example {
 };
 
 struct EchoRequest {
-	pb_msg _pbhdr;
+	EchoRequest *_next;
+	int _encsz;
 	pb_string ping;
 };
 
