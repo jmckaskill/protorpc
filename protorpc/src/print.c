@@ -529,8 +529,8 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 			}
 			case PROTO_LIST_MESSAGE:
 			{
-				pb_message *list = *(pb_message**)(msg + f->offset);
-				next_msg = (char*)list;
+				pb_msg_list *list = (pb_msg_list*)(msg + f->offset);
+				next_msg = (char*)list->first;
 				if (next_msg) {
 					start_array(&out, f->json_name, indent++);
 					goto next_message_in_list;

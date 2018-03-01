@@ -108,7 +108,7 @@ struct TestMessage {
 	struct {int len; TestEnum *v; int _encoded;} ren;
 	TestMessage *msg;
 	TestPod pod;
-	TestMessage *rmsg;
+	struct {int len; TestMessage *first;} rmsg;
 	struct {int len; TestPod *v;} rpod;
 	struct {int len; TestMessage_MbEntry *v;} mb;
 	struct {int len; TestMessage_Mu32Entry *v;} mu32;
@@ -123,10 +123,10 @@ struct TestMessage {
 	struct {int len; TestMessage_Msf64Entry *v;} msf64;
 	struct {int len; TestMessage_MfEntry *v;} mf;
 	struct {int len; TestMessage_MdEntry *v;} md;
-	TestMessage_MbyEntry *mby;
-	TestMessage_MstrEntry *mstr;
+	struct {int len; TestMessage_MbyEntry *first;} mby;
+	struct {int len; TestMessage_MstrEntry *first;} mstr;
 	struct {int len; TestMessage_MenEntry *v;} men;
-	TestMessage_MmsgEntry *mmsg;
+	struct {int len; TestMessage_MmsgEntry *first;} mmsg;
 	struct {int len; TestMessage_MpodEntry *v;} mpod;
 };
 

@@ -17,19 +17,19 @@ struct FileDescriptorProto {
 	pb_string	name;
 	pb_string	package;
 	pb_string_list	dependency;
-	DescriptorProto *message_type;
-	EnumDescriptorProto *enum_type;
-	ServiceDescriptorProto *service;
+	struct {int len; DescriptorProto *first;} message_type;
+	struct {int len; EnumDescriptorProto *first;} enum_type;
+	struct {int len; ServiceDescriptorProto *first;} service;
 	pb_string	syntax;
 };
 struct DescriptorProto {
 	DescriptorProto *_next;
 	int _encsz;
 	pb_string	name;
-	FieldDescriptorProto *field;
-	DescriptorProto *nested_type;
-	EnumDescriptorProto *enum_type;
-	OneofDescriptorProto *oneof_decl;
+	struct {int len; FieldDescriptorProto *first;} field;
+	struct {int len; DescriptorProto *first;} nested_type;
+	struct {int len; EnumDescriptorProto *first;} enum_type;
+	struct {int len; OneofDescriptorProto *first;} oneof_decl;
 };
 enum FieldDescriptorProto_Type {
 	TYPE_DOUBLE = 1,
@@ -80,7 +80,7 @@ struct EnumDescriptorProto {
 	EnumDescriptorProto *_next;
 	int _encsz;
 	pb_string	name;
-	EnumValueDescriptorProto *value;
+	struct {int len; EnumValueDescriptorProto *first;} value;
 };
 struct EnumValueDescriptorProto {
 	EnumValueDescriptorProto *_next;
@@ -92,7 +92,7 @@ struct ServiceDescriptorProto {
 	ServiceDescriptorProto *_next;
 	int _encsz;
 	pb_string	name;
-	MethodDescriptorProto *method;
+	struct {int len; MethodDescriptorProto *first;} method;
 };
 struct MethodDescriptorProto {
 	MethodDescriptorProto *_next;
@@ -108,7 +108,7 @@ struct CodeGeneratorRequest {
 	CodeGeneratorRequest *_next;
 	int _encsz;
 	pb_string_list file_to_generate;
-	FileDescriptorProto *proto_file;
+	struct {int len; FileDescriptorProto *first;} proto_file;
 };
 
 extern const proto_message type_FileDescriptorProto;

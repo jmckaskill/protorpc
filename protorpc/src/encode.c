@@ -265,11 +265,14 @@ int pb_encoded_size(void *obj, const struct proto_message *type) {
 				continue;
 			}
 			case PROTO_LIST_MESSAGE:
-				next_msg = *(char**)(msg + f->offset);
+			{
+				pb_msg_list *list = (pb_msg_list*)(msg + f->offset);
+				next_msg = (char*)list->first;
 				if (next_msg) {
 					goto next_message_in_list;
 				}
 				break;
+			}
 			case PROTO_LIST_POD:
 			{
 				pb_pod_list *list = (pb_pod_list*)(msg + f->offset);
@@ -617,11 +620,14 @@ int pb_encode(void *obj, const struct proto_message *type, char *data) {
 				continue;
 			}
 			case PROTO_LIST_MESSAGE:
-				next_msg = *(char**)(msg + f->offset);
+			{
+				pb_msg_list *list = (pb_msg_list*)(msg + f->offset);
+				next_msg = (char*) list->first;
 				if (next_msg) {
 					goto next_message_in_list;
 				}
 				break;
+			}
 			case PROTO_LIST_POD:
 			{
 				pb_pod_list *list = (pb_pod_list*)(msg + f->offset);

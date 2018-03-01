@@ -351,7 +351,8 @@ static void setup_message(TestMessage *m) {
 	m->ren.v = ren;
 	m->msg = &msg2;
 	m->pod = pod;
-	m->rmsg = &msg2;
+	m->rmsg.len = 3;
+	m->rmsg.first = &msg2;
 	m->rpod.len = 2;
 	m->rpod.v = rpod;
 }
@@ -448,10 +449,11 @@ static void check_message(const struct TestMessage *m) {
 	EXPECT_EQ(true, m->msg->b);
 	EXPECT_EQ(TESTPOD_I, m->pod.foo_type);
 	EXPECT_EQ(-12, m->pod.foo.i);
-	EXPECT_EQ(true, m->rmsg->b);
-	EXPECT_EQ(10234, m->rmsg->_next->u64);
-	EXPECT_EQ(true, m->rmsg->_next->_next != NULL);
-	EXPECT_EQ(true, m->rmsg->_next->_next->_next == NULL);
+	EXPECT_EQ(3, m->rmsg.len);
+	EXPECT_EQ(true, m->rmsg.first->b);
+	EXPECT_EQ(10234, m->rmsg.first->_next->u64);
+	EXPECT_EQ(true, m->rmsg.first->_next->_next != NULL);
+	EXPECT_EQ(true, m->rmsg.first->_next->_next->_next == NULL);
 	EXPECT_EQ(2, m->rpod.len);
 	EXPECT_EQ(TESTPOD_U, m->rpod.v[0].foo_type);
 	EXPECT_EQ(1, m->rpod.v[0].foo.u);

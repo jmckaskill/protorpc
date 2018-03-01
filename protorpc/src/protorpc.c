@@ -63,11 +63,13 @@ char * create_child_message(pb_allocator *a, char *parent, size_t datasz) {
 	return child;
 }
 
-char *append_message_list(pb_allocator *a, pb_message ***plast_msg, size_t datasz) {
+char *append_message_list(pb_allocator *a, char *parent, pb_message ***plast_msg, size_t datasz) {
 	pb_message *child = (pb_message*) pb_calloc(a, 1, datasz);
 	if (!child) {
 		return NULL;
 	}
+	pb_msg_list *list = (pb_msg_list*)parent;
+	list->len++;
 	**plast_msg = child;
 	*plast_msg = &child->next;
 	return (char*)child;

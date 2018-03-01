@@ -11,8 +11,8 @@ static void define_enum(str_t *o, proto_type *t) {
 
 	str_add(o, "\n");
 	str_addf(o, "enum %s {\n", t->c_type.c_str);
-	for (EnumValueDescriptorProto *v = t->en->value; v != NULL; v = v->_next) {
-		if (v != t->en->value) {
+	for (EnumValueDescriptorProto *v = t->en->value.first; v != NULL; v = v->_next) {
+		if (v != t->en->value.first) {
 			str_add(o, ",\n");
 		}
 		str_addf(o, "\t%s = %d", v->name.c_str, v->number);
@@ -34,7 +34,7 @@ static void add_upper(str_t *o, const char *str) {
 }
 
 static OneofDescriptorProto *get_oneof(const DescriptorProto *msg, unsigned idx) {
-	OneofDescriptorProto *v = msg->oneof_decl;
+	OneofDescriptorProto *v = msg->oneof_decl.first;
 	while (idx && v) {
 		v = v->_next;
 	}
@@ -50,7 +50,7 @@ static void declare_oneof(str_t *o, const proto_type *t, OneofDescriptorProto* o
 	str_addf(o, "enum %s_%s {\n", t->c_type.c_str, oneof->name.c_str);
 	bool first = true;
 
-	for (FieldDescriptorProto *f = t->msg->field; f != NULL; f = f->_next) {
+	for (FieldDescriptorProto *f = t->msg->field.first; f != NULL; f = f->_next) {
 		if (f->oneof_index.set && f->oneof_index.val == oneof_idx) {
 			if (!first) {
 				str_add(o, ",\n");
@@ -73,7 +73,7 @@ static void append_field(str_t *o, const FieldDescriptorProto *f) {
 		if (ft->is_pod) {
 			str_addf(o, "\tstruct {int len; %s *v;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else if (ft->msg) {
-			str_addf(o, "\t%s *%s;\n", ft->c_type.c_str, f->name.c_str);
+			str_addf(o, "\tstruct {int len; %s *first;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else if (ft->en) {
 			str_addf(o, "\tstruct {int len; %s *v; int _encoded;} %s;\n", ft->c_type.c_str, f->name.c_str);
 		} else {
@@ -94,7 +94,7 @@ static void define_message(str_t *o, proto_type *t) {
 		return;
 	}
 
-	for (FieldDescriptorProto *f = t->msg->field; f != NULL; f = f->_next) {
+	for (FieldDescriptorProto *f = t->msg->field.first; f != NULL; f = f->_next) {
 		proto_type *ft = get_field_type(f);
 		if (f->label != LABEL_REPEATED && ft->is_pod && ft->file == t->file) {
 			define_message(o, ft);
@@ -104,7 +104,7 @@ static void define_message(str_t *o, proto_type *t) {
 	}
 
 	unsigned oneof_idx = 0;
-	for (OneofDescriptorProto *n = t->msg->oneof_decl; n != NULL; n = n->_next) {
+	for (OneofDescriptorProto *n = t->msg->oneof_decl.first; n != NULL; n = n->_next) {
 		declare_oneof(o, t, n, oneof_idx++);
 	}
 
@@ -113,11 +113,11 @@ static void define_message(str_t *o, proto_type *t) {
 	if (!t->is_pod) {
 		str_addf(o, "\t%s *_next;\n", t->c_type.c_str);
 		str_add(o, "\tint _encsz;\n");
-	} else if (t->msg->field == NULL) {
+	} else if (t->msg->field.len == 0) {
 		str_add(o, "\tchar _pbempty;\n");
 	}
 
-	for (FieldDescriptorProto *f = t->msg->field; f != NULL;) {
+	for (FieldDescriptorProto *f = t->msg->field.first; f != NULL;) {
 		if (f->oneof_index.set) {
 			unsigned oneof = f->oneof_index.val;
 			const char *oneof_name = get_oneof(t->msg, oneof)->name.c_str;
@@ -146,7 +146,7 @@ static void define_message(str_t *o, proto_type *t) {
 static void define_service(str_t *o, const proto_type *t) {
 	str_add(o, "\n");
 	str_addf(o, "struct %s {\n", t->c_type.c_str);
-	for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
+	for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next) {
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
 		str_addf(o, "\tint (*%s)(%s *svc, pb_allocator *obj, const %s *in, %s *out);\n",
@@ -192,7 +192,7 @@ static void write_header(str_t *o, const FileDescriptorProto *f) {
 			str_addf(o, "extern const proto_enum proto_%s;\n", t->c_type.c_str);
 		} else if (t->file == f && t->svc) {
 			str_addf(o, "extern const proto_service proto_%s;\n", t->c_type.c_str);
-			for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
+			for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next) {
 				str_addf(o, "extern const proto_method proto_%s_%s;\n", t->c_type.c_str, m->name.c_str);
 			}
 		}
@@ -355,7 +355,7 @@ static void do_enuminfo(str_t *o, const proto_type *t) {
 
 static void do_method_by_index(str_t *o, const proto_type *t) {
 	int method_idx = 0;
-	for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
+	for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next) {
 		// Note the proto_type has a leading . that we want to remove
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
@@ -383,16 +383,6 @@ static void do_svcinfo(str_t *o, const proto_type *t) {
 	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
 	str_addf(o, "};\n");
 }
-
-static int list_length(void *head) {
-	int sz = 0;
-	while (head) {
-		sz++;
-		head = *(void**)head;
-	}
-	return sz;
-}
-
 static void write_source(str_t *o, const FileDescriptorProto *f) {
 	int num;
 	proto_type **types = get_all_types(&num);
@@ -410,11 +400,11 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 		if (t->file == f && t->msg) {
 			str_add(o, "\n");
 
-			int fnum = list_length(t->msg->field);
+			int fnum = t->msg->field.len;
 			Field *fields = (Field*)calloc(fnum, sizeof(Field));
 
 			int j = 0;
-			for (FieldDescriptorProto *fld = t->msg->field; fld != NULL; fld = fld->_next) {
+			for (FieldDescriptorProto *fld = t->msg->field.first; fld != NULL; fld = fld->_next) {
 				fields[j++].pb = fld;
 			}
 
@@ -436,11 +426,11 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 		} else if (t->file == f && t->en) {
 			str_add(o, "\n");
 
-			int vnum = list_length(t->en->value);
+			int vnum = t->en->value.len;
 			EnumValue *values = (EnumValue*)calloc(vnum, sizeof(EnumValue));
 
 			int j = 0;
-			for (EnumValueDescriptorProto *v = t->en->value; v != NULL; v = v->_next) {
+			for (EnumValueDescriptorProto *v = t->en->value.first; v != NULL; v = v->_next) {
 				values[j++].pb = v;
 			}
 
@@ -463,11 +453,11 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 			str_add(o, "\n");
 			do_method_by_index(o, t);
 
-			int mnum = list_length(t->svc->method);
+			int mnum = t->svc->method.len;
 			Method *methods = (Method*)calloc(mnum, sizeof(Method));
 
 			int j = 0;
-			for (MethodDescriptorProto *m = t->svc->method; m != NULL; m = m->_next) {
+			for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next) {
 				methods[j++].pb = m;
 			}
 
@@ -482,7 +472,7 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 }
 
 static FileDescriptorProto *find_file(const CodeGeneratorRequest *r, pb_string name) {
-	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
+	for (FileDescriptorProto *f = r->proto_file.first; f != NULL; f = f->_next) {
 		if (str_equals(f->name, name)) {
 			return f;
 		}
@@ -522,7 +512,7 @@ int main(int argc, char *argv[]) {
 
 	CodeGeneratorRequest *r = (CodeGeneratorRequest*)pb_decode(&alloc, &type_CodeGeneratorRequest, in.c_str, in.len);
 
-	for (FileDescriptorProto *f = r->proto_file; f != NULL; f = f->_next) {
+	for (FileDescriptorProto *f = r->proto_file.first; f != NULL; f = f->_next) {
 		insert_file_types(f);
 	}
 	finish_types();

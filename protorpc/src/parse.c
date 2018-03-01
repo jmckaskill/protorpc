@@ -738,13 +738,16 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 				}
 				break;
 			case PROTO_LIST_MESSAGE:
-				plast_msg = (pb_message**)(msg + f->offset);
-				// fallthrough
+			{
+				pb_msg_list *msglist = (pb_msg_list*)(msg + f->offset);
+				plast_msg = &msglist->first;
+				// fall-through
+			}
 			case PROTO_LIST_POD:
 				if (!start_array(&p)) {
 					break;
 				}
-				// fallthrough
+				// fall-through
 			next_message_in_list:
 				stack[depth].type = type;
 				stack[depth].msg = msg;
@@ -756,7 +759,7 @@ void *pb_parse(pb_allocator *obj, const struct proto_message *type, char *p) {
 				if (f->type == PROTO_LIST_POD) {
 					msg = append_pod_list(obj, msg + f->offset, type->datasz);
 				} else {
-					msg = append_message_list(obj, &plast_msg, type->datasz);
+					msg = append_message_list(obj, msg + f->offset, &plast_msg, type->datasz);
 				}
 
 				stack[depth].plast_msg = plast_msg;

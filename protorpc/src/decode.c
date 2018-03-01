@@ -430,8 +430,11 @@ void *pb_decode(pb_allocator *obj, const struct proto_message *type, char *data,
 				continue;
 			}
 			case PROTO_LIST_MESSAGE:
-				plast_msg = (pb_message**)(msg + f->offset);
+			{
+				pb_msg_list *list = (pb_msg_list*)(msg + f->offset);
+				plast_msg = &list->first;
 				// fallthrough
+			}
 next_message_in_list:
 			case PROTO_LIST_POD: {
 				if (get_bytes(&in, &bytes)) {
@@ -447,7 +450,7 @@ next_message_in_list:
 				if (f->type == PROTO_LIST_POD) {
 					msg = append_pod_list(obj, msg + f->offset, ct->datasz);
 				} else {
-					msg = append_message_list(obj, &plast_msg, ct->datasz);
+					msg = append_message_list(obj, msg + f->offset, &plast_msg, ct->datasz);
 				}
 
 				stack[depth].plast_msg = plast_msg;
