@@ -1,10 +1,10 @@
 #include <protorpc/str.h>
 #include <protorpc/flag.h>
+#include "protorpc/sha1.h"
 #include <stdio.h>
 #include <zlib/zlib.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sha1.h"
 
 struct entry {
 	str_t http;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
 	const char *outfn = NULL;
 	flag_string(&outfn, 'o', "output", "FILE", "Output filename");
 	flag_parse(&argc, argv, "[options] <input files...>", 1);
-	
+
 	for (int i = 0; i < argc; i++) {
 		clean_slashes(argv[i]);
     }
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
 		}
 		str_destroy(&tempfn);
 #endif
-		
+
 		struct entry *e = &entries[i];
 		e->idx = i;
 

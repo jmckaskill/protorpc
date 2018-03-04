@@ -635,7 +635,7 @@ static void test_http() {
 	char *rx = http_recv_buffer(&h, &len);
 	EXPECT_PTREQ(rxbuf, rx);
 	EXPECT_EQ(sizeof(rxbuf), len);
-	EXPECT_EQ(HTTP_IDLE, h.state);
+	EXPECT_EQ(HTTP_RECEIVING_HEADERS, h.state);
 
 	len = sprintf(rxbuf, "POST / HTTP/1.1\r\nContent-Length:3\r\n\r\nabc");
 	EXPECT_EQ(0, http_received(&h, len));
@@ -682,7 +682,7 @@ static void test_http() {
 	// test pipelining whilst skipping the request payload
 	// start the next request
 	EXPECT_EQ(0, http_next_request(&h));
-	EXPECT_EQ(HTTP_IDLE, h.state);
+	EXPECT_EQ(HTTP_RECEIVING_HEADERS, h.state);
 
 	rx = http_recv_buffer(&h, &len);
 	len = sprintf(rx, "POST /foo HTTP/1.1\r\nContent-Length:3\r\n\r\ndefGET /bar HTTP/1.1\r\n\r\n");
@@ -728,7 +728,7 @@ static void test_http() {
 	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
 
 	EXPECT_EQ(0, http_next_request(&h));
-	EXPECT_EQ(HTTP_IDLE, h.state);
+	EXPECT_EQ(HTTP_RECEIVING_HEADERS, h.state);
 
 
 
@@ -752,7 +752,7 @@ static void test_http() {
 
 	// send an early response - it won't be sent until the rest of the payload is received
 	EXPECT_EQ(0, http_send_response(&h, ok, strlen(ok)));
-	EXPECT_EQ(HTTP_RECEIVING_DATA, h.state);
+	EXPECT_EQ(HTTP_DUMPING_DATA, h.state);
 	EXPECT_PTREQ(ok, h.txnext);
 	EXPECT_PTREQ(NULL, http_send_buffer(&h, &len));
 
@@ -763,7 +763,7 @@ static void test_http() {
 	// send the response data in two chunks. since we sent an early response it should be dumped
 	len = sprintf(rx, "123");
 	EXPECT_EQ(0, http_received(&h, len));
-	EXPECT_EQ(HTTP_RECEIVING_DATA, h.state);
+	EXPECT_EQ(HTTP_DUMPING_DATA, h.state);
 
 	http_request_data(&h, &len);
 	EXPECT_EQ(0, len);
@@ -872,6 +872,26 @@ static void test_http() {
 	EXPECT_EQ(0, len);
 }
 
+static void test_websocket() {
+	http h;
+	char rxbuf[4096];
+	http_reset(&h, rxbuf, sizeof(rxbuf), NULL);
+
+	int len;
+	char *rx = http_recv_buffer(&h, &len);
+	// use example nonce from RFC
+	len = sprintf(rx, "GET /stream HTTP/1.1\r\n"
+		"Host:localhost\r\n"
+		"Upgrade:Websocket\r\n"
+		"Connection:Upgrade\r\n"
+		"Sec-Websocket-Key:AQIDBAUGBwgJCgsMDQ4PEC==\r\n"
+		"Sec-Websocket-Version:13\r\n"
+		"\r\n");
+	EXPECT_EQ(HTTP_RECEIVING_HEADERS, h.state);
+	EXPECT_EQ(0, http_received(&h, len));
+	EXPECT_EQ(HTTP_HEADERS_RECEIVED, h.state);
+	EXPECT_EQ(1, h.expect_websocket);
+}
 
 int main(int argc, char *argv[]) {
 	start_test(&argc, argv, 10);
@@ -884,5 +904,6 @@ int main(int argc, char *argv[]) {
 	test_decode();
 	test_dispatch();
 	test_http();
+	test_websocket();
 	return finish_test();
 }

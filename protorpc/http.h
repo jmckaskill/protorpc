@@ -12,33 +12,37 @@ typedef struct http http;
 typedef void(*http_on_header)(http *h, const char *key, const char *val);
 
 enum http_state {
-	// request header has not started
-	// see http_received
-	HTTP_IDLE,				
-
-	// request header has started but not finished
+	// waiting for the rest of the request headers
 	// see http_received
 	HTTP_RECEIVING_HEADERS,
 
 	// request header has been fully processed,
 	// application has not accepted the request yet
 	// see http_send_response & http_send_continue
-	HTTP_HEADERS_RECEIVED,	
+	HTTP_HEADERS_RECEIVED,
 
 	// sending the 100 continue initial response
 	// see http_sent
-	HTTP_SENDING_CONTINUE,	
+	HTTP_SENDING_CONTINUE,
 
 	// application has accepted the request,
 	// 100 continue (if applicable) has been sent,
 	// not all payload bytes have been received
 	// see http_received, http_request_data & http_consume_data
-	HTTP_RECEIVING_DATA,	
+	HTTP_RECEIVING_DATA,
 
 	// all payload bytes have been received
 	// they may still be in the receive buffer
 	// use http_send_response to proceed
-	HTTP_DATA_RECEIVED,	
+	HTTP_DATA_RECEIVED,
+
+	// all payload bytes have been received and consumed
+	// by the application, waiting for reply
+	HTTP_DATA_CONSUMED,
+
+	// actively dumping the payload because we already have decided
+	// on the response - typically an error
+	HTTP_DUMPING_DATA,
 
 	// all payload bytes have been received and removed from the receive buffer
 	// actively sending the response
@@ -47,6 +51,14 @@ enum http_state {
 	// response fully sent
 	// waiting for application to start the next request
 	HTTP_RESPONSE_SENT,
+
+	// we are in a websocket and are buffering up the next
+	// incoming message
+	HTTP_RECEIVING_WEBSOCKET,
+
+	// we've received a complete websocket message and are
+	// waiting fro the user to consume it
+	HTTP_WEBSOCKET_RECEIVED,
 };
 
 // struct http is the data structure to manage the server side of a
@@ -70,12 +82,16 @@ struct http {
 	int64_t length_remaining;
 
 	unsigned expect_continue : 1;
+	unsigned expect_websocket : 1;
+
 	unsigned connection_close : 1;
 	unsigned have_nextch : 1;
-	unsigned dump_request_data : 1;
+
+	uint8_t websocket_flags;
 
 	struct {int len; char c_str[12];} method;
 	struct {int len; char c_str[256];} path;
+	struct {int len; char c_str[128];} ws_response;
 
 	char nextch;
 	char *rxbuf;
@@ -84,6 +100,8 @@ struct http {
 
 	const char *txnext;
 	int txleft;
+
+	const char *internal_error;
 };
 
 // http_reset initializes the http struct
@@ -125,7 +143,7 @@ int http_sent(http *h, int txlen);
 // This can be called once the system has started receiving data (i.e.
 // HTTP_RECEIVING_DATA) and/or once the full payload is received (i.e.
 // HTTP_DATA_RECEIVED).
-char *http_request_data(const http *h, int *plen);
+char *http_request_data(http *h, int *plen);
 
 // http_consume_data removes request data from the receive buffer. This
 // is an optional step to free up room for more request data. It should
@@ -147,6 +165,7 @@ int http_send_response(http *h, const char *p, int len);
 // message. It should only be called in the HTTP_HEADERS_RECEIVED state.
 // Note that the 100 continue is only actually sent if the client has
 // requested it, but the method should be called irrespectively.
+// In the case of a websocket request this will initiate the websocket.
 int http_send_continue(http *h);
 
 // http_pump pumps data through BSD sockets send/recv calls
