@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -153,8 +154,9 @@ void *pb_appendv_(pb_allocator *obj, void *list, size_t add, size_t objsz);
 void *pb_decode(pb_allocator *obj, const proto_message *type, char *data, int sz);
 int pb_encoded_size(void *obj, const proto_message *type);
 int pb_encode(void *obj, const proto_message *type, char *data);
-int pb_print(const void *obj, const proto_message *type, char *buf, int sz);
 void *pb_parse(pb_allocator *obj, const proto_message *type, char *p);
+int pb_print(char *buf, int sz, const void *obj, const proto_message *type, int indent);
+int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent);
 
 const char *pb_lookup_file(const proto_dir *d, const char *path, int len, int *resplen);
 const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path, int len);
@@ -163,6 +165,7 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 static inline int pb_base64_size(int sz) {
 	return (sz * 4 + 3) / 3;
 }
+
 
 char *pb_encode_base64(char *out, const uint8_t *v, int n);
 char *pb_decode_base64(char *text, pb_bytes *v);

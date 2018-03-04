@@ -80,7 +80,7 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 	// encode the output
 	int sz;
 	if (is_text) {
-		sz = pb_print(outm, method->output, out + ret, outsz - ret);
+		sz = pb_print(out + ret, outsz - ret, outm, method->output, 0);
 	} else {
 		sz = pb_encoded_size(outm, method->output);
 		if (0 <= sz && sz < (outsz - ret)) {

@@ -1,4 +1,5 @@
 #include "common.h"
+#include <protorpc/char-array.h>
 #include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
@@ -11,14 +12,9 @@ struct print_stack {
 	char *next_msg;
 };
 
-struct out {
-	char *next;
-	char *end;
-};
-
-static void print_key(struct out *out, pb_string key, int indent) {
+static void print_key(pb_allocator *out, pb_string key, int indent) {
 	char *keyend = out->next + /*\n*/ 1 + indent + 1 /*"*/ + key.len + 3 /*": */;
-	if (keyend > out->end) {
+	if (keyend >= out->end) {
 		out->end = out->next;
 	} else {
 		*(out->next++) = '\n';
@@ -35,9 +31,9 @@ static void print_key(struct out *out, pb_string key, int indent) {
 	}
 }
 
-static void print_text(struct out *out, const char *text, int sz) {
+static void print_text(pb_allocator *out, const char *text, int sz) {
 	char *end = out->next + sz;
-	if (end > out->end) {
+	if (end >= out->end) {
 		out->end = out->next;
 	} else {
 		memcpy(out->next, text, sz);
@@ -45,31 +41,39 @@ static void print_text(struct out *out, const char *text, int sz) {
 	}
 }
 
-static void print_u32(struct out *out, unsigned val) {
+static void print_bool(pb_allocator *out, bool val) {
+	if (val) {
+		print_text(out, "true,", 5);
+	} else {
+		print_text(out, "false,", 6);
+	}
+}
+
+static void print_u32(pb_allocator *out, unsigned val) {
 	char buf[32];
 	int len = sprintf(buf, "%u,", val);
 	print_text(out, buf, len);
 }
 
-static void print_i32(struct out *out, int val) {
+static void print_i32(pb_allocator *out, int val) {
 	char buf[32];
 	int len = sprintf(buf, "%d,", val);
 	print_text(out, buf, len);
 }
 
-static void print_u64(struct out *out, uint64_t val) {
+static void print_u64(pb_allocator *out, uint64_t val) {
 	char buf[32];
 	int len = sprintf(buf, "\"%" PRIu64 "\",", val);
 	print_text(out, buf, len);
 }
 
-static void print_i64(struct out *out, int64_t val) {
+static void print_i64(pb_allocator *out, int64_t val) {
 	char buf[32];
 	int len = sprintf(buf, "\"%" PRId64 "\",", val);
 	print_text(out, buf, len);
 }
 
-static void print_float(struct out *out, float val) {
+static void print_float(pb_allocator *out, float val) {
 	if (val != val) {
 		print_text(out, "\"NaN\",", 6);
 	} else {
@@ -79,7 +83,7 @@ static void print_float(struct out *out, float val) {
 	}
 }
 
-static void print_double(struct out *out, double val) {
+static void print_double(pb_allocator *out, double val) {
 	if (val != val) {
 		print_text(out, "\"NaN\",", 6);
 	} else {
@@ -89,11 +93,11 @@ static void print_double(struct out *out, double val) {
 	}
 }
 
-static void print_enum(struct out *o, int value, const struct proto_enum *en) {
+static void print_enum(pb_allocator *o, int value, const struct proto_enum *en) {
 	for (size_t i = 0; i < en->num_values; i++) {
 		const struct proto_enum_value *v = &en->values[i];
 		if (v->number == value) {
-			if (o->next + 1 + v->name.len + 2 > o->end) {
+			if (o->next + 1 + v->name.len + 2 >= o->end) {
 				o->end = o->next;
 				return;
 			}
@@ -132,8 +136,8 @@ static const char escapechar[] =
 "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0"
 "\0\0\0\0\0\0\0\0"  "\0\0\0\0\0\0\0\0";
 
-static void print_string(struct out *o, pb_string v) {
-	if (o->next + 1 /*"*/ + v.len + 2 /*",*/ > o->end) {
+static void print_string(pb_allocator *o, pb_string v) {
+	if (o->next + 1 /*"*/ + v.len + 2 /*",*/ >= o->end) {
 		goto err;
 	}
 	char *p = o->next;
@@ -191,9 +195,9 @@ char *pb_encode_base64(char *p, const uint8_t *v, int n) {
 	return p;
 }
 
-static void print_bytes(struct out *o, pb_bytes v) {
+static void print_bytes(pb_allocator *o, pb_bytes v) {
 	char *p = o->next;
-	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ > o->end) {
+	if (p + 1 /*"*/ + pb_base64_size(v.len) + 2 /*",*/ >= o->end) {
 		o->end = o->next;
 		return;
 	}
@@ -204,13 +208,13 @@ static void print_bytes(struct out *o, pb_bytes v) {
 	o->next = p;
 }
 
-static void start_array(struct out *o, pb_string json_name, int indent) {
+static void start_array(pb_allocator *o, pb_string json_name, int indent) {
 	print_key(o, json_name, indent);
 	print_text(o, "[", 1);
 }
 
-static void print_indent(struct out *o, int indent) {
-	if (o->next + 1 /*\n*/ + indent > o->end) {
+static void print_indent(pb_allocator *o, int indent) {
+	if (o->next + 1 /*\n*/ + indent >= o->end) {
 		o->end = o->next;
 		return;
 	}
@@ -221,9 +225,9 @@ static void print_indent(struct out *o, int indent) {
 	}
 }
 
-static void finish_array(struct out *o, int indent) {
+static void finish_array(pb_allocator *o, int indent) {
 	// now add \n<indent>],
-	if (o->next - 1 /*,*/ + 1 /*\n*/ + indent + 2 /*],*/ > o->end) {
+	if (o->next - 1 /*,*/ + 1 /*\n*/ + indent + 2 /*],*/ >= o->end) {
 		o->end = o->next;
 		return;
 	}
@@ -237,19 +241,19 @@ static void finish_array(struct out *o, int indent) {
 	*(o->next++) = ',';
 }
 
-int pb_print(const void *obj, const struct proto_message *type, char *buf, int sz) {
+int pb_print(char *buf, int sz, const void *obj, const struct proto_message *type, int indent) {
 	int depth = 0;
 	struct print_stack stack[MAX_DEPTH];
 	const struct proto_field *f = type->fields;
 	const struct proto_field *end = f + type->num_fields;
 	char *msg = (char*)obj;
 	char *next_msg = NULL;
-	struct out out;
+	pb_allocator out;
 	out.next = buf;
 	out.end = buf + sz;
 
 	print_text(&out, "{", 1);
-	int indent = 1;
+	indent++;
 
 	for (;;) {
 		while (f < end) {
@@ -363,11 +367,7 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 					start_array(&out, f->json_name, indent++);
 					for (int i = 0; i < list->len; i++) {
 						print_indent(&out, indent);
-						if (list->v[i]) {
-							print_text(&out, "true,", 5);
-						} else {
-							print_text(&out, "false,", 6);
-						}
+						print_bool(&out, list->v[i]);
 					}
 					finish_array(&out, --indent);
 				}
@@ -502,7 +502,6 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 				print_text(&out, "{", 1);
 
 				if (++depth == MAX_DEPTH) {
-					*out.next = 0;
 					return -1;
 				}
 
@@ -563,7 +562,6 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 					stack[depth].next_msg = next_msg;
 
 					if (++depth == MAX_DEPTH) {
-						*out.next = 0;
 						return -1;
 					}
 
@@ -578,17 +576,15 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 
 		if (!depth) {
 			if (out.next == out.end) {
-				*out.next = 0;
 				return -1;
 			}
 			if (out.next[-1] == ',') {
 				// non-empty message
 				out.next--;
-				print_text(&out, "\n}\n", 3);
-			} else {
-				// empty message "{}"
-				print_text(&out, "}\n", 2);
+				print_indent(&out, --indent);
+				// otherwise empty "{}\n"
 			}
+			print_text(&out, "}\n", 2);
 			*out.next = '\0';
 			return out.next - buf;
 		}
@@ -636,4 +632,86 @@ int pb_print(const void *obj, const struct proto_message *type, char *buf, int s
 		f++;
 	}
 }
+
+int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent) {
+	pb_allocator o;
+	o.next = buf;
+	o.end = buf + sz;
+
+	while (*fmt) {
+		const char *bar = strchr(fmt, '|');
+		const char *next = bar ? (bar + 1) : (fmt + strlen(fmt));
+		if (!bar) {
+			bar = next;
+		}
+		const char *colon = (const char*) memchr(fmt, ':', bar - fmt);
+		if (!colon) {
+			return -1;
+		}
+
+		pb_string key = {colon - fmt, fmt};
+		pb_string type = {bar - colon - 1, colon + 1};
+		fmt = next;
+
+		print_key(&o, key, indent);
+
+		if (str_test(type, "%p%p")) {
+			// protobuf type
+			const proto_message *type = va_arg(ap, const proto_message*);
+			const void *obj = va_arg(ap, const void*);
+			int r = pb_print(o.next, o.end - o.next, obj, type, indent);
+			if (r < 0) {
+				return -1;
+			}
+			o.next += r;
+
+		} else if (str_test(type, "%.*s")) {
+			int len = va_arg(ap, int);
+			const char *cstr = va_arg(ap, const char*);
+			pb_string str = {len, cstr};
+			print_string(&o, str);
+
+		} else if (str_test(type, "%s")) {
+			const char *cstr = va_arg(ap, const char*);
+			int len = (int) strlen(cstr);
+			pb_string str = {len, cstr};
+			print_string(&o, str);
+
+		} else if (str_test(type, "%d")) {
+			int val = va_arg(ap, int);
+			print_i32(&o, val);
+
+		} else if (str_test(type, "%u")) {
+			unsigned val = va_arg(ap, unsigned);
+			print_u32(&o, val);
+
+		} else if (str_test(type, "%"PRIu64)) {
+			uint64_t val = va_arg(ap, uint64_t);
+			print_u64(&o, val);
+		
+		} else if (str_test(type, "%"PRId64)) {
+			int64_t val = va_arg(ap, int64_t);
+			print_i64(&o, val);
+
+		} else if (str_test(type, "%g")) {
+			double val = va_arg(ap, double);
+			print_double(&o, val);
+
+		} else if (str_test(type, "%c")) {
+			int val = va_arg(ap, int);
+			print_bool(&o, val != 0);
+
+		} else {
+			return -1;
+		}
+	}
+
+	if (o.next == o.end) {
+		return -1;
+	}
+	*o.next = 0;
+	return o.next - buf;
+}
+
+
 

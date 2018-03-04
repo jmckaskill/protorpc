@@ -2,6 +2,7 @@
 #include "protorpc/flag.h"
 #include "protorpc/str.h"
 #include "protorpc/log.h"
+#include "protorpc/protorpc.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -18,7 +19,7 @@
 #endif
 
 static const char *output_fn;
-static str_t log_text = STR_INIT;
+static str_t slog = STR_INIT;
 static int error_count;
 static const char *test_name;
 
@@ -66,23 +67,38 @@ static float calc_time_span_ms() {
 #endif
 }
 
-static int do_log(log_t *log, const char *fmt, ...) {
+static int do_log(log_t *l, const char *fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
-	int sz = log_text.len;
-	int ret = str_vaddf(&log_text, fmt, ap);
-	if (!str_ends_with(log_text, "\n")) {
-		str_addch(&log_text, '\n');
+	int sz = slog.len;
+
+	const char *bar = strchr(fmt, '|');
+	str_addf(&slog, "{\n\t\"msg\": \"%.*s\",", (int)(bar-fmt), fmt);
+
+	if (bar) {
+		str_grow(&slog, slog.len + 256);
+		int ret = pb_vprint(slog.c_str + slog.len, slog.cap - slog.len, bar+1, ap, 1);
+		if (ret > 0) {
+			str_setlen(&slog, slog.len + ret);
+		}
 	}
+
+	if (str_ends_with(slog, ",")) {
+		slog.len--;
+	}
+	str_add(&slog, "\n}\n");
+
 #ifdef _WIN32
 	if (IsDebuggerPresent()) {
-		OutputDebugStringA(log_text.c_str + sz);
+		OutputDebugStringA(slog.c_str + sz);
 	}
 #endif
+
 	if (error_count) {
-		fwrite(log_text.c_str + sz, 1, log_text.len - sz, stderr);
+		fwrite(slog.c_str + sz, 1, slog.len - sz, stderr);
 	}
-	return ret;
+
+	return slog.len - sz;
 }
 
 static log_t test_logger = {
@@ -130,29 +146,29 @@ log_t *start_test(int *argc, char *argv[], int timeout_ms) {
 	pthread_detach(thr);
 #endif
 	record_start_time();
-	str_clear(&log_text);
+	str_clear(&slog);
 	return &test_logger;
 }
 
 int finish_test() {
 	float span = calc_time_span_ms();
-	LOG(&test_logger, "finished %s in %f ms\n", test_name, span);
+	LOG(&test_logger, "finished|test:%s|timeMillis:%f", test_name, span);
 	if (output_fn) {
 		FILE *f = fopen(output_fn, "wb");
 		if (f) {
-			fwrite(log_text.c_str, 1, log_text.len, f);
+			fwrite(slog.c_str, 1, slog.len, f);
 			fclose(f);
 		}
 	}
 	if (!output_fn && !error_count) {
-		fwrite(log_text.c_str, 1, log_text.len, stderr);
+		fwrite(slog.c_str, 1, slog.len, stderr);
 	}
 	return error_count;
 }
 
 static int do_test_failed(const char *file, int line, const char *msg) {
 	if (!error_count) {
-		fwrite(log_text.c_str, 1, log_text.len, stderr);
+		fwrite(slog.c_str, 1, slog.len, stderr);
 	}
 	error_count++;
 	fprintf(stderr, "%s(%d,1): error: %s", file, line, msg);

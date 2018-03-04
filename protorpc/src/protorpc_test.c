@@ -466,7 +466,7 @@ static void test_print() {
 	setup_message(&m);
 
 	char buf[4096];
-	int sz = pb_print(&m, &proto_TestMessage, buf, sizeof(buf));
+	int sz = pb_print(buf, sizeof(buf), &m, &proto_TestMessage, 0);
 	EXPECT_EQ(strlen(test_json), sz);
 	EXPECT_STREQ(test_json, buf);
 }
@@ -482,6 +482,38 @@ static void test_encode_base64() {
 
 	EXPECT_PTREQ(buf + 4, pb_encode_base64(buf, (uint8_t*) "abc", 3));
 	EXPECT_STREQ("YWJj", buf);
+}
+
+#ifdef __GNUC__
+	__attribute__((format(printf, 1, 2)))
+#endif
+const char *do_vprint(const char *fmt, ...) {
+	static struct {int len; char c_str[128];} s;
+	va_list ap;
+	va_start(ap, fmt);
+	ca_set(&s, "{");
+	int sz = pb_vprint(s.c_str + s.len, sizeof(s.c_str) - s.len, fmt, ap, 1);
+	ca_setlen(&s, s.len + sz);
+	if (str_ends_with(s, ",")) {
+		s.len--;
+	}
+	ca_add(&s, "}\n");
+	return s.c_str;
+}
+
+static void test_vprint() {
+	TestPod pod = {0};
+	pod.foo_type = TESTPOD_U;
+	pod.foo.u = 3;
+
+	EXPECT_STREQ("{\n"
+		"\t\"foo\": 3.4,\n"
+		"\t\"bar\": 13,\n"
+		"\t\"pod\": {\n"
+		"\t\t\"u\": 3\n"
+		"\t}\n"
+		"}\n",
+		do_vprint("foo:%g|bar:%d|pod:%p%p", 3.4, 13, &proto_TestPod, &pod));
 }
 
 static void test_parse() {
@@ -840,10 +872,12 @@ static void test_http() {
 	EXPECT_EQ(0, len);
 }
 
+
 int main(int argc, char *argv[]) {
 	start_test(&argc, argv, 10);
 	test_print();
 	test_encode_base64();
+	test_vprint();
 	test_parse();
 	test_decode_base64();
 	test_encode();

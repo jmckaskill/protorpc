@@ -12,7 +12,7 @@ build $obj/protorpc/service.o: cc $SRC/protorpc/src/service.c
 build $obj/protorpc/http.o: cc $SRC/protorpc/src/http.c
 build $obj/protorpc/http-sockets.o: cc $SRC/protorpc/src/http-sockets.c
 build $obj/protorpc/flag.o: cc $SRC/protorpc/src/flag.c
-build $obj/protorpc/test2.o: cc $SRC/protorpc/src/test.c
+build $obj/protorpc/test.o: cc $SRC/protorpc/src/test.c
 build $obj/protorpc.lib: lib $
  $obj/protorpc/decode.o $
  $obj/protorpc/encode.o $
@@ -25,7 +25,7 @@ build $obj/protorpc.lib: lib $
  $obj/protorpc/http.o $
  $obj/protorpc/http-sockets.o $
  $obj/protorpc/flag.o $
- $obj/protorpc/test2.o $
+ $obj/protorpc/test.o $
 
 build $obj/protorpc/test.proto.o: cc $SRC/protorpc/src/test.proto.c
 build $obj/protorpc/protorpc_test.o: cc $SRC/protorpc/src/protorpc_test.c || $SRC/protorpc/src/test.proto.h
