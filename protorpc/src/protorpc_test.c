@@ -586,7 +586,7 @@ static void test_decode() {
 	free(buf);
 }
 
-static int test_rpc1(TestService *s, http *h, const TestMessage *in, TestPod *out) {
+static int test_rpc1(TestService *s, http *h, TestMessage *in, TestPod *out) {
 	check_message(in);
 	setup_pod(out);
 	return 201;
@@ -941,13 +941,6 @@ static void test_websocket() {
 		0x8A, // pong && fin
 		0x04, // !mask && length == 4
 		9, 8, 7, 6,
-	};
-	static unsigned char large_ws[] = {
-		0x81, // text && fin
-		0xFE, // mask && 2 byte length extension
-		0x01, 0x02, // length 0x102 = 258
-		1, 2, 3, 4, // mask
-		1^1, 2^2, 3^3, 4^4,
 	};
 
 	http h;

@@ -13,7 +13,6 @@
 #include <windows.h>
 #include <crtdbg.h>
 #else
-#include <pthread.h>
 #include <unistd.h>
 #include <time.h>
 #endif
@@ -139,9 +138,7 @@ log_t *start_test(int *argc, char *argv[]) {
 	if (output_fn) {
 		unlink(output_fn);
 	}
-	pthread_t thr;
-	pthread_create(&thr, NULL, &timeout_thread, (void*)(uintptr_t)timeout_ms);
-	pthread_detach(thr);
+	alarm(1);
 #endif
 	record_start_time();
 	str_clear(&slog);
