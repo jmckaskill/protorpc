@@ -227,7 +227,7 @@ static int process_headers(http *h, slice *data) {
 			}
 
 		} else if (str_itest(key, "sec-websocket-key")) {
-			static const char resp[] = "HTTP/1.1 101 \r\nUpgrade:websocket\r\nConnection:upgrade\r\nSec-WebSocket-Accept:";
+			static const char resp[] = "HTTP/1.1 101 \r\nUpgrade:websocket\r\nConnection:Upgrade\r\nSec-WebSocket-Accept:";
 			static const char guid[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 			unsigned char sha1[20];
 			SHA1_CTX ctx;
@@ -237,12 +237,17 @@ static int process_headers(http *h, slice *data) {
 			SHA1Final(sha1, &ctx);
 			ca_set(&h->ws_response, resp);
 			pb_encode_base64(h->ws_response.c_str + strlen(resp), sha1, sizeof(sha1));
-			ca_setlen(&h->ws_response, strlen(resp) + 28);
+			ca_setlen(&h->ws_response, strlen(resp) + pb_base64_size(sizeof(sha1)));
 			ca_add(&h->ws_response, "=\r\n\r\n");
 			h->websocket_flags |= HAVE_WS_KEY;
 
-		} else if (str_itest(key, "sec-websocket-version") && str_test(value, "13")) {
-			h->websocket_flags |= HAVE_WS_VERSION;
+		} else if (str_itest(key, "sec-websocket-version")) {
+			while (value.len) {
+				slice token = next_token(&value);
+				if (str_test(token, "13")) {
+					h->websocket_flags |= HAVE_WS_VERSION;
+				}
+			}
 		}
 
 		if (h->on_header) {
@@ -298,6 +303,8 @@ static int process_websocket(http *h) {
 			pdata[i] ^= pmask[i&3];
 		}
 
+		uint8_t fin = p[0] & WS_FIN;
+
 		// decide what to do with the message
 		switch (p[0]) {
 		case WS_TEXT:
@@ -306,10 +313,11 @@ static int process_websocket(http *h) {
 		case WS_CONTINUATION | WS_FIN:
 		case WS_TEXT | WS_FIN:
 		case WS_BINARY | WS_FIN:
-			memmove(h->rxbuf + h->content_length, p, h->rxused - h->content_length - hlen);
+			// remove the header buffering the message at the beginning of the message
 			h->rxused -= hlen;
+			memmove(h->rxbuf + h->content_length, pdata, h->rxused - (int)h->content_length);
 			h->content_length += len;
-			if (!(p[0] & WS_FIN)) {
+			if (!fin) {
 				continue;
 			}
 			h->length_remaining = h->content_length;
@@ -324,6 +332,9 @@ static int process_websocket(http *h) {
 				ca_add2(&h->ws_response, (char*)pdata, len);
 				http_send_response(h, h->ws_response.c_str, h->ws_response.len);
 			}
+			// remove the data
+			h->rxused -= len + hlen;
+			memmove(h->rxbuf + h->content_length, pdata + len, h->rxused - (int)h->content_length);
 			continue;
 
 		case WS_PONG | WS_FIN:
@@ -332,7 +343,8 @@ static int process_websocket(http *h) {
 				return -1;
 			}
 			// ignore
-			memmove(h->rxbuf, pdata + len, h->rxused - len - hlen);
+			h->rxused -= len + hlen;
+			memmove(h->rxbuf + h->content_length, pdata + len, h->rxused - (int)h->content_length);
 			continue;
 
 		default:
@@ -373,10 +385,6 @@ static int process_request(http *h) {
 	switch (h->state) {
 	case HTTP_RECEIVING_HEADERS:
 		if (!h->method.len) {
-			if (h->rxused) {
-				h->state = HTTP_RECEIVING_HEADERS;
-			}
-
 			switch (process_path(h, &data)) {
 			case ERROR:
 				return -1;
@@ -406,7 +414,7 @@ static int process_request(http *h) {
 			http_send_response(h, h->internal_error, strlen(h->internal_error));
 			h->internal_error = NULL;
 
-		} else if (h->content_length >= 0) {
+		} else if (h->content_length > 0) {
 			// normal post with data
 			h->length_remaining = h->content_length;
 
@@ -586,7 +594,7 @@ int http_send_continue(http *h) {
 		h->txleft = h->ws_response.len;
 		h->txnext = h->ws_response.c_str;
 		h->state = HTTP_RECEIVING_WEBSOCKET;
-		h->content_length = -1;
+		h->content_length = 0;
 		h->expect_websocket = 0;
 		return 0;
 	} else if (h->expect_continue) {

@@ -873,28 +873,146 @@ static void test_http() {
 }
 
 static void test_websocket() {
+	// use example nonce from RFC
+	static const char request[] = "GET /stream HTTP/1.1\r\n"
+		"Host:localhost\r\n"
+		"Upgrade:Websocket\r\n"
+		"Connection:Upgrade\r\n"
+		"Sec-Websocket-Key:dGhlIHNhbXBsZSBub25jZQ==\r\n"
+		"Sec-Websocket-Version:13\r\n"
+		"\r\n";
+	static const char deny[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\r\n";
+	static const char accept[] = "HTTP/1.1 101 \r\n"
+		"Upgrade:websocket\r\n"
+		"Connection:Upgrade\r\n"
+		"Sec-WebSocket-Accept:s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
+		"\r\n";
+
+	static const char recv_msg[] = "hello world";
+	static unsigned char recv_ws[] = {
+		0x81, // text & fin
+		0x8B, // mask & length = 11
+		1, 2, 3, 4, // mask
+		'h' ^ 1, 'e' ^ 2, 'l' ^ 3, 'l' ^ 4,
+		'o' ^ 1, ' ' ^ 2, 'w' ^ 3, 'o' ^ 4,
+		'r' ^ 1, 'l' ^ 2, 'd' ^ 3,
+	};
+	static const char fragment[] = "fragment";
+	static unsigned char frag1_ws[] = {
+		0x01, // text & !fin
+		0x83, // mask & length = 3
+		4, 5, 6, 7, // mask
+		'f' ^ 4, 'r' ^ 5, 'a' ^ 6,
+	};
+	static unsigned char frag2_ws[] = {
+		0x00, // continuation && !fin
+		0x84, // mask & length = 4
+		8, 9, 10, 11, // mask
+		'g' ^ 8, 'm' ^ 9, 'e' ^ 10, 'n' ^ 11,
+	};
+	static unsigned char frag3_ws[] = {
+		0x80, // continuation && fin
+		0x81, // mask & length = 1
+		12, 13, 14, 15, // mask
+		't' ^ 12,
+	};
+	static unsigned char ping_ws[] = {
+		0x89, // ping && fin
+		0x84, // mask && length == 4
+		1, 2, 3, 4, // mask
+		9 ^ 1, 8 ^ 2, 7 ^ 3, 6 ^ 4, // ping data
+	};
+	static unsigned char client_pong_ws[] = {
+		0x8A, // pong && fin
+		0x84, // mask && length == 4
+		1, 2, 3, 4, // mask
+		10 ^ 1, 8 ^ 2, 7 ^ 3, 6 ^ 4, // ping data
+	};
+	static unsigned char pong_ws[] = {
+		0x8A, // pong && fin
+		0x04, // !mask && length == 4
+		9, 8, 7, 6,
+	};
+
 	http h;
 	char rxbuf[4096];
 	http_reset(&h, rxbuf, sizeof(rxbuf), NULL);
 
+	// first deny the websocket request
 	int len;
 	char *rx = http_recv_buffer(&h, &len);
-	// use example nonce from RFC
-	len = sprintf(rx, "GET /stream HTTP/1.1\r\n"
-		"Host:localhost\r\n"
-		"Upgrade:Websocket\r\n"
-		"Connection:Upgrade\r\n"
-		"Sec-Websocket-Key:AQIDBAUGBwgJCgsMDQ4PEC==\r\n"
-		"Sec-Websocket-Version:13\r\n"
-		"\r\n");
+	strcpy(rx, request);
 	EXPECT_EQ(HTTP_RECEIVING_HEADERS, h.state);
-	EXPECT_EQ(0, http_received(&h, len));
+	EXPECT_EQ(0, http_received(&h, strlen(request)));
 	EXPECT_EQ(HTTP_HEADERS_RECEIVED, h.state);
 	EXPECT_EQ(1, h.expect_websocket);
+
+	EXPECT_EQ(0, http_send_response(&h, deny, strlen(deny)));
+	EXPECT_EQ(0, h.expect_websocket);
+	EXPECT_EQ(HTTP_SENDING_RESPONSE, h.state);
+	EXPECT_PTREQ(deny, http_send_buffer(&h, &len));
+	EXPECT_EQ(strlen(deny), len);
+	EXPECT_EQ(0, http_sent(&h, len));
+	EXPECT_EQ(0, http_next_request(&h));
+
+	// now accept the websocket request
+	rx = http_recv_buffer(&h, &len);
+	strcpy(rx, request);
+	EXPECT_EQ(HTTP_RECEIVING_HEADERS, h.state);
+	EXPECT_EQ(0, http_received(&h, strlen(request)));
+	EXPECT_EQ(HTTP_HEADERS_RECEIVED, h.state);
+
+	EXPECT_EQ(0, http_send_continue(&h));
+	EXPECT_STREQ(accept, http_send_buffer(&h, &len));
+	EXPECT_EQ(strlen(accept), len);
+	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
+	EXPECT_EQ(0, http_sent(&h, len));
+
+	// process an incoming message
+	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
+	rx = http_recv_buffer(&h, &len);
+	memcpy(rx, recv_ws, sizeof(recv_ws));
+	EXPECT_EQ(0, http_received(&h, sizeof(recv_ws)));
+	EXPECT_EQ(h.state, HTTP_WEBSOCKET_RECEIVED);
+	rx = http_request_data(&h, &len);
+	EXPECT_BYTES_EQ(recv_msg, strlen(recv_msg), rx, len);
+	EXPECT_EQ(0, http_consume_data(&h, len));
+	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
+
+	// process a fragmented message
+	rx = http_recv_buffer(&h, &len);
+	memcpy(rx, frag1_ws, sizeof(frag1_ws));
+	memcpy(rx + sizeof(frag1_ws), frag2_ws, sizeof(frag2_ws));
+	EXPECT_EQ(0, http_received(&h, sizeof(frag1_ws) + sizeof(frag2_ws)));
+	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
+	rx = http_recv_buffer(&h, &len);
+	memcpy(rx, frag3_ws, sizeof(frag3_ws));
+	EXPECT_EQ(0, http_received(&h, sizeof(frag3_ws)));
+	EXPECT_EQ(h.state, HTTP_WEBSOCKET_RECEIVED);
+	rx = http_request_data(&h, &len);
+	EXPECT_BYTES_EQ(fragment, strlen(fragment), rx, len);
+	EXPECT_EQ(0, http_consume_data(&h, len));
+
+	// process and respond to a ping
+	rx = http_recv_buffer(&h, &len);
+	memcpy(rx, ping_ws, sizeof(ping_ws));
+	EXPECT_EQ(0, http_received(&h, sizeof(ping_ws)));
+	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
+	const char *tx = http_send_buffer(&h, &len);
+	EXPECT_BYTES_EQ(pong_ws, sizeof(pong_ws), tx, len);
+	EXPECT_EQ(0, http_sent(&h, len));
+
+	// ignore incoming pongs
+	rx = http_recv_buffer(&h, &len);
+	memcpy(rx, client_pong_ws, sizeof(client_pong_ws));
+	EXPECT_EQ(0, http_received(&h, sizeof(client_pong_ws)));
+	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
+	http_send_buffer(&h, &len);
+	EXPECT_EQ(0, len);
 }
 
 int main(int argc, char *argv[]) {
-	start_test(&argc, argv, 10);
+	start_test(&argc, argv);
 	test_print();
 	test_encode_base64();
 	test_vprint();

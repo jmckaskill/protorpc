@@ -23,6 +23,7 @@
     <ClCompile Include="src\protorpc_test.c" />
     <ClCompile Include="src\ptr-vector.c" />
     <ClCompile Include="src\service.c" />
+    <ClCompile Include="src\sha1.c" />
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\str_test.c" />
     <ClCompile Include="src\test.c" />
@@ -38,6 +39,7 @@
     <ClInclude Include="protorpc.h" />
     <ClInclude Include="ptr-array.h" />
     <ClInclude Include="ptr-vector.h" />
+    <ClInclude Include="sha1.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\test.proto.h" />
     <ClInclude Include="str.h" />

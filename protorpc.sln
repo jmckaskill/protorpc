@@ -9,7 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "_GENERATE_VCXPROJ", "_GENER
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib - protorpc", "protorpc\protorpc.vcxproj", "{050DDF54-1308-58A9-AB43-CF3C23C14F47}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test - protorpc", "protorpc_test.vcxproj", "{69AD12A5-59BD-5F3C-A5AA-7AFDA9098FC7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test - protorpc", "test_protorpc.vcxproj", "{719A914E-A620-52CF-83FD-504BB165A7BA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test - str", "test_str.vcxproj", "{E2DAA550-9C2D-5AD0-B766-43EF9AAC47CD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bin - protoc-gen-protorpc", "protoc\protoc-gen-protorpc.vcxproj", "{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}"
 EndProject
@@ -29,8 +31,10 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{050DDF54-1308-58A9-AB43-CF3C23C14F47}.Debug|ALL.ActiveCfg = Debug|Win32
 		{050DDF54-1308-58A9-AB43-CF3C23C14F47}.Release|ALL.ActiveCfg = Release|Win32
-		{69AD12A5-59BD-5F3C-A5AA-7AFDA9098FC7}.Debug|ALL.ActiveCfg = Debug|Win32
-		{69AD12A5-59BD-5F3C-A5AA-7AFDA9098FC7}.Release|ALL.ActiveCfg = Release|Win32
+		{719A914E-A620-52CF-83FD-504BB165A7BA}.Debug|ALL.ActiveCfg = Debug|Win32
+		{719A914E-A620-52CF-83FD-504BB165A7BA}.Release|ALL.ActiveCfg = Release|Win32
+		{E2DAA550-9C2D-5AD0-B766-43EF9AAC47CD}.Debug|ALL.ActiveCfg = Debug|Win32
+		{E2DAA550-9C2D-5AD0-B766-43EF9AAC47CD}.Release|ALL.ActiveCfg = Release|Win32
 		{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}.Debug|ALL.ActiveCfg = Debug|Win32
 		{68F53FF6-D3E2-5A43-848B-9DD3E6282E2D}.Release|ALL.ActiveCfg = Release|Win32
 		{3FD9C97E-4EB8-51F5-BAF8-7D079F0BFED4}.Debug|ALL.ActiveCfg = Debug|Win32

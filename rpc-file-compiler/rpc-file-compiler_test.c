@@ -13,13 +13,13 @@ static const char test_js_header[] =
 "Cache-Control:max-age=31536000\r\n"
 "\r\n";
 
-static const char test_js_data[] = 
+static const char test_js_data[] =
 	"{\n"
 	"    \"foo\": \"bar\"\n"
 	"}\n";
 
 int main(int argc, char *argv[]) {
-	start_test(&argc, argv, 10);
+	start_test(&argc, argv);
 
 	int respsz;
 	const char *path = "/test.4CDDE84B7A.js";

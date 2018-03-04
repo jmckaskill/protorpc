@@ -26,8 +26,13 @@
         },
         {
             "Name": "test - protorpc",
-            "File": "protorpc_test.vcxproj",
+            "File": "test_protorpc.vcxproj",
             "Target": "bin/{TGT}/test_protorpc.exe"
+        },
+        {
+            "Name": "test - str",
+            "File": "test_str.vcxproj",
+            "Target": "bin/{TGT}/test_str.exe"
         },
         {
             "Name": "bin - protoc-gen-protorpc",

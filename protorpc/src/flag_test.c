@@ -10,7 +10,7 @@ static int my_exit(int code, const char *msg) {
 }
 
 int main(int argc, char *argv[]) {
-	start_test(&argc, argv, 10);
+	start_test(&argc, argv);
 
 	bool b = false;
 	int i = 34;
