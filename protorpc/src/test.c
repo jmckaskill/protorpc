@@ -152,7 +152,7 @@ log_t *start_test(int *argc, char *argv[], int timeout_ms) {
 
 int finish_test() {
 	float span = calc_time_span_ms();
-	LOG(&test_logger, "finished|test:%s|timeMillis:%f", test_name, span);
+	LOG(&test_logger, "test finished|test:%s|timeMillis:%g", test_name, span);
 	if (output_fn) {
 		FILE *f = fopen(output_fn, "wb");
 		if (f) {

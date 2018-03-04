@@ -536,7 +536,7 @@ int pb_print(char *buf, int sz, const void *obj, const struct proto_message *typ
 				}
 				break;
 			}
-			next_message_in_list: 
+			next_message_in_list:
 				{
 					print_indent(&out, indent++);
 					print_text(&out, "{", 1);
@@ -657,9 +657,9 @@ int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent) {
 
 		if (str_test(type, "%p%p")) {
 			// protobuf type
-			const proto_message *type = va_arg(ap, const proto_message*);
+			const proto_message *ct = va_arg(ap, const proto_message*);
 			const void *obj = va_arg(ap, const void*);
-			int r = pb_print(o.next, o.end - o.next, obj, type, indent);
+			int r = pb_print(o.next, o.end - o.next, obj, ct, indent);
 			if (r < 0) {
 				return -1;
 			}
@@ -688,7 +688,7 @@ int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent) {
 		} else if (str_test(type, "%"PRIu64)) {
 			uint64_t val = va_arg(ap, uint64_t);
 			print_u64(&o, val);
-		
+
 		} else if (str_test(type, "%"PRId64)) {
 			int64_t val = va_arg(ap, int64_t);
 			print_i64(&o, val);
