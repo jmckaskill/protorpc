@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 
 struct print_stack {
 	const struct proto_field *next_field;
@@ -13,21 +14,25 @@ struct print_stack {
 };
 
 static void print_key(pb_allocator *out, pb_string key, int indent) {
-	char *keyend = out->next + /*\n*/ 1 + indent + 1 /*"*/ + key.len + 3 /*": */;
+	char *keyend = out->next + /*\n*/ 1 + (indent < 0 ? -1 : indent) + 1 /*"*/ + key.len + 3 /*": */;
 	if (keyend >= out->end) {
 		out->end = out->next;
 	} else {
-		*(out->next++) = '\n';
-		while (indent) {
-			*(out->next++) = '\t';
-			indent--;
+		if (indent >= 0) {
+			*(out->next++) = '\n';
+			while (indent) {
+				*(out->next++) = '\t';
+				indent--;
+			}
 		}
 		*(out->next++) = '"';
 		memcpy(out->next, key.c_str, key.len);
 		out->next += key.len;
 		*(out->next++) = '"';
 		*(out->next++) = ':';
-		*(out->next++) = ' ';
+		if (indent >= 0) {
+			*(out->next++) = ' ';
+		}
 	}
 }
 
@@ -214,14 +219,16 @@ static void start_array(pb_allocator *o, pb_string json_name, int indent) {
 }
 
 static void print_indent(pb_allocator *o, int indent) {
-	if (o->next + 1 /*\n*/ + indent >= o->end) {
-		o->end = o->next;
-		return;
-	}
-	*(o->next++) = '\n';
-	while (indent) {
-		*(o->next++) = '\t';
-		indent--;
+	if (indent >= 0) {
+		if (o->next + 1 /*\n*/ + indent >= o->end) {
+			o->end = o->next;
+			return;
+		}
+		*(o->next++) = '\n';
+		while (indent) {
+			*(o->next++) = '\t';
+			indent--;
+		}
 	}
 }
 
@@ -253,7 +260,11 @@ int pb_print(char *buf, int sz, const void *obj, const struct proto_message *typ
 	out.end = buf + sz;
 
 	print_text(&out, "{", 1);
-	indent++;
+	if (indent >= 0) {
+		indent++;
+	} else {
+		indent = INT_MIN;
+	}
 
 	for (;;) {
 		while (f < end) {
@@ -664,6 +675,7 @@ int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent) {
 				return -1;
 			}
 			o.next += r;
+			o.next[-1] = ','; // replace trailing \n with a comma
 
 		} else if (str_test(type, "%.*s")) {
 			int len = va_arg(ap, int);
@@ -702,7 +714,7 @@ int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent) {
 			print_bool(&o, val != 0);
 
 		} else {
-			return -1;
+			print_string(&o, type);
 		}
 	}
 

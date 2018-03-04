@@ -73,20 +73,21 @@ static int do_log(log_t *l, const char *fmt, ...) {
 	int sz = slog.len;
 
 	const char *bar = strchr(fmt, '|');
-	str_addf(&slog, "{\n\t\"msg\": \"%.*s\",", (int)(bar-fmt), fmt);
 
 	if (bar) {
+		str_addf(&slog, "{\n\t\"msg\": \"%.*s\",", (int)(bar - fmt), fmt);
 		str_grow(&slog, slog.len + 256);
 		int ret = pb_vprint(slog.c_str + slog.len, slog.cap - slog.len, bar+1, ap, 1);
 		if (ret > 0) {
 			str_setlen(&slog, slog.len + ret);
 		}
+		if (str_ends_with(slog, ",")) {
+			slog.len--;
+		}
+		str_add(&slog, "\n}\n");
+	} else {
+		str_addf(&slog, "{\n\t\"msg\": \"%s\"\n}\n", fmt);
 	}
-
-	if (str_ends_with(slog, ",")) {
-		slog.len--;
-	}
-	str_add(&slog, "\n}\n");
 
 #ifdef _WIN32
 	if (IsDebuggerPresent()) {

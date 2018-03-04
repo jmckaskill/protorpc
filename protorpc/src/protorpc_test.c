@@ -98,7 +98,7 @@ static const uint8_t test_proto[] = {
 
 	// rf32 = [10,20,30]
 	0xD2, 1, 12, 10, 0, 0, 0, 20, 0, 0, 0, 30, 0, 0, 0,
-	
+
 	// ri64 = [-2,0,2] = [0xFFFFFFFFFFFFFFFE,0,2] = [x01 x7F x7F x7F x7F x7F x7F x7F x7F x7E, 0, 2]
 	0xDA, 1, 12, 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01, 0, 2,
 
@@ -119,7 +119,7 @@ static const uint8_t test_proto[] = {
 
 	// rd = [1.1,2.2,3.3] = [0x3FF1 9999 9999 999A, 0x4001 9999 9999 999A, 0x400A 6666 6666 6666]
 	0xAA, 0xD, 24,
-		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0xF1, 0x3F, 
+		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0xF1, 0x3F,
 		0x9A, 0x99, 0x99, 0x99, 0x99, 0x99, 0x01, 0x40,
 		0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x0A, 0x40,
 
@@ -144,7 +144,7 @@ static const uint8_t test_proto[] = {
 	0xD2, 0xD, 2, 0x10, 1,
 };
 
-static const char test_json[] = 
+static const char test_json[] =
 	"{\n"
 		"\t\"b\": true,\n"
 		"\t\"i32\": -23,\n"
@@ -497,7 +497,7 @@ const char *do_vprint(const char *fmt, ...) {
 	if (str_ends_with(s, ",")) {
 		s.len--;
 	}
-	ca_add(&s, "}\n");
+	ca_add(&s, "\n}\n");
 	return s.c_str;
 }
 
@@ -628,7 +628,7 @@ static void test_dispatch() {
 static void test_http() {
 	http h;
 	char rxbuf[4096];
-	http_reset(&h, rxbuf, sizeof(rxbuf), NULL); 
+	http_reset(&h, rxbuf, sizeof(rxbuf), NULL);
 
 	// test normal one off request
 	int len;
@@ -723,7 +723,7 @@ static void test_http() {
 	tx = http_send_buffer(&h, &len);
 	EXPECT_PTREQ(ok, tx);
 	EXPECT_EQ(strlen(ok), len);
-	
+
 	EXPECT_EQ(0, http_sent(&h, len));
 	EXPECT_EQ(HTTP_RESPONSE_SENT, h.state);
 
@@ -781,7 +781,7 @@ static void test_http() {
 	EXPECT_EQ(strlen(ok), len);
 	EXPECT_EQ(0, http_sent(&h, len));
 
-	
+
 
 	// post a streamed upload/download
 	// upload is three chunks:
@@ -814,7 +814,7 @@ static void test_http() {
 	// and check that we have the first two chunks
 	EXPECT_STREQ("123", http_request_data(&h, &len));
 	EXPECT_EQ(3, len);
-	
+
 	// consume some of the first two chunks
 	// and see that we still have the rest of the first chunk
 	EXPECT_EQ(0, http_consume_data(&h, 2));
