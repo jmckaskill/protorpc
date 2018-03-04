@@ -233,7 +233,8 @@
     }
     console.log("test encoder - finished");
 
-    var svc = proto.new_client(proto.com_example_Example);
+    var host = window.location.origin;
+    var svc = proto.new_client(host, proto.com_example_Example);
 
     svc.Echo({
         ping: "hello world",
@@ -246,4 +247,14 @@
     svc.GenerateError({}).catch(err => {
         console.log("expected error", err);
     });
+
+    var stream = proto.new_stream(host, proto.com_example_Example_EchoStream);
+    stream.send({ping: "hello world"});
+    stream.onmessage = (msg) => {
+        console.log(msg);
+    };
+    stream.onclose = (msg) => {
+        console.log(msg);
+    };
+    setInterval(() => stream.send({ping: "123"}), 1000);
 })(proto);

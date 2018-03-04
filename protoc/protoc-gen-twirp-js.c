@@ -223,13 +223,28 @@ static void define_service(str_t *o, const char *ns, const ServiceDescriptorProt
 	str_add(o, " = {\n");
 	str_addf(o, "\t\t_basePath: \"/twirp/%s%s/\",\n", ns, s->name.c_str);
 	for (MethodDescriptorProto *m = s->method.first; m != NULL; m = m->_next) {
-		str_addf(o, "\t\t%s: [\"%s\", ", m->name.c_str, m->name.c_str);
-		write_variable(o, NULL, m->input_type.c_str+1);
-		str_add(o, ", ");
-		write_variable(o, NULL, m->output_type.c_str+1);
-		str_add(o, "],\n");
+		if (!m->client_streaming && !m->server_streaming) {
+			str_addf(o, "\t\t%s: [\"%s\", ", m->name.c_str, m->name.c_str);
+			write_variable(o, NULL, m->input_type.c_str+1);
+			str_add(o, ", ");
+			write_variable(o, NULL, m->output_type.c_str+1);
+			str_add(o, "],\n");
+		}
 	}
 	str_add(o, "\t};\n");
+	for (MethodDescriptorProto *m = s->method.first; m != NULL; m = m->_next) {
+		if (m->client_streaming || m->server_streaming) {
+			str_add(o, "\tproto.");
+			write_variable(o, ns, s->name.c_str);
+			str_addf(o, "_%s = [\n", m->name.c_str);
+			str_addf(o, "\t\t\"/twirp/%s%s/%s\",\n", ns, s->name.c_str, m->name.c_str);
+			str_add(o, "\t\t");
+			write_variable(o, NULL, m->input_type.c_str + 1);
+			str_add(o, ",\n\t\t");
+			write_variable(o, NULL, m->output_type.c_str + 1);
+			str_add(o, "\n\t];\n");
+		}
+	}
 }
 
 static void write_file(const char *fn, const char *data, int len) {
@@ -321,7 +336,7 @@ int main(int argc, char *argv[]) {
 
 
 	str_add(&o, "})(proto);\n\n");
-	
+
 	str_t fn = STR_INIT;
 	str_setstr(&fn, r->file_to_generate.v[0]);
 	str_add(&fn, ".js");

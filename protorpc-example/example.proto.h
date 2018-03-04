@@ -20,9 +20,9 @@ struct Empty {
 };
 
 struct Example {
-	int (*Echo)(Example *svc, http *h, const EchoRequest *in, EchoRequest *out);
-	int (*EchoStream)(Example *svc, http *h, const EchoRequest *in);
-	int (*GenerateError)(Example *svc, http *h, const Empty *in);
+	int (*Echo)(Example *svc, http *h, EchoRequest *in, EchoRequest *out);
+	int (*EchoStream)(Example *svc, http *h, EchoRequest *in);
+	int (*GenerateError)(Example *svc, http *h, Empty *in);
 };
 
 struct EchoRequest {

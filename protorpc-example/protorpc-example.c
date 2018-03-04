@@ -75,18 +75,18 @@ struct server {
 	Example svc;
 };
 
-static int example_echo(Example *svc, http *h, const EchoRequest *in, EchoRequest *out) {
+static int example_echo(Example *svc, http *h, EchoRequest *in, EchoRequest *out) {
 	*out = *in;
 	return 0;
 }
 
-static int example_error(Example *svc, http *h, const Empty *in) {
+static int example_error(Example *svc, http *h, Empty *in) {
 	return 500;
 }
 
-static int echo_stream(Example *svc, http *h, const EchoRequest *in) {
+static int echo_stream(Example *svc, http *h, EchoRequest *in) {
 	char tx[256];
-	ws_send_json(h, tx, sizeof(tx), in, &proto_EchoRequest, 0);
+	ws_send_binary(h, tx, sizeof(tx), in, &proto_EchoRequest);
 	return 0;
 }
 

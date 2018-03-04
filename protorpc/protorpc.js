@@ -143,7 +143,7 @@ var proto = (function () {
 				v.setUint8(idx++, 0xC0 | (ch >>> 6));
 				v.setUint8(idx++, 0x80 | (ch & 0x3F));
 			} else if ((ch & 0xFF00) == 0xD800) {
-				// high surrogate 1101 10xx xxxx xxxx 
+				// high surrogate 1101 10xx xxxx xxxx
 				// low surrogate 1101 11xx xxxx xxxx
 				var high = ch & 0x3FF;
 				var low = str.charCodeAt(++i) & 0x3FF;
@@ -193,7 +193,7 @@ var proto = (function () {
 				// then encode to UTF-16
 				// UTF16 is shifted by 0x10000
 				u -= 0x10000;
-				// high surrogate 1101 10xx xxxx xxxx 
+				// high surrogate 1101 10xx xxxx xxxx
 				var high = 0xD800 | (u >> 10);
 				// low surrogate 1101 11xx xxxx xxxx
 				var low = 0xDC00 | (u & 0x3FF);
@@ -693,7 +693,7 @@ var proto = (function () {
 			req.send(encmsg);
 		});
 	};
-	var new_client = function (svc, timeout) {
+	var new_client = function (host, svc, timeout) {
 		if (!svc._prototype) {
 			var bp = svc._basePath;
 			delete svc._basePath;
@@ -705,7 +705,7 @@ var proto = (function () {
 					var itype = method[1];
 					var otype = method[2];
 					proto[name] = function (request) {
-						return call(bp + path, itype, otype, this._timeout || 10000, request);
+						return call(host + bp + path, itype, otype, this._timeout || 10000, request);
 					}
 				})(name, svc[name]);
 			}
@@ -716,6 +716,79 @@ var proto = (function () {
 		if (timeout) {
 			c._timeout = timeout;
 		}
+		return c;
+	};
+	var stream_proto = {
+		reopen: function() {
+			if (this.ws != null) {
+				this.ws.close();
+				this.ws = null;
+			}
+			var stream = this;
+			var ws = new WebSocket(this.uri);
+			ws.binaryType = "arraybuffer";
+			ws.onopen = function(ev) {
+				console.log("open", ev);
+				for (var idx in stream.pending) {
+					ws.send(stream.pending[idx]);
+				}
+				stream.pending = [];
+				if (stream.onopen) {
+					stream.onopen(ev);
+				}
+			};
+			ws.onclose = function(ev) {
+				console.log("error", ev);
+				stream.ws.close();
+				stream.ws = null;
+				stream.pending = [];
+				if (stream.onclose) {
+					stream.onclose(ev);
+				}
+			};
+			ws.onmessage = function(ev) {
+				console.log("msg", ev);
+				if (!stream.onmessage) {
+					// ignore incoming messages
+				} else if (stream.is_text) {
+					stream.onmessage(JSON.parse(ev.data));
+				} else {
+					var ab = /** @type {!ArrayBuffer}*/ (ev.data);
+					var resp = decode_message(stream.otype, new DataView(ab), [0, ab.byteLength]);
+					stream.onmessage(resp);
+				}
+			};
+			this.ws = ws;
+		},
+		send: function(msg) {
+			if (this.ws == null || this.ws.readyState == WebSocket.CLOSING || this.ws.readyState == WebSocket.CLOSED) {
+				this.reopen();
+			}
+			var ab = this.is_text ? JSON.stringify(msg) : encode(this.itype, msg);
+			if (this.ws.readyState == WebSocket.OPEN) {
+				console.log("send", msg, ab);
+				this.ws.send(ab);
+			} else {
+				console.log("pending", msg, ab);
+				this.pending.push(ab);
+			}
+		},
+	};
+	var new_stream = function (host, method, is_text) {
+		var uri;
+		if (host.startsWith("https://")) {
+			uri = "wss://" + host.substr("https://".length) + method[0];
+		} else if (host.startsWith("http://")) {
+			uri = "ws://" + host.substr("http://".length) + method[0];
+		} else {
+			throw new Error("invalid hostname");
+		}
+		var c = Object.create(stream_proto);
+		c.uri = uri;
+		c.itype = method[1];
+		c.otype = method[2];
+		c.pending = [];
+		c.is_text = is_text;
 		return c;
 	};
 
@@ -731,6 +804,7 @@ var proto = (function () {
 			}
 		},
 		new_client: new_client,
+		new_stream: new_stream,
 		encode: encode,
 		utf8to16: utf8to16,
 	};

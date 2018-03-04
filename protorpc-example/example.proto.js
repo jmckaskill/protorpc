@@ -172,9 +172,13 @@
 	proto.com_example_Example = {
 		_basePath: "/twirp/com.example.Example/",
 		Echo: ["Echo", com_example_EchoRequest, com_example_EchoRequest],
-		EchoStream: ["EchoStream", com_example_EchoRequest, com_example_EchoRequest],
 		GenerateError: ["GenerateError", com_example_Empty, com_example_Empty],
 	};
+	proto.com_example_Example_EchoStream = [
+		"/twirp/com.example.Example/EchoStream",
+		com_example_EchoRequest,
+		com_example_EchoRequest
+	];
 	proto.com_example_TestService = {
 		_basePath: "/twirp/com.example.TestService/",
 		rpc2: ["rpc2", com_example_TestPod, com_example_TestMessage],

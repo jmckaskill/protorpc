@@ -150,10 +150,10 @@ static void define_service(str_t *o, const proto_type *t) {
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
 		if (m->client_streaming || m->server_streaming || ot->is_empty) {
-			str_addf(o, "\tint (*%s)(%s *svc, http *h, const %s *in);\n",
+			str_addf(o, "\tint (*%s)(%s *svc, http *h, %s *in);\n",
 				m->name.c_str, t->c_type.c_str, it->c_type.c_str);
 		} else {
-			str_addf(o, "\tint (*%s)(%s *svc, http *h, const %s *in, %s *out);\n",
+			str_addf(o, "\tint (*%s)(%s *svc, http *h, %s *in, %s *out);\n",
 				m->name.c_str, t->c_type.c_str, it->c_type.c_str, ot->c_type.c_str);
 		}
 	}
