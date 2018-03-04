@@ -75,13 +75,19 @@ struct server {
 	Example svc;
 };
 
-static int example_echo(Example *svc, pb_allocator *obj, const EchoRequest *in, EchoRequest *out) {
+static int example_echo(Example *svc, http *h, const EchoRequest *in, EchoRequest *out) {
 	*out = *in;
 	return 0;
 }
 
-static int example_error(Example *svc, pb_allocator *obj, const Empty *in, Empty *out) {
+static int example_error(Example *svc, http *h, const Empty *in) {
 	return 500;
+}
+
+static int echo_stream(Example *svc, http *h, const EchoRequest *in) {
+	char tx[256];
+	ws_send_json(h, tx, sizeof(tx), in, &proto_EchoRequest, 0);
+	return 0;
 }
 
 extern const proto_dir dir_www_data;
@@ -91,7 +97,12 @@ static const char not_found[] = "HTTP/1.1 404 Not Found\r\nContent-Length:0\r\n\
 static int decide_on_dispatch(server *s, client *c) {
 	c->method = NULL;
 
-	if (str_itest(c->h.method, "GET")) {
+	if (c->h.expect_websocket) {
+		c->method = pb_lookup_stream(&s->svc, &proto_Example, c->h.path.c_str, c->h.path.len);
+		if (c->method) {
+			return http_send_continue(&c->h);
+		}
+	} else if (str_itest(c->h.method, "GET")) {
 		int len;
 		const char *file = pb_lookup_file(&dir_www_data, c->h.path.c_str, c->h.path.len, &len);
 		if (file) {
@@ -176,6 +187,7 @@ int main(int argc, char *argv[]) {
 	server s = { 0 };
 	s.svc.Echo = &example_echo;
 	s.svc.GenerateError = &example_error;
+	s.svc.EchoStream = &echo_stream;
 
 	struct {
 		int len;
@@ -185,7 +197,7 @@ int main(int argc, char *argv[]) {
 	struct heap client_heap = { 0 };
 	time_t now = time(NULL);
 
-	for (;;) {		
+	for (;;) {
 		int timeoutms;
 		for (;;) {
 			client *c = (client*)heap_min(&client_heap);
@@ -251,13 +263,14 @@ int main(int argc, char *argv[]) {
 					decide_on_dispatch(&s, c);
 				}
 
-				if (c->h.state == HTTP_DATA_RECEIVED && c->method) {
+				if (c->method && (c->h.state == HTTP_DATA_RECEIVED || c->h.state == HTTP_WEBSOCKET_RECEIVED)) {
 					char obj[65536];
-					pb_allocator alloc = PB_INIT_ALLOCATOR(obj);
-					int rxlen;
-					char *req = http_request_data(&c->h, &rxlen);
-					int txlen = pb_dispatch(&s.svc, c->method, &alloc, req, rxlen, c->tx, sizeof(c->tx));
-					http_send_response(&c->h, c->tx, txlen);
+					c->h.obj.next = obj;
+					c->h.obj.end = obj + sizeof(obj);
+					int txlen = pb_dispatch(&s.svc, c->method, &c->h, c->tx, sizeof(c->tx));
+					if (txlen) {
+						http_send_response(&c->h, c->tx, txlen);
+					}
 				}
 			}
 

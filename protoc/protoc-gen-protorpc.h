@@ -11,6 +11,7 @@ struct proto_type {
 	bool max_proto_size_calculated;
 	bool defined;
 	bool is_pod;
+	bool is_empty;
 	DescriptorProto *msg;
 	EnumDescriptorProto *en;
 	ServiceDescriptorProto *svc;

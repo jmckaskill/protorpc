@@ -1,5 +1,6 @@
 #pragma once
 
+#include <protorpc/protorpc.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -8,6 +9,7 @@ extern "C" {
 #endif
 
 typedef struct http http;
+typedef struct pb_allocator pb_allocator;
 
 typedef void(*http_on_header)(http *h, const char *key, const char *val);
 
@@ -102,12 +104,15 @@ struct http {
 	int txleft;
 
 	const char *internal_error;
+
+	pb_allocator obj;
+	void *udata;
 };
 
 // http_reset initializes the http struct
 // on_header is a callback called for every request header
 // rxbuf and sz are the receive buffer
-void http_reset(http *h, char *rxbuf, int sz, http_on_header on_header);
+void http_reset(http *h, char *rxbuf, int rxsz, http_on_header on_header);
 
 // http_next_request should be called once a request is finished
 // (ie h->state == HTTP_RESPONSE_SENT) to start the next request
@@ -174,6 +179,10 @@ int http_send_continue(http *h);
 // 0 - wait for more
 // -1 - error
 int http_pump(http *h, int fd);
+
+int ws_send_binary(http *h, char *buf, int sz, void *obj, const proto_message *type);
+int ws_send_json(http *h, char *buf, int sz, const void *obj, const proto_message *type, int indent);
+int ws_send_text(http *h, char *buf, int sz, const char *text, int len);
 
 #ifdef __cplusplus
 }

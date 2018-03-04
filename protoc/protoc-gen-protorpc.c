@@ -149,8 +149,13 @@ static void define_service(str_t *o, const proto_type *t) {
 	for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next) {
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
-		str_addf(o, "\tint (*%s)(%s *svc, pb_allocator *obj, const %s *in, %s *out);\n",
-			m->name.c_str, t->c_type.c_str, it->c_type.c_str, ot->c_type.c_str);
+		if (m->client_streaming || m->server_streaming || ot->is_empty) {
+			str_addf(o, "\tint (*%s)(%s *svc, http *h, const %s *in);\n",
+				m->name.c_str, t->c_type.c_str, it->c_type.c_str);
+		} else {
+			str_addf(o, "\tint (*%s)(%s *svc, http *h, const %s *in, %s *out);\n",
+				m->name.c_str, t->c_type.c_str, it->c_type.c_str, ot->c_type.c_str);
+		}
 	}
 	str_add(o, "};\n");
 }
@@ -232,7 +237,7 @@ static int cmp_enum_number(const void *a, const void *b) {
 
 static int cmp_enum_name(const void *a, const void *b) {
 	EnumValue *va = (EnumValue*)a;
-	EnumValue *vb = (EnumValue*)b; 
+	EnumValue *vb = (EnumValue*)b;
 	return compare_string(va->pb->name.c_str, va->pb->name.len, vb->pb->name.c_str, vb->pb->name.len);
 }
 
@@ -302,21 +307,16 @@ static void do_fields_by_number(str_t *o, const proto_type *t, Field *fields, in
 static void do_fields_by_name(str_t *o, const proto_type *t, Field *fields, int num) {
 	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < num; i++) {
-		if (i) {
-			str_addf(o, ",\n");
-		}
-		str_addf(o, "\t&fields_%s[%d].json_name", t->c_type.c_str, fields[i].by_number_index);
+		str_addf(o, "\t&fields_%s[%d].json_name,\n", t->c_type.c_str, fields[i].by_number_index);
 	}
-	if (!num) {
-		str_addf(o, "\tNULL");
-	}
-	str_addf(o, "\n};\n");
+	str_addf(o, "\tNULL,\n");
+	str_addf(o, "};\n");
 }
 
 static void do_typeinfo(str_t *o, const proto_type *t) {
 	str_addf(o, "const proto_message proto_%s = {\n", t->c_type.c_str);
 	str_addf(o, "\tsizeof(%s),\n", t->c_type.c_str);
-	str_addf(o, "\tsizeof(fields_%s)/sizeof(proto_field),\n", t->c_type.c_str);
+	str_addf(o, "\tsizeof(by_name_%s)/sizeof(pb_string*) - 1,\n", t->c_type.c_str);
 	str_addf(o, "\tfields_%s,\n", t->c_type.c_str);
 	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
 	str_addf(o, "};\n");
@@ -325,29 +325,24 @@ static void do_typeinfo(str_t *o, const proto_type *t) {
 static void do_enum_by_number(str_t *o, const proto_type *t, const EnumValue *values, int num) {
 	str_addf(o, "static const proto_enum_value values_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < num; i++) {
-		if (i) {
-			str_addf(o, ",\n");
-		}
 		const EnumValueDescriptorProto *v = values[i].pb;
-		str_addf(o, "\t{{%d, \"%s\"}, %d}", v->name.len, v->name.c_str, v->number);
+		str_addf(o, "\t{{%d, \"%s\"}, %d},\n", v->name.len, v->name.c_str, v->number);
 	}
-	str_add(o, "\n};\n");
+	str_add(o, "};\n");
 }
 
 static void do_enum_by_name(str_t *o, const proto_type *t, const EnumValue *values, int num) {
 	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < num; i++) {
-		if (i) {
-			str_addf(o, ",\n");
-		}
-		str_addf(o, "\t&values_%s[%d].name", t->c_type.c_str, values[i].by_number_index);
+		str_addf(o, "\t&values_%s[%d].name,\n", t->c_type.c_str, values[i].by_number_index);
 	}
-	str_add(o, "\n};\n");
+	str_add(o, "\tNULL,\n");
+	str_add(o, "};\n");
 }
 
 static void do_enuminfo(str_t *o, const proto_type *t) {
 	str_addf(o, "const proto_enum proto_%s = {\n", t->c_type.c_str);
-	str_addf(o, "\tsizeof(values_%s)/sizeof(proto_enum_value),\n", t->c_type.c_str);
+	str_addf(o, "\tsizeof(by_name_%s)/sizeof(pb_string*) - 1,\n", t->c_type.c_str);
 	str_addf(o, "\tvalues_%s,\n", t->c_type.c_str);
 	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
 	str_addf(o, "};\n");
@@ -355,32 +350,54 @@ static void do_enuminfo(str_t *o, const proto_type *t) {
 
 static void do_method_by_index(str_t *o, const proto_type *t) {
 	int method_idx = 0;
-	for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next) {
+	for (MethodDescriptorProto *m = t->svc->method.first; m != NULL; m = m->_next, method_idx++) {
 		// Note the proto_type has a leading . that we want to remove
 		proto_type *it = get_type(m->input_type);
 		proto_type *ot = get_type(m->output_type);
 		str_addf(o, "const proto_method proto_%s_%s = {\n", t->c_type.c_str, m->name.c_str);
 		str_addf(o, "\t{%d, \"/twirp/%s/%s\"},\n",
-			7 /*/twirp*/ + (t->proto_type.len-1) + 1 + m->name.len, t->proto_type.c_str+1, m->name.c_str);
-		str_addf(o, "\t%d,\n", method_idx++);
+			7 /*/twirp*/ + (t->proto_type.len - 1) + 1 + m->name.len, t->proto_type.c_str + 1, m->name.c_str);
+		str_addf(o, "\t%d,\n", method_idx);
 		str_addf(o, "\t&proto_%s,\n", it->c_type.c_str);
-		str_addf(o, "\t&proto_%s\n", ot->c_type.c_str);
+		if (m->client_streaming || m->server_streaming || ot->is_empty) {
+			str_add(o, "\tNULL,\n");
+		} else {
+			str_addf(o, "\t&proto_%s,\n", ot->c_type.c_str);
+		}
 		str_add(o, "};\n");
 	}
 }
 
-static void do_method_by_name(str_t *o, const proto_type *t, Method *methods, int num) {
-	str_addf(o, "static const pb_string *by_name_%s[] = {\n", t->c_type.c_str);
+static void do_methods_by_name(str_t *o, const proto_type *t, Method *methods, int num) {
+	str_addf(o, "static const pb_string *methods_%s[] = {\n", t->c_type.c_str);
 	for (int i = 0; i < num; i++) {
-		str_addf(o, "\t&proto_%s_%s.path,\n", t->c_type.c_str, methods[i].pb->name.c_str);
+		const MethodDescriptorProto *m = methods[i].pb;
+		if (!m->client_streaming && !m->server_streaming) {
+			str_addf(o, "\t&proto_%s_%s.path,\n", t->c_type.c_str, m->name.c_str);
+		}
 	}
+	str_add(o, "\tNULL,\n");
+	str_addf(o, "};\n");
+}
+
+static void do_streams_by_name(str_t *o, const proto_type *t, Method *methods, int num) {
+	str_addf(o, "static const pb_string *streams_%s[] = {\n", t->c_type.c_str);
+	for (int i = 0; i < num; i++) {
+		const MethodDescriptorProto *m = methods[i].pb;
+		if (m->client_streaming || m->server_streaming) {
+			str_addf(o, "\t&proto_%s_%s.path,\n", t->c_type.c_str, m->name.c_str);
+		}
+	}
+	str_add(o, "\tNULL,\n");
 	str_addf(o, "};\n");
 }
 
 static void do_svcinfo(str_t *o, const proto_type *t) {
 	str_addf(o, "const proto_service proto_%s = {\n", t->c_type.c_str);
-	str_addf(o, "\tsizeof(by_name_%s)/sizeof(pb_string*),\n", t->c_type.c_str);
-	str_addf(o, "\tby_name_%s\n", t->c_type.c_str);
+	str_addf(o, "\tsizeof(methods_%s)/sizeof(pb_string*) - 1,\n", t->c_type.c_str);
+	str_addf(o, "\tsizeof(streams_%s)/sizeof(pb_string*) - 1,\n", t->c_type.c_str);
+	str_addf(o, "\tmethods_%s,\n", t->c_type.c_str);
+	str_addf(o, "\tstreams_%s,\n", t->c_type.c_str);
 	str_addf(o, "};\n");
 }
 static void write_source(str_t *o, const FileDescriptorProto *f) {
@@ -463,7 +480,8 @@ static void write_source(str_t *o, const FileDescriptorProto *f) {
 
 			qsort(methods, mnum, sizeof(methods[0]), &cmp_method_name);
 
-			do_method_by_name(o, t, methods, mnum);
+			do_methods_by_name(o, t, methods, mnum);
+			do_streams_by_name(o, t, methods, mnum);
 			do_svcinfo(o, t);
 		}
 	}

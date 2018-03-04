@@ -105,6 +105,9 @@ static float compute_proto_size(proto_type *t) {
 	}
 
 	if (isfinite(sz)) {
+		if (sz == 0) {
+			t->is_empty = true;
+		}
 		sz += get_varint_size((uint32_t)sz);
 		if (sz <= 32) {
 			t->is_pod = true;

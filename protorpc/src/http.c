@@ -2,6 +2,7 @@
 #include <protorpc/char-array.h>
 #include <protorpc/sha1.h>
 #include <protorpc/protorpc.h>
+#include <limits.h>
 
 #ifndef min
 #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -292,8 +293,30 @@ static int process_websocket(http *h) {
 			}
 			break;
 		case WS_8BYTE:
-			// overlarge message
-			return -1;
+			hlen = 14;
+			if (h->rxused < h->content_length + hlen) {
+				return 0;
+			}
+
+			{
+				uint64_t len64 = ((uint64_t)p[2] << 56)
+					| ((uint64_t)p[3] << 48)
+					| ((uint64_t)p[4] << 40)
+					| ((uint64_t)p[5] << 32)
+					| ((uint64_t)p[6] << 24)
+					| ((uint64_t)p[7] << 16)
+					| ((uint64_t)p[8] << 8)
+					| ((uint64_t)p[9]);
+				if (len64 < WS_2BYTE || len64 > INT_MAX || (p[0] & ~WS_FIN) > WS_BINARY) {
+					return -1;
+				}
+				len = (int)len64;
+			}
+			break;
+		}
+
+		if (h->rxused < h->content_length + hlen + len) {
+			return 0;
 		}
 
 		// undo the masking
@@ -721,3 +744,68 @@ int http_consume_data(http *h, int used) {
 	h->rxused -= used;
 	return 0;
 }
+
+static char *fill_out_ws_length(char *buf, int *psz) {
+	uint8_t *u = (uint8_t*)buf;
+	int msgsz = *psz;
+	if (msgsz < WS_2BYTE) {
+		u[9] = (uint8_t)msgsz;
+		*psz += 2;
+		return buf + 8;
+	} else if (msgsz < 0xFFFF) {
+		u[7] = WS_2BYTE;
+		u[8] = (uint8_t)(msgsz >> 8);
+		u[9] = (uint8_t)(msgsz);
+		*psz += 4;
+		return buf + 6;
+	} else {
+		u[1] = WS_8BYTE;
+		u[2] = (uint8_t)((uint64_t)msgsz >> 56);
+		u[3] = (uint8_t)((uint64_t)msgsz >> 48);
+		u[4] = (uint8_t)((uint64_t)msgsz >> 40);
+		u[5] = (uint8_t)((uint64_t)msgsz >> 32);
+		u[6] = (uint8_t)((uint64_t)msgsz >> 24);
+		u[7] = (uint8_t)((uint64_t)msgsz >> 16);
+		u[8] = (uint8_t)((uint64_t)msgsz >> 8);
+		u[9] = (uint8_t)((uint64_t)msgsz);
+		*psz += 10;
+		return buf;
+	}
+}
+
+int ws_send_binary(http *h, char *buf, int sz, void *obj, const proto_message *type) {
+	int msgsz = pb_encoded_size(obj, type);
+	if (msgsz + 10 > sz) {
+		return -1;
+	}
+	if (pb_encode(obj, type, buf + 10) < 0) {
+		return -1;
+	}
+	char *msg = fill_out_ws_length(buf, &msgsz);
+	*(uint8_t*)msg = WS_FIN | WS_BINARY;
+	return http_send_response(h, msg, msgsz);
+}
+
+int ws_send_json(http *h, char *buf, int sz, const void *obj, const proto_message *type, int indent) {
+	if (sz < 10) {
+		return -1;
+	}
+	int msgsz = pb_print(buf + 10, sz - 10, obj, type, indent);
+	if (msgsz < 0) {
+		return -1;
+	}
+	char *msg = fill_out_ws_length(buf, &msgsz);
+	*(uint8_t*)msg = WS_FIN | WS_TEXT;
+	return http_send_response(h, msg, msgsz);
+}
+
+int ws_send_text(http *h, char *buf, int sz, const char *text, int len) {
+	if (sz < 10 + len) {
+		return -1;
+	}
+	memcpy(buf + 10, text, len);
+	char *msg = fill_out_ws_length(buf, &len);
+	*(uint8_t*)msg = WS_FIN | WS_TEXT;
+	return http_send_response(h, msg, len);
+}
+

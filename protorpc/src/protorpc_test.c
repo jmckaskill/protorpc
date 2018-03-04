@@ -586,7 +586,7 @@ static void test_decode() {
 	free(buf);
 }
 
-static int test_rpc1(TestService *s, pb_allocator *a, const TestMessage *in, TestPod *out) {
+static int test_rpc1(TestService *s, http *h, const TestMessage *in, TestPod *out) {
 	check_message(in);
 	setup_pod(out);
 	return 201;
@@ -598,27 +598,36 @@ static void test_dispatch() {
 	char obuf[4096];
 	char tbuf[4096];
 
-	pb_allocator obj = PB_INIT_ALLOCATOR(abuf);
-
 	TestService svc = { 0 };
 	svc.rpc1 = &test_rpc1;
 
-	const char *path = "/twirp/com.example.TestService/rpc1";
+	static const char path[] = "/twirp/com.example.TestService/rpc1";
 	EXPECT_PTREQ(&proto_TestService_rpc1, pb_lookup_method(&svc, &proto_TestService, path, strlen(path)));
 
 	// Try with protobufs
-	int inlen = sizeof(test_proto);
-	memcpy(ibuf, test_proto, inlen);
-	int osz = pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, sizeof(obuf));
+	int len = sizeof(test_proto);
+	memcpy(ibuf, test_proto, len);
+	http h = { 0 };
+	h.obj.next = abuf;
+	h.obj.end = abuf + sizeof(abuf);
+	h.state = HTTP_DATA_RECEIVED;
+	h.length_remaining = len;
+	h.rxused = len;
+	h.rxbuf = ibuf;
+	int osz = pb_dispatch(&svc, &proto_TestService_rpc1, &h, obuf, sizeof(obuf));
 	int tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/protobuf\r\nContent-Length:%6d\r\n\r\n%.*s",
 		(int) sizeof(test_pod_proto), (int) sizeof(test_pod_proto), test_pod_proto);
 
 	EXPECT_BYTES_EQ(obuf, osz, tbuf, tsz);
 
 	// Try with json
-	inlen = strlen(test_json);
-	memcpy(ibuf, test_json, inlen);
-	osz = pb_dispatch(&svc, &proto_TestService_rpc1, &obj, ibuf, inlen, obuf, sizeof(obuf));
+	len = strlen(test_json);
+	memcpy(ibuf, test_json, len);
+	h.state = HTTP_DATA_RECEIVED;
+	h.length_remaining = len;
+	h.rxused = len;
+	h.rxbuf = ibuf;
+	osz = pb_dispatch(&svc, &proto_TestService_rpc1, &h, obuf, sizeof(obuf));
 	tsz = sprintf(tbuf, "HTTP/1.1 201 \r\nContent-Type:application/json;charset=utf-8\r\nContent-Length:%6d\r\n\r\n%s",
 		(int)strlen(test_pod_json), test_pod_json);
 
@@ -933,6 +942,13 @@ static void test_websocket() {
 		0x04, // !mask && length == 4
 		9, 8, 7, 6,
 	};
+	static unsigned char large_ws[] = {
+		0x81, // text && fin
+		0xFE, // mask && 2 byte length extension
+		0x01, 0x02, // length 0x102 = 258
+		1, 2, 3, 4, // mask
+		1^1, 2^2, 3^3, 4^4,
+	};
 
 	http h;
 	char rxbuf[4096];
@@ -1009,6 +1025,28 @@ static void test_websocket() {
 	EXPECT_EQ(h.state, HTTP_RECEIVING_WEBSOCKET);
 	http_send_buffer(&h, &len);
 	EXPECT_EQ(0, len);
+
+	// process a large message in multiple chunks
+	uint8_t *u = (uint8_t*) http_recv_buffer(&h, &len);
+	u[0] = 0x82; // fin & binary
+	u[1] = 0xFE; // mask & 2 length extension
+	u[2] = (uint8_t)(sizeof(test_proto) >> 8);
+	u[3] = (uint8_t)(sizeof(test_proto) & 0xFF);
+	u[4] = 0; // mask
+	u[5] = 1;
+	EXPECT_EQ(0, http_received(&h, 6));
+	u = (uint8_t*)http_recv_buffer(&h, &len);
+	u[0] = 2;
+	u[1] = 3;
+	EXPECT_EQ(0, http_received(&h, 2));
+	u = (uint8_t*)http_recv_buffer(&h, &len);
+	for (int i = 0; i < sizeof(test_proto); i++) {
+		u[i] = test_proto[i] ^ (i & 3);
+	}
+	EXPECT_EQ(0, http_received(&h, sizeof(test_proto)));
+	EXPECT_EQ(h.state, HTTP_WEBSOCKET_RECEIVED);
+	rx = http_request_data(&h, &len);
+	EXPECT_BYTES_EQ(test_proto, sizeof(test_proto), rx, len);
 }
 
 int main(int argc, char *argv[]) {

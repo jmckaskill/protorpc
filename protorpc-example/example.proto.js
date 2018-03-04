@@ -172,6 +172,7 @@
 	proto.com_example_Example = {
 		_basePath: "/twirp/com.example.Example/",
 		Echo: ["Echo", com_example_EchoRequest, com_example_EchoRequest],
+		EchoStream: ["EchoStream", com_example_EchoRequest, com_example_EchoRequest],
 		GenerateError: ["GenerateError", com_example_Empty, com_example_Empty],
 	};
 	proto.com_example_TestService = {

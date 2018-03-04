@@ -10,7 +10,9 @@ message EchoRequest {
 
 service Example {
     rpc Echo(EchoRequest) returns (EchoRequest);
+	rpc EchoStream(stream EchoRequest) returns (stream EchoRequest);
     rpc GenerateError(Empty) returns (Empty);
 }
+
 
 

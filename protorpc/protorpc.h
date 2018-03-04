@@ -123,7 +123,9 @@ struct proto_message {
 	const pb_string **by_name;
 };
 
-typedef int(*proto_method_fn)(void *, pb_allocator*, const void*, void*);
+typedef struct http http;
+typedef int(*proto_bidi_fn)(void *, http*, const void*, void*);
+typedef int(*proto_in_fn)(void *, http*, const void*);
 
 struct proto_method {
 	pb_string path;
@@ -134,7 +136,9 @@ struct proto_method {
 
 struct proto_service {
 	size_t num_methods;
-	const pb_string **by_path;
+	size_t num_streams;
+	const pb_string **methods_by_path;
+	const pb_string **streams_by_path;
 };
 
 struct proto_file {
@@ -160,7 +164,8 @@ int pb_vprint(char *buf, int sz, const char *fmt, va_list ap, int indent);
 
 const char *pb_lookup_file(const proto_dir *d, const char *path, int len, int *resplen);
 const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path, int len);
-int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int outsz);
+const proto_method *pb_lookup_stream(void *svc, const proto_service *type, const char *path, int len);
+int pb_dispatch(void *svc, const proto_method *method, http *h, char *out, int outsz);
 
 static inline int pb_base64_size(int sz) {
 	return (sz * 4 + 3) / 3;

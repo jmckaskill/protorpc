@@ -1,4 +1,6 @@
 #include "common.h"
+#include "protorpc/http.h"
+#include "protorpc/char-array.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -14,20 +16,28 @@ const char *pb_lookup_file(const proto_dir *d, const char *path, int len, int *r
 	return f->response;
 }
 
-const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path, int len) {
+static const proto_method *lookup_method(void *svc, const char *path, int len, const pb_string **by_path, size_t num) {
 	pb_string pathstr = { len, path };
-	const pb_string *mname = binary_search(type->by_path, type->num_methods, pathstr);
+	const pb_string *mname = binary_search(by_path, num, pathstr);
 	if (!mname) {
 		return NULL;
 	}
 	const proto_method *method = (const proto_method*)mname;
-	proto_method_fn *fns = (proto_method_fn*)svc;
-	proto_method_fn fn = fns[method->offset];
+	proto_bidi_fn *fns = (proto_bidi_fn*)svc;
+	proto_bidi_fn fn = fns[method->offset];
 	if (!fn) {
 		return NULL;
 	}
-	
+
 	return method;
+}
+
+const proto_method *pb_lookup_method(void *svc, const proto_service *type, const char *path, int len) {
+	return lookup_method(svc, path, len, type->methods_by_path, type->num_methods);
+}
+
+const proto_method *pb_lookup_stream(void *svc, const proto_service *type, const char *path, int len) {
+	return lookup_method(svc, path, len, type->streams_by_path, type->num_streams);
 }
 
 
@@ -39,12 +49,16 @@ const proto_method *pb_lookup_method(void *svc, const proto_service *type, const
 // the input.
 // This function services both JSON and protobuf request data by looking
 // at the data.
-int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *in, int insz, char *out, int outsz) {
-	proto_method_fn *fns = (proto_method_fn*)svc;
-	proto_method_fn fn = fns[method->offset];
-	
+int pb_dispatch(void *svc, const proto_method *method, http *h, char *out, int outsz) {
+	proto_bidi_fn bifn = ((proto_bidi_fn*)svc)[method->offset];
+	proto_in_fn infn = ((proto_in_fn*)svc)[method->offset];
+
+	int insz;
+	char *in = http_request_data(h, &insz);
 	bool is_text = (insz && in[0] == '{');
+	pb_allocator *obj = &h->obj;
 	char *objstart = obj->next;
+	bool is_bidi = method->output != NULL;
 
 	if (outsz < 256) {
 		return 0;
@@ -59,7 +73,9 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 		inm = pb_decode(obj, method->input, in, insz);
 	}
 
-	void *outm = pb_calloc(obj, 1, method->output->datasz);
+	http_consume_data(h, insz);
+
+	void *outm = is_bidi ? pb_calloc(obj, 1, method->output->datasz) : inm;
 
 	if (!inm || !outm) {
 		// decoding the input failed
@@ -67,7 +83,10 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 		return sprintf(out, "HTTP/1.1 400 Malformed Payload\r\nContent-Length:0\r\n\r\n");
 	}
 
-	int sts = fn(svc, obj, inm, outm);
+	int sts = is_bidi ? bifn(svc, h, inm, outm) : infn(svc, h, inm);
+	if (h->state == HTTP_RECEIVING_WEBSOCKET) {
+		return 0;
+	}
 	if (!sts) {
 		sts = 200; // OK
 	} else if (sts < 100 || sts > 999) {
@@ -78,15 +97,17 @@ int pb_dispatch(void *svc, const proto_method *method, pb_allocator *obj, char *
 		sts, is_text ? "application/json;charset=utf-8" : "application/protobuf");
 
 	// encode the output
-	int sz;
-	if (is_text) {
-		sz = pb_print(out + ret, outsz - ret, outm, method->output, 0);
-	} else {
-		sz = pb_encoded_size(outm, method->output);
-		if (0 <= sz && sz < (outsz - ret)) {
-			sz = pb_encode(outm, method->output, out + ret);
+	int sz = 0;
+	if (is_bidi) {
+		if (is_text) {
+			sz = pb_print(out + ret, outsz - ret, outm, method->output, 0);
 		} else {
-			sz = -1;
+			sz = pb_encoded_size(outm, method->output);
+			if (0 <= sz && sz < (outsz - ret)) {
+				sz = pb_encode(outm, method->output, out + ret);
+			} else {
+				sz = -1;
+			}
 		}
 	}
 

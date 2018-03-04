@@ -6,11 +6,12 @@ static const struct proto_field fields_TestPod[] = {
 };
 static const pb_string *by_name_TestPod[] = {
 	&fields_TestPod[1].json_name,
-	&fields_TestPod[0].json_name
+	&fields_TestPod[0].json_name,
+	NULL,
 };
 const proto_message proto_TestPod = {
 	sizeof(TestPod),
-	sizeof(fields_TestPod)/sizeof(proto_field),
+	sizeof(by_name_TestPod)/sizeof(pb_string*) - 1,
 	fields_TestPod,
 	by_name_TestPod
 };
@@ -18,15 +19,16 @@ const proto_message proto_TestPod = {
 static const proto_enum_value values_TestEnum[] = {
 	{{6, "ENUM_A"}, 0},
 	{{6, "ENUM_B"}, 1},
-	{{6, "ENUM_C"}, 2}
+	{{6, "ENUM_C"}, 2},
 };
 static const pb_string *by_name_TestEnum[] = {
 	&values_TestEnum[0].name,
 	&values_TestEnum[1].name,
-	&values_TestEnum[2].name
+	&values_TestEnum[2].name,
+	NULL,
 };
 const proto_enum proto_TestEnum = {
-	sizeof(values_TestEnum)/sizeof(proto_enum_value),
+	sizeof(by_name_TestEnum)/sizeof(pb_string*) - 1,
 	values_TestEnum,
 	by_name_TestEnum
 };
@@ -141,11 +143,12 @@ static const pb_string *by_name_TestMessage[] = {
 	&fields_TestMessage[39].json_name,
 	&fields_TestMessage[43].json_name,
 	&fields_TestMessage[21].json_name,
-	&fields_TestMessage[25].json_name
+	&fields_TestMessage[25].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage = {
 	sizeof(TestMessage),
-	sizeof(fields_TestMessage)/sizeof(proto_field),
+	sizeof(by_name_TestMessage)/sizeof(pb_string*) - 1,
 	fields_TestMessage,
 	by_name_TestMessage
 };
@@ -154,21 +157,27 @@ const proto_method proto_TestService_rpc2 = {
 	{35, "/twirp/com.example.TestService/rpc2"},
 	0,
 	&proto_TestPod,
-	&proto_TestMessage
+	&proto_TestMessage,
 };
 const proto_method proto_TestService_rpc1 = {
 	{35, "/twirp/com.example.TestService/rpc1"},
 	1,
 	&proto_TestMessage,
-	&proto_TestPod
+	&proto_TestPod,
 };
-static const pb_string *by_name_TestService[] = {
+static const pb_string *methods_TestService[] = {
 	&proto_TestService_rpc1.path,
 	&proto_TestService_rpc2.path,
+	NULL,
+};
+static const pb_string *streams_TestService[] = {
+	NULL,
 };
 const proto_service proto_TestService = {
-	sizeof(by_name_TestService)/sizeof(pb_string*),
-	by_name_TestService
+	sizeof(methods_TestService)/sizeof(pb_string*) - 1,
+	sizeof(streams_TestService)/sizeof(pb_string*) - 1,
+	methods_TestService,
+	streams_TestService,
 };
 
 static const struct proto_field fields_TestMessage_MbEntry[] = {
@@ -177,11 +186,12 @@ static const struct proto_field fields_TestMessage_MbEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MbEntry[] = {
 	&fields_TestMessage_MbEntry[0].json_name,
-	&fields_TestMessage_MbEntry[1].json_name
+	&fields_TestMessage_MbEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MbEntry = {
 	sizeof(TestMessage_MbEntry),
-	sizeof(fields_TestMessage_MbEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MbEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MbEntry,
 	by_name_TestMessage_MbEntry
 };
@@ -192,11 +202,12 @@ static const struct proto_field fields_TestMessage_MdEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MdEntry[] = {
 	&fields_TestMessage_MdEntry[0].json_name,
-	&fields_TestMessage_MdEntry[1].json_name
+	&fields_TestMessage_MdEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MdEntry = {
 	sizeof(TestMessage_MdEntry),
-	sizeof(fields_TestMessage_MdEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MdEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MdEntry,
 	by_name_TestMessage_MdEntry
 };
@@ -207,11 +218,12 @@ static const struct proto_field fields_TestMessage_MfEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MfEntry[] = {
 	&fields_TestMessage_MfEntry[0].json_name,
-	&fields_TestMessage_MfEntry[1].json_name
+	&fields_TestMessage_MfEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MfEntry = {
 	sizeof(TestMessage_MfEntry),
-	sizeof(fields_TestMessage_MfEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MfEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MfEntry,
 	by_name_TestMessage_MfEntry
 };
@@ -222,11 +234,12 @@ static const struct proto_field fields_TestMessage_MbyEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MbyEntry[] = {
 	&fields_TestMessage_MbyEntry[0].json_name,
-	&fields_TestMessage_MbyEntry[1].json_name
+	&fields_TestMessage_MbyEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MbyEntry = {
 	sizeof(TestMessage_MbyEntry),
-	sizeof(fields_TestMessage_MbyEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MbyEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MbyEntry,
 	by_name_TestMessage_MbyEntry
 };
@@ -237,11 +250,12 @@ static const struct proto_field fields_TestMessage_MenEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MenEntry[] = {
 	&fields_TestMessage_MenEntry[0].json_name,
-	&fields_TestMessage_MenEntry[1].json_name
+	&fields_TestMessage_MenEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MenEntry = {
 	sizeof(TestMessage_MenEntry),
-	sizeof(fields_TestMessage_MenEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MenEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MenEntry,
 	by_name_TestMessage_MenEntry
 };
@@ -252,11 +266,12 @@ static const struct proto_field fields_TestMessage_Mf32Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Mf32Entry[] = {
 	&fields_TestMessage_Mf32Entry[0].json_name,
-	&fields_TestMessage_Mf32Entry[1].json_name
+	&fields_TestMessage_Mf32Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Mf32Entry = {
 	sizeof(TestMessage_Mf32Entry),
-	sizeof(fields_TestMessage_Mf32Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Mf32Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Mf32Entry,
 	by_name_TestMessage_Mf32Entry
 };
@@ -267,11 +282,12 @@ static const struct proto_field fields_TestMessage_Mf64Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Mf64Entry[] = {
 	&fields_TestMessage_Mf64Entry[0].json_name,
-	&fields_TestMessage_Mf64Entry[1].json_name
+	&fields_TestMessage_Mf64Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Mf64Entry = {
 	sizeof(TestMessage_Mf64Entry),
-	sizeof(fields_TestMessage_Mf64Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Mf64Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Mf64Entry,
 	by_name_TestMessage_Mf64Entry
 };
@@ -282,11 +298,12 @@ static const struct proto_field fields_TestMessage_Mi32Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Mi32Entry[] = {
 	&fields_TestMessage_Mi32Entry[0].json_name,
-	&fields_TestMessage_Mi32Entry[1].json_name
+	&fields_TestMessage_Mi32Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Mi32Entry = {
 	sizeof(TestMessage_Mi32Entry),
-	sizeof(fields_TestMessage_Mi32Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Mi32Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Mi32Entry,
 	by_name_TestMessage_Mi32Entry
 };
@@ -297,11 +314,12 @@ static const struct proto_field fields_TestMessage_Mi64Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Mi64Entry[] = {
 	&fields_TestMessage_Mi64Entry[0].json_name,
-	&fields_TestMessage_Mi64Entry[1].json_name
+	&fields_TestMessage_Mi64Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Mi64Entry = {
 	sizeof(TestMessage_Mi64Entry),
-	sizeof(fields_TestMessage_Mi64Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Mi64Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Mi64Entry,
 	by_name_TestMessage_Mi64Entry
 };
@@ -312,11 +330,12 @@ static const struct proto_field fields_TestMessage_MmsgEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MmsgEntry[] = {
 	&fields_TestMessage_MmsgEntry[0].json_name,
-	&fields_TestMessage_MmsgEntry[1].json_name
+	&fields_TestMessage_MmsgEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MmsgEntry = {
 	sizeof(TestMessage_MmsgEntry),
-	sizeof(fields_TestMessage_MmsgEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MmsgEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MmsgEntry,
 	by_name_TestMessage_MmsgEntry
 };
@@ -327,11 +346,12 @@ static const struct proto_field fields_TestMessage_MpodEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MpodEntry[] = {
 	&fields_TestMessage_MpodEntry[0].json_name,
-	&fields_TestMessage_MpodEntry[1].json_name
+	&fields_TestMessage_MpodEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MpodEntry = {
 	sizeof(TestMessage_MpodEntry),
-	sizeof(fields_TestMessage_MpodEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MpodEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MpodEntry,
 	by_name_TestMessage_MpodEntry
 };
@@ -342,11 +362,12 @@ static const struct proto_field fields_TestMessage_Ms32Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Ms32Entry[] = {
 	&fields_TestMessage_Ms32Entry[0].json_name,
-	&fields_TestMessage_Ms32Entry[1].json_name
+	&fields_TestMessage_Ms32Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Ms32Entry = {
 	sizeof(TestMessage_Ms32Entry),
-	sizeof(fields_TestMessage_Ms32Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Ms32Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Ms32Entry,
 	by_name_TestMessage_Ms32Entry
 };
@@ -357,11 +378,12 @@ static const struct proto_field fields_TestMessage_Ms64Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Ms64Entry[] = {
 	&fields_TestMessage_Ms64Entry[0].json_name,
-	&fields_TestMessage_Ms64Entry[1].json_name
+	&fields_TestMessage_Ms64Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Ms64Entry = {
 	sizeof(TestMessage_Ms64Entry),
-	sizeof(fields_TestMessage_Ms64Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Ms64Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Ms64Entry,
 	by_name_TestMessage_Ms64Entry
 };
@@ -372,11 +394,12 @@ static const struct proto_field fields_TestMessage_MstrEntry[] = {
 };
 static const pb_string *by_name_TestMessage_MstrEntry[] = {
 	&fields_TestMessage_MstrEntry[0].json_name,
-	&fields_TestMessage_MstrEntry[1].json_name
+	&fields_TestMessage_MstrEntry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_MstrEntry = {
 	sizeof(TestMessage_MstrEntry),
-	sizeof(fields_TestMessage_MstrEntry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_MstrEntry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_MstrEntry,
 	by_name_TestMessage_MstrEntry
 };
@@ -387,11 +410,12 @@ static const struct proto_field fields_TestMessage_Mu32Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Mu32Entry[] = {
 	&fields_TestMessage_Mu32Entry[0].json_name,
-	&fields_TestMessage_Mu32Entry[1].json_name
+	&fields_TestMessage_Mu32Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Mu32Entry = {
 	sizeof(TestMessage_Mu32Entry),
-	sizeof(fields_TestMessage_Mu32Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Mu32Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Mu32Entry,
 	by_name_TestMessage_Mu32Entry
 };
@@ -402,11 +426,12 @@ static const struct proto_field fields_TestMessage_Mu64Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Mu64Entry[] = {
 	&fields_TestMessage_Mu64Entry[0].json_name,
-	&fields_TestMessage_Mu64Entry[1].json_name
+	&fields_TestMessage_Mu64Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Mu64Entry = {
 	sizeof(TestMessage_Mu64Entry),
-	sizeof(fields_TestMessage_Mu64Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Mu64Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Mu64Entry,
 	by_name_TestMessage_Mu64Entry
 };
@@ -417,11 +442,12 @@ static const struct proto_field fields_TestMessage_Msf32Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Msf32Entry[] = {
 	&fields_TestMessage_Msf32Entry[0].json_name,
-	&fields_TestMessage_Msf32Entry[1].json_name
+	&fields_TestMessage_Msf32Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Msf32Entry = {
 	sizeof(TestMessage_Msf32Entry),
-	sizeof(fields_TestMessage_Msf32Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Msf32Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Msf32Entry,
 	by_name_TestMessage_Msf32Entry
 };
@@ -432,11 +458,12 @@ static const struct proto_field fields_TestMessage_Msf64Entry[] = {
 };
 static const pb_string *by_name_TestMessage_Msf64Entry[] = {
 	&fields_TestMessage_Msf64Entry[0].json_name,
-	&fields_TestMessage_Msf64Entry[1].json_name
+	&fields_TestMessage_Msf64Entry[1].json_name,
+	NULL,
 };
 const proto_message proto_TestMessage_Msf64Entry = {
 	sizeof(TestMessage_Msf64Entry),
-	sizeof(fields_TestMessage_Msf64Entry)/sizeof(proto_field),
+	sizeof(by_name_TestMessage_Msf64Entry)/sizeof(pb_string*) - 1,
 	fields_TestMessage_Msf64Entry,
 	by_name_TestMessage_Msf64Entry
 };

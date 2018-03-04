@@ -131,8 +131,8 @@ struct TestMessage {
 };
 
 struct TestService {
-	int (*rpc2)(TestService *svc, pb_allocator *obj, const TestPod *in, TestMessage *out);
-	int (*rpc1)(TestService *svc, pb_allocator *obj, const TestMessage *in, TestPod *out);
+	int (*rpc2)(TestService *svc, http *h, const TestPod *in, TestMessage *out);
+	int (*rpc1)(TestService *svc, http *h, const TestMessage *in, TestPod *out);
 };
 
 struct TestMessage_MbEntry {
