@@ -113,13 +113,6 @@ static DWORD WINAPI timeout_thread(void *udata) {
 	ExitProcess(3);
 	return 0;
 }
-#else
-static void *timeout_thread(void *udata) {
-	sleep(1);
-	fprintf(stderr, "test timed out\n");
-	_exit(3);
-	return NULL;
-}
 #endif
 
 log_t *start_test(int *argc, char *argv[]) {
