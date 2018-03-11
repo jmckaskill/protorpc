@@ -122,16 +122,14 @@ log_t *start_test(int *argc, char *argv[]) {
 #ifdef _WIN32
 	if (output_fn) {
 		DeleteFileA(output_fn);
-	}
-	if (!IsDebuggerPresent()) {
 		HANDLE h = CreateThread(NULL, 0, &timeout_thread, NULL, 0, NULL);
 		CloseHandle(h);
 	}
 #else
 	if (output_fn) {
 		unlink(output_fn);
+		alarm(1);
 	}
-	alarm(1);
 #endif
 	record_start_time();
 	str_clear(&slog);
