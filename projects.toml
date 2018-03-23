@@ -1,0 +1,60 @@
+solution = "protorpc.sln"
+includes = [""]
+generate = "generate-vcxproj.exe $(SolutionDir)"
+build = "ninja.exe -f msvc.ninja -C $(SolutionDir)"
+
+[[target]]
+vs = "Debug"
+ninja = "win32-debug"
+default = "win32-debug win32-debug/check"
+defines = ["WIN32", "DEBUG"]
+
+[[target]]
+vs = "Release"
+ninja = "win32-release"
+default = "win32-release win32-release/check"
+defines = ["WIN32", "NDEBUG"]
+
+[[project]]
+name = "lib - protorpc"
+file = "protorpc/protorpc.vcxproj"
+target = "bin/{TGT}/protorpc.lib"
+dirs = ["protorpc", "protorpc/src"]
+
+[[project]]
+name = "test - protorpc"
+file = "test_protorpc.vcxproj"
+target = "bin/{TGT}/test_protorpc.exe"
+
+[[project]]
+name = "test - str"
+file = "test_str.vcxproj"
+target = "bin/{TGT}/test_str.exe"
+
+[[project]]
+name = "bin - protoc-gen-protorpc"
+file = "protoc/protoc-gen-protorpc.vcxproj"
+target = "bin/{TGT}/protoc-gen-protorpc.exe"
+dirs = ["protoc"]
+
+[[project]]
+name = "bin - protoc-gen-twirp-js"
+file = "protoc/protoc-gen-twirp-js.vcxproj"
+target = "bin/{TGT}/protoc-gen-twirp-js.exe"
+
+[[project]]
+name = "bin - rpc-file-compiler"
+file = "rpc-file-compiler/rpc-file-compiler.vcxproj"
+target = "bin/{TGT}/rpc-file-compiler.exe"
+dirs = ["rpc-file-compiler"]
+
+[[project]]
+name = "test - rpc-file-compiler"
+file = "rpc-file-compiler/rpc-file-compiler_test.vcxproj"
+target = "bin/{TGT}/test_rpc-file-compiler.exe"
+
+[[project]]
+name = "bin - protorpc-example"
+file = "protorpc-example/protorpc-example.vcxproj"
+target = "bin/{TGT}/protorpc-example.exe"
+dirs = ["protorpc-example"]

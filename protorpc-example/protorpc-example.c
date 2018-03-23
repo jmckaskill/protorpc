@@ -29,14 +29,6 @@ typedef WSAPOLLFD pollfd;
 #define MAX_CLIENTS 16
 #define IDLE_TIMEOUT_SECONDS 10
 
-static bool would_block() {
-#ifdef _WIN32
-	return WSAGetLastError() == WSAEWOULDBLOCK;
-#else
-	return errno == EWOULDBLOCK || errno == EINTR;
-#endif
-}
-
 static int set_non_blocking(int fd) {
 #ifdef _WIN32
 	u_long nonblock = 1;

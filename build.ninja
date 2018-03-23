@@ -3,13 +3,14 @@ INCLUDES = -I . -I gtest/googletest/include -I gtest/googletest
 TOOLCHAIN_DIR = toolchain
 SRC = .
 
-include toolchain/host-clang.ninja
-
-build toolchain/host/bin/protoc.exe: copy /usr/local/bin/protoc
-
+include toolchain/host-cc.ninja
 subninja generate.ninja
-subninja toolchain/target-clang-debug.ninja
-subninja toolchain/target-clang-release.ninja
 
-build check: phony clang-debug/check clang-release/check
-default clang-debug clang-release check
+JS_FLAGS = -O BUNDLE
+subninja toolchain/target-cc-debug.ninja
+
+JS_FLAGS = -O ADVANCED
+subninja toolchain/target-cc-release.ninja
+
+build check: phony cc-debug/check cc-release/check
+default cc-debug cc-release check

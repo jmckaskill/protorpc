@@ -4,10 +4,11 @@ TOOLCHAIN_DIR = toolchain
 SRC = .
 
 include toolchain/host-win32.ninja
-
-build bin/$HOST/protoc.exe: copy toolchain/host/bin/protoc.exe
-
 subninja generate.ninja
+
+JS_FLAGS = -O BUNDLE
 subninja toolchain/target-win32-debug.ninja
+
+JS_FLAGS = -O ADVANCED
 subninja toolchain/target-win32-release.ninja
 

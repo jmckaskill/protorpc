@@ -67,6 +67,10 @@ build $bin/protoc-gen-twirp-js.exe: clink $
  $obj/protoc/exec.o $
  $obj/protorpc.lib $
 
+rule js-compile
+ command = java -jar tools/closure/closure-compiler-v20180204.jar $JS_FLAGS --rewrite_polyfills=false --js_output_file $out $in
+ description = JS-COMPILE $out
+
 build $obj/protorpc-example/lib.js: js-compile $
  $SRC/protorpc/protorpc.js $
  $SRC/protorpc-example/example.proto.js $

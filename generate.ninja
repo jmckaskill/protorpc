@@ -1,5 +1,5 @@
-bin = bin/${HOST_BASE}-release
-protoc = toolchain/host/bin/protoc.exe
+bin = bin/${HOST}
+protoc = tools/protoc/bin/protoc${EXE_EXT}
 
 build $SRC/protorpc/src/test.proto.h $SRC/protorpc/src/test.proto.c: run $
  $bin/protoc-gen-protorpc.exe $protoc $SRC/protorpc/src/test.proto
@@ -14,6 +14,6 @@ build $SRC/protorpc-example/example.proto.h $SRC/protorpc-example/example.proto.
 build $SRC/protorpc-example/example.proto.js: run $bin/protoc-gen-twirp-js.exe $protoc $
  $SRC/protorpc-example/example.proto $
  $SRC/protorpc/src/test.proto $
- 
+
 
 

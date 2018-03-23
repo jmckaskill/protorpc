@@ -39,13 +39,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeReBuildCommandLine>
+    <NMakeBuildCommandLine>generate-vcxproj.exe $(SolutionDir)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>generate-vcxproj.exe $(SolutionDir)</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine></NMakeCleanCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>$(SolutionDir)\toolchain\generate-vcxproj\generate-vcxproj.exe projects.json</NMakeReBuildCommandLine>
+    <NMakeBuildCommandLine>generate-vcxproj.exe $(SolutionDir)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>generate-vcxproj.exe $(SolutionDir)</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine></NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
