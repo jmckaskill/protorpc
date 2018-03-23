@@ -57,9 +57,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <NMakeOutput>$(SolutionDir)\bin\win32-debug\protoc-gen-protorpc.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;DEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/protoc-gen-protorpc.exe &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/protoc-gen-protorpc.exe &amp;&amp; download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
@@ -68,9 +68,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeOutput>$(SolutionDir)\bin\win32-release\protoc-gen-protorpc.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/protoc-gen-protorpc.exe &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/protoc-gen-protorpc.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/protoc-gen-protorpc.exe &amp;&amp; download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/protoc-gen-protorpc.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/protoc-gen-protorpc.exe</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />

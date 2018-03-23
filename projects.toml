@@ -1,7 +1,7 @@
 solution = "protorpc.sln"
 includes = [""]
 generate = "generate-vcxproj.exe $(SolutionDir)"
-build = "ninja.exe -f msvc.ninja -C $(SolutionDir)"
+build = "download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir)"
 
 [[target]]
 vs = "Debug"

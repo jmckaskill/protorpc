@@ -47,9 +47,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <NMakeOutput>$(SolutionDir)\bin\win32-debug\test_str.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;DEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/test_str.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/test_str.exe &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/test_str.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/test_str.exe</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/test_str.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/test_str.exe &amp;&amp; download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-debug/test_str.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-debug/test_str.exe</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
@@ -58,9 +58,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <NMakeOutput>$(SolutionDir)\bin\win32-release\test_str.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG</NMakePreprocessorDefinitions>
-    <NMakeBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/test_str.exe</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/test_str.exe &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/test_str.exe</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/test_str.exe</NMakeCleanCommandLine>
+    <NMakeBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/test_str.exe</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/test_str.exe &amp;&amp; download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) bin/win32-release/test_str.exe</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>download.exe $(SolutionDir) &amp;&amp; ninja.exe -f msvc.ninja -C $(SolutionDir) -t clean bin/win32-release/test_str.exe</NMakeCleanCommandLine>
     <NMakeIncludeSearchPath>$(ProjectDir);$(SolutionDir)\</NMakeIncludeSearchPath>
     <IntDir>$(SolutionDir)\obj\$(Configuration)\</IntDir>
     <SourcePath />
