@@ -4,10 +4,6 @@ protoc = tools/protoc/bin/protoc${EXE_EXT}
 build $SRC/protorpc/src/test.proto.h $SRC/protorpc/src/test.proto.c: run $
  $bin/protoc-gen-protorpc.exe $protoc $SRC/protorpc/src/test.proto
 
-build $SRC/rpc-file-compiler/rpc-test-data.c: run $bin/rpc-file-compiler.exe $
- $SRC/rpc-file-compiler/rpc-test-data/test.html $
- $SRC/rpc-file-compiler/rpc-test-data/test.js $
-
 build $SRC/protorpc-example/example.proto.h $SRC/protorpc-example/example.proto.c: run $
  $bin/protoc-gen-protorpc.exe $protoc $SRC/protorpc-example/example.proto
 

@@ -119,7 +119,11 @@ build $bin/rpc-file-compiler.exe: clink $
  $obj/protorpc.lib $
  $obj/zlib.lib $
 
-build $obj/rpc-test-data.o: cc $SRC/rpc-file-compiler/rpc-test-data.c
+build $obj/rpc-test-data.c: run bin/${HOST}/rpc-file-compiler.exe $
+ $SRC/rpc-file-compiler/rpc-test-data/test.html $
+ $SRC/rpc-file-compiler/rpc-test-data/test.js $
+
+build $obj/rpc-test-data.o: cc $obj/rpc-test-data.c
 build $obj/rpc-file-compiler_test.o: cc $SRC/rpc-file-compiler/rpc-file-compiler_test.c
 build $bin/test_rpc-file-compiler.log: run $bin/test_rpc-file-compiler.exe
 build $bin/test_rpc-file-compiler.exe: clink $

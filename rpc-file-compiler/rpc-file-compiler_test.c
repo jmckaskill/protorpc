@@ -10,7 +10,11 @@ static const char test_js_header[] =
 "Content-Length:39\r\n"
 "Content-Type:application/javascript;charset=utf-8\r\n"
 "Content-Encoding:gzip\r\n"
+#ifdef NDEBUG
 "Cache-Control:max-age=31536000\r\n"
+#else
+"Cache-Control:no-cache\r\n"
+#endif
 "\r\n";
 
 static const char test_js_data[] =
@@ -22,8 +26,13 @@ int main(int argc, char *argv[]) {
 	start_test(&argc, argv);
 
 	int respsz;
+#ifdef NDEBUG
 	const char *path = "/test.4CDDE84B7A.js";
+#else
+	const char *path = "/test.js";
+#endif
 	const char *resp = pb_lookup_file(&dir_rpc_test_data, path, strlen(path), &respsz);
+	ASSERT_TRUE(resp != NULL);
 	char buf[4096];
 	memcpy(buf, resp, respsz);
 	size_t hdrsz = strlen(test_js_header);
@@ -47,7 +56,7 @@ int main(int argc, char *argv[]) {
 	EXPECT_EQ((int) sizeof(test_js_data) - 1, (char*) z.next_out - decoded);
 
 	// Test 404 response
-	path = "/test.js";
+	path = "/something-random";
 	resp = pb_lookup_file(&dir_rpc_test_data, path, strlen(path), &respsz);
 	EXPECT_PTREQ(NULL, resp);
 
