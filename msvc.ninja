@@ -2,13 +2,12 @@ SRC_NINJA = src.ninja
 INCLUDES = -I . -I gtest/googletest/include -I gtest/googletest
 TOOLCHAIN_DIR = toolchain
 SRC = .
+JS_FLAGS-debug = -O BUNDLE
+JS_FLAGS-release = -O ADVANCED
 
 include toolchain/host-win32.ninja
 subninja generate.ninja
 
-JS_FLAGS = -O BUNDLE
 subninja toolchain/target-win32-debug.ninja
-
-JS_FLAGS = -O ADVANCED
 subninja toolchain/target-win32-release.ninja
 
